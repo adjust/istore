@@ -4,7 +4,9 @@ EXTVERSION = $(shell grep default_version $(EXTENSION).control | \
 DATA = $(wildcard sql/*--*.sql)
 
 MODULE_big = istore
-OBJS = src/istore.o
+OBJS = src/istore.o \
+	   src/pairs.o \
+	   src/istore_io.o
 
 TESTS        = setup $(filter-out test/sql/setup.sql test/sql/update.sql, $(wildcard test/sql/*.sql))
 
