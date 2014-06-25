@@ -11,7 +11,6 @@ CREATE FUNCTION istore_out(istore)
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE TYPE istore (
-    INTERNALLENGTH = -1,
     INPUT = istore_in,
     OUTPUT = istore_out
 );

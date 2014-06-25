@@ -66,19 +66,6 @@ parse_istore(ISParser *parser)
     }
 }
 
-size_t get_digit_num(long number)
-{
-    size_t count = 0;
-    if( number == 0 || number < 0 )
-        ++count;
-    while( number != 0 )
-    {
-        number /= 10;
-        ++count;
-    }
-    return count;
-}
-
 Datum
 istore_in(PG_FUNCTION_ARGS)
 {
@@ -86,14 +73,10 @@ istore_in(PG_FUNCTION_ARGS)
     IStore   *out;
     parser.begin = PG_GETARG_CSTRING(0);
     parser.pairs = palloc0(sizeof(ISPairs));
-    Pairs_init(parser.pairs, 1);
+    Pairs_init(parser.pairs, 200);
     parse_istore(&parser);
     Pairs_sort(parser.pairs);
-    out = palloc0(sizeof *out);
-    SET_VARSIZE(out, VARHDRSZ + sizeof *out + parser.pairs->used * sizeof(ISPair)+ sizeof(ISPairs*));
-    out->buflen = parser.buflen;
-    out->len = parser.pairs->used;
-    out->pairs = parser.pairs->pairs;
+    FINALIZE_ISTORE(out, parser);
     PG_RETURN_POINTER(out);
 }
 
@@ -101,16 +84,18 @@ Datum
 istore_out(PG_FUNCTION_ARGS)
 {
     IStore *in = PG_GETARG_IS(0);
-    int i;
-    char *out = palloc0(in->buflen);
-    int ptr = 0;
-    for (i=0; i<in->len; ++i)
+    ISPair *pairs;
+    int     i,
+            ptr = 0;
+    char   *out = palloc0(in->buflen);
+    pairs = FIRST_PAIR(in);
+    for (i = 0; i<in->len; ++i)
     {
         ptr += sprintf(
             out+ptr,
             "\"%d\"=>\"%ld\",",
-            in->pairs[i].key,
-            in->pairs[i].val
+            pairs[i].key,
+            pairs[i].val
         );
     }
     out[in->buflen - 1] = '\0';
