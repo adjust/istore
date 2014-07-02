@@ -36,6 +36,11 @@ CREATE FUNCTION subtract(istore, istore)
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION multiply(istore, istore)
+    RETURNS istore
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE OPERATOR -> (
     leftarg   = istore,
     rightarg  = integer,
@@ -58,4 +63,10 @@ CREATE OPERATOR - (
     leftarg   = istore,
     rightarg  = istore,
     procedure = subtract
+);
+
+CREATE OPERATOR * (
+    leftarg   = istore,
+    rightarg  = istore,
+    procedure = multiply
 );

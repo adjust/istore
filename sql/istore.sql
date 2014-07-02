@@ -35,3 +35,8 @@ CREATE FUNCTION subtract(istore, istore)
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION multiply(istore, istore)
+    RETURNS istore
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+

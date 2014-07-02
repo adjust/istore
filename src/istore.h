@@ -120,5 +120,6 @@ Datum exist(PG_FUNCTION_ARGS);
 Datum fetchval(PG_FUNCTION_ARGS);
 Datum add(PG_FUNCTION_ARGS);
 Datum subtract(PG_FUNCTION_ARGS);
+Datum multiply(PG_FUNCTION_ARGS);
 
 #endif // ISTORE_H

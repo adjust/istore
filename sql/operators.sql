@@ -21,3 +21,9 @@ CREATE OPERATOR - (
     rightarg  = istore,
     procedure = subtract
 );
+
+CREATE OPERATOR * (
+    leftarg   = istore,
+    rightarg  = istore,
+    procedure = multiply
+);
