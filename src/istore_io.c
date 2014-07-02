@@ -10,8 +10,9 @@ parse_istore(ISParser *parser)
     long val;
     bool escaped;
 
-    parser->state  = WKEY;
-    parser->ptr    = parser->begin;
+    parser->state = WKEY;
+    parser->ptr   = parser->begin;
+    parser->tree  = NULL;
     IS_ESCAPED(parser->ptr, escaped);
     while(1)
     {
@@ -45,7 +46,7 @@ parse_istore(ISParser *parser)
         {
             GET_VAL(parser, val, escaped);
             parser->state = WDEL;
-            Pairs_insert(parser->pairs, key, val);
+            parser->tree = insert(key, val, parser->tree);
         }
         else if (parser->state == WDEL)
         {
@@ -67,12 +68,13 @@ istore_in(PG_FUNCTION_ARGS)
 {
     ISParser  parser;
     IStore   *out;
+    ISPairs  *pairs;
     parser.begin = PG_GETARG_CSTRING(0);
-    parser.pairs = palloc0(sizeof(ISPairs));
-    Pairs_init(parser.pairs, 200);
+    pairs = palloc0(sizeof(ISPairs));
+    Pairs_init(pairs, 200);
     parse_istore(&parser);
-    Pairs_sort(parser.pairs);
-    FINALIZE_ISTORE(out, parser.pairs);
+    tree_to_pairs(parser.tree, pairs, 0);
+    FINALIZE_ISTORE(out, pairs);
     PG_RETURN_POINTER(out);
 }
 

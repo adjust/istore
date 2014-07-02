@@ -129,7 +129,6 @@ add(PG_FUNCTION_ARGS)
         Pairs_insert(creator, pairs2[index2].key, pairs2[index2].val);
         ++index2;
     }
-    Pairs_sort(creator);
     FINALIZE_ISTORE(result, creator);
     PG_RETURN_POINTER(result);
 }
@@ -189,7 +188,6 @@ subtract(PG_FUNCTION_ARGS)
         Pairs_insert(creator, pairs2[index2].key, -pairs2[index2].val);
         ++index2;
     }
-    Pairs_sort(creator);
     FINALIZE_ISTORE(result, creator);
     PG_RETURN_POINTER(result);
 }
@@ -249,7 +247,6 @@ multiply(PG_FUNCTION_ARGS)
         Pairs_insert(creator, pairs2[index2].key, 0);
         ++index2;
     }
-    Pairs_sort(creator);
     FINALIZE_ISTORE(result, creator);
     PG_RETURN_POINTER(result);
 }
