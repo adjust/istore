@@ -1,4 +1,4 @@
-#include "pairs.h"
+#include "istore.h"
 
 void
 Pairs_init(ISPairs *pairs, size_t initial_size)

@@ -16,3 +16,8 @@ CREATE TYPE istore (
     OUTPUT = istore_out
 );
 
+CREATE FUNCTION exist(istore, integer)
+    RETURNS boolean
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+

@@ -1,4 +1,7 @@
-#include "istore_io.h"
+#include "istore.h"
+
+PG_FUNCTION_INFO_V1(istore_in);
+PG_FUNCTION_INFO_V1(istore_out);
 
 void
 parse_istore(ISParser *parser)
