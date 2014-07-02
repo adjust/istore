@@ -72,7 +72,7 @@ istore_in(PG_FUNCTION_ARGS)
     Pairs_init(parser.pairs, 200);
     parse_istore(&parser);
     Pairs_sort(parser.pairs);
-    FINALIZE_ISTORE(out, parser);
+    FINALIZE_ISTORE(out, parser.pairs);
     PG_RETURN_POINTER(out);
 }
 

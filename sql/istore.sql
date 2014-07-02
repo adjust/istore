@@ -25,3 +25,13 @@ CREATE FUNCTION fetchval(istore, integer)
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION add(istore, istore)
+    RETURNS istore
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION subtract(istore, istore)
+    RETURNS istore
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
