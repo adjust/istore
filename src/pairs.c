@@ -47,6 +47,6 @@ Pairs_debug(ISPairs *pairs)
     int i;
     for (i = 0; i < pairs->used; ++i)
     {
-        elog(INFO, "key: %d, val: %ld", pairs->pairs[i].key, pairs->pairs[i].val);
+        elog(INFO, "key: %ld, val: %ld", pairs->pairs[i].key, pairs->pairs[i].val);
     }
 }

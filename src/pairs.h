@@ -4,7 +4,7 @@
 #include "istore.h"
 
 struct ISPair {
-    int  key;
+    long  key;
     long val;
     int  key_len;
     int  val_len;

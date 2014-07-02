@@ -23,6 +23,21 @@ typedef struct ISParser ISParser;
 #define PAYLOAD(_parser) parser.pairs->pairs
 #define PAYLOAD_SIZE(_parser) (parser.pairs->used * sizeof(ISPair))
 
+#define IS_ESCAPED(_ptr, _escaped) \
+    do {                           \
+        while (isspace(*_ptr))     \
+            _ptr++;                \
+        _escaped = *_ptr == '"';   \
+    } while(0)
+
+#define SKIP_ESCAPED(_ptr, _escaped)                     \
+    do {                                                 \
+        if (_escaped && *_ptr == '"')                    \
+            _ptr++;                                      \
+        else if (_escaped && *_ptr != '"')               \
+            elog(ERROR, "expected '\"', got %c", *_ptr); \
+    } while(0)
+
 typedef struct
 {
     int32   __varlen;

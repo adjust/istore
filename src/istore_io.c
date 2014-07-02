@@ -3,19 +3,21 @@
 void
 parse_istore(ISParser *parser)
 {
-    int key;
+    long key;
     long val;
+    bool escaped;
 
     parser->state  = WKEY;
     parser->ptr    = parser->begin;
     parser->buflen = 0;
+    IS_ESCAPED(parser->ptr, escaped);
     while(1)
     {
         if (parser->state == WKEY)
         {
-            while (isspace(*(parser->ptr)))
-                parser->ptr++;
+            SKIP_ESCAPED(parser->ptr, escaped);
             key = strtol(parser->ptr, &parser->ptr, 10);
+            SKIP_ESCAPED(parser->ptr, escaped);
             parser->state = WEQ;
         }
         else if (parser->state == WEQ)
@@ -42,9 +44,9 @@ parse_istore(ISParser *parser)
         {
             int key_len;
             int val_len;
-            while (isspace(*(parser->ptr)))
-                parser->ptr++;
+            SKIP_ESCAPED(parser->ptr, escaped);
             val = strtol(parser->ptr, &parser->ptr, 10);
+            SKIP_ESCAPED(parser->ptr, escaped);
             parser->state = WDEL;
             key_len = get_digit_num(key);
             val_len = get_digit_num(val);
@@ -93,7 +95,7 @@ istore_out(PG_FUNCTION_ARGS)
     {
         ptr += sprintf(
             out+ptr,
-            "\"%d\"=>\"%ld\",",
+            "\"%ld\"=>\"%ld\",",
             pairs[i].key,
             pairs[i].val
         );
