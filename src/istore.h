@@ -44,9 +44,6 @@ size_t get_digit_num(long number);
         }                           \
     } while (0)
 
-
-Datum exist(PG_FUNCTION_ARGS);
-
 #define WKEY 0
 #define WVAL 1
 #define WEQ  2
@@ -118,5 +115,8 @@ Datum istore_in(PG_FUNCTION_ARGS);
 Datum istore_out(PG_FUNCTION_ARGS);
 
 ISPair* find(IStore *is, long key);
+
+Datum exist(PG_FUNCTION_ARGS);
+Datum fetchval(PG_FUNCTION_ARGS);
 
 #endif // ISTORE_H

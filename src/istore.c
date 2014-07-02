@@ -15,24 +15,6 @@ size_t get_digit_num(long number)
     return count;
 }
 
-PG_FUNCTION_INFO_V1(exist);
-
-Datum
-exist(PG_FUNCTION_ARGS)
-{
-    IStore *in;
-    int     key;
-    bool    found;
-    /*TODO: NULL handling*/
-    in  = PG_GETARG_IS(0);
-    key = PG_GETARG_INT32(1);
-    if (find(in, key))
-        found = true;
-    else
-        found = false;
-    PG_RETURN_BOOL(found);
-}
-
 ISPair*
 find(IStore *is, long key)
 {
@@ -55,4 +37,40 @@ find(IStore *is, long key)
         }
     }
     return result;
+}
+
+PG_FUNCTION_INFO_V1(exist);
+
+Datum
+exist(PG_FUNCTION_ARGS)
+{
+    IStore *in;
+    int     key;
+    bool    found;
+    /*TODO: NULL handling*/
+    in  = PG_GETARG_IS(0);
+    key = PG_GETARG_INT32(1);
+    if (find(in, key))
+        found = true;
+    else
+        found = false;
+    PG_RETURN_BOOL(found);
+}
+
+PG_FUNCTION_INFO_V1(fetchval);
+
+Datum
+fetchval(PG_FUNCTION_ARGS)
+{
+    IStore *in;
+    int     key;
+    long    result;
+    ISPair  *pair;
+    /* TODO: NULL handling */
+    in  = PG_GETARG_IS(0);
+    key = PG_GETARG_INT32(1);
+    if ((pair = find(in, key)) == NULL )
+        PG_RETURN_NULL();
+    else
+        PG_RETURN_INT64(pair->val);
 }

@@ -20,3 +20,8 @@ CREATE FUNCTION exist(istore, integer)
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION fetchval(istore, integer)
+    RETURNS bigint
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
