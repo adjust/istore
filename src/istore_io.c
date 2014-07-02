@@ -14,19 +14,18 @@ parse_istore(ISParser *parser)
     {
         if (parser->state == WKEY)
         {
-            SKIP_ESCAPED(parser->ptr, escaped);
-            key = strtol(parser->ptr, &parser->ptr, 10);
-            SKIP_ESCAPED(parser->ptr, escaped);
+            GET_KEY(parser, key, escaped);
             parser->state = WEQ;
         }
         else if (parser->state == WEQ)
         {
+            SKIP_SPACES(parser->ptr);
             if (*(parser->ptr) == '=')
             {
                 parser->state = WGT;
                 parser->ptr++;
             }
-            else if (!isspace(*(parser->ptr)))
+            else
                 elog(ERROR, "unexpected sign %c, expected eq", *(parser->ptr));
         }
         else if (parser->state == WGT)
@@ -41,9 +40,7 @@ parse_istore(ISParser *parser)
         }
         else if (parser->state == WVAL)
         {
-            SKIP_ESCAPED(parser->ptr, escaped);
-            val = strtol(parser->ptr, &parser->ptr, 10);
-            SKIP_ESCAPED(parser->ptr, escaped);
+            GET_VAL(parser, val, escaped);
             parser->state = WDEL;
             Pairs_insert(parser->pairs, key, val);
         }

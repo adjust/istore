@@ -22,10 +22,13 @@ typedef struct ISParser ISParser;
 #define PAYLOAD(_parser) parser.pairs->pairs
 #define PAYLOAD_SIZE(_parser) (parser.pairs->used * sizeof(ISPair))
 
+#define SKIP_SPACES(_ptr)  \
+    while (isspace(*_ptr)) \
+        _ptr++;
+
 #define IS_ESCAPED(_ptr, _escaped) \
     do {                           \
-        while (isspace(*_ptr))     \
-            _ptr++;                \
+        SKIP_SPACES(_ptr)          \
         _escaped = *_ptr == '"';   \
     } while(0)
 
@@ -36,6 +39,15 @@ typedef struct ISParser ISParser;
         else if (_escaped && *_ptr != '"')               \
             elog(ERROR, "expected '\"', got %c", *_ptr); \
     } while(0)
+
+#define GET_KEY(_parser, _key, _escaped)            \
+    SKIP_SPACES(_parser->ptr)                       \
+    SKIP_ESCAPED(_parser->ptr, _escaped);           \
+    _key = strtol(_parser->ptr, &_parser->ptr, 10); \
+    SKIP_ESCAPED(_parser->ptr, _escaped);
+
+#define GET_VAL(_parser, _val, _escaped) \
+    GET_KEY(_parser, _val, _escaped)
 
 typedef struct
 {
