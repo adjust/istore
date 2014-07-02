@@ -15,7 +15,6 @@ struct ISParser {
     char    *ptr;
     int      state;
     ISPairs *pairs;
-    int      buflen;
 };
 
 typedef struct ISParser ISParser;
@@ -52,7 +51,7 @@ typedef struct
 #define FINALIZE_ISTORE(_istore, _parser)                                     \
     do {                                                                      \
         _istore = palloc(ISHDRSZ + PAYLOAD_SIZE(_parser));                    \
-        _istore->buflen = _parser.buflen;                                     \
+        _istore->buflen = _parser.pairs->buflen;                                     \
         _istore->len    = _parser.pairs->used;                                \
         SET_VARSIZE(_istore, ISHDRSZ + PAYLOAD_SIZE(_parser));                \
         memcpy(FIRST_PAIR(_istore), PAYLOAD(_parser), PAYLOAD_SIZE(_parser)); \

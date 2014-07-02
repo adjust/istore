@@ -9,7 +9,6 @@ parse_istore(ISParser *parser)
 
     parser->state  = WKEY;
     parser->ptr    = parser->begin;
-    parser->buflen = 0;
     IS_ESCAPED(parser->ptr, escaped);
     while(1)
     {
@@ -42,16 +41,11 @@ parse_istore(ISParser *parser)
         }
         else if (parser->state == WVAL)
         {
-            int key_len;
-            int val_len;
             SKIP_ESCAPED(parser->ptr, escaped);
             val = strtol(parser->ptr, &parser->ptr, 10);
             SKIP_ESCAPED(parser->ptr, escaped);
             parser->state = WDEL;
-            key_len = get_digit_num(key);
-            val_len = get_digit_num(val);
-            Pairs_insert(parser->pairs, key, val, key_len, val_len);
-            parser->buflen += key_len + val_len + 7;
+            Pairs_insert(parser->pairs, key, val);
         }
         else if (parser->state == WDEL)
         {

@@ -6,8 +6,8 @@
 struct ISPair {
     long  key;
     long val;
-    int  key_len;
-    int  val_len;
+    int  keylen;
+    int  vallen;
 };
 
 typedef struct ISPair ISPair;
@@ -16,12 +16,13 @@ struct ISPairs {
     ISPair *pairs;
     size_t  size;
     int     used;
+    int     buflen;
 };
 
 typedef struct ISPairs ISPairs;
 
 void Pairs_init(ISPairs *pairs, size_t initial_size);
-void Pairs_insert(ISPairs *pairs, int key, long val, int key_len, int val_len);
+void Pairs_insert(ISPairs *pairs, long key, long val);
 int  Pairs_cmp(const void *a, const void *b);
 void Pairs_sort(ISPairs *pairs);
 void Pairs_debug(ISPairs *pairs);

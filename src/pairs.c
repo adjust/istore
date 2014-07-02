@@ -3,23 +3,27 @@
 void
 Pairs_init(ISPairs *pairs, size_t initial_size)
 {
-    pairs->pairs = palloc(initial_size * sizeof(ISPair));
-    pairs->used  = 0;
-    pairs->size  = initial_size;
+    pairs->pairs  = palloc(initial_size * sizeof(ISPair));
+    pairs->used   = 0;
+    pairs->size   = initial_size;
+    pairs->buflen = 0;
 }
 
 void
-Pairs_insert(ISPairs *pairs, int key, long val, int key_len, int val_len)
+Pairs_insert(ISPairs *pairs, long key, long val)
 {
     if (pairs->size == pairs->used) {
-        /* TODO: palloc0! */
         pairs->size *= 2;
         pairs->pairs = repalloc(pairs->pairs, pairs->size * sizeof(ISPair));
     }
     pairs->pairs[pairs->used].key = key;
     pairs->pairs[pairs->used].val = val;
-    pairs->pairs[pairs->used].key_len = key_len;
-    pairs->pairs[pairs->used++].val_len = val_len;
+    DIGIT_WIDTH(key, pairs->pairs[pairs->used].keylen);
+    DIGIT_WIDTH(val, pairs->pairs[pairs->used].vallen);
+    pairs->buflen += pairs->pairs[pairs->used].keylen
+                  +  pairs->pairs[pairs->used].vallen
+                  +  7;
+    pairs->used++;
 }
 
 int
