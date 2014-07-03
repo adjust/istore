@@ -5,7 +5,6 @@ DATA = $(wildcard sql/*--*.sql)
 
 MODULE_big = istore
 OBJS = src/istore.o \
-	   src/pairs.o \
 	   src/data_types.o \
 	   src/istore_io.o
 

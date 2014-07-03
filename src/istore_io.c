@@ -3,8 +3,25 @@
 PG_FUNCTION_INFO_V1(istore_in);
 PG_FUNCTION_INFO_V1(istore_out);
 
-void
-parse_istore(ISParser *parser)
+#define WKEY 0
+#define WVAL 1
+#define WEQ  2
+#define WGT  3
+#define WDEL 4
+
+struct ISParser {
+    char    *begin;
+    char    *ptr;
+    int      state;
+    AvlNode *tree;
+};
+
+typedef struct ISParser ISParser;
+
+static void is_parse_istore(ISParser *parser);
+
+static void
+is_parse_istore(ISParser *parser)
 {
     long key;
     long val;
@@ -46,7 +63,7 @@ parse_istore(ISParser *parser)
         {
             GET_VAL(parser, val, escaped);
             parser->state = WDEL;
-            parser->tree = insert(key, val, parser->tree);
+            parser->tree = is_insert(key, val, parser->tree);
         }
         else if (parser->state == WDEL)
         {
@@ -71,9 +88,10 @@ istore_in(PG_FUNCTION_ARGS)
     ISPairs  *pairs;
     parser.begin = PG_GETARG_CSTRING(0);
     pairs = palloc0(sizeof(ISPairs));
-    Pairs_init(pairs, 200);
-    parse_istore(&parser);
-    tree_to_pairs(parser.tree, pairs, 0);
+    is_pairs_init(pairs, 200);
+    is_parse_istore(&parser);
+    is_tree_to_pairs(parser.tree, pairs, 0);
+    is_make_empty(parser.tree);
     FINALIZE_ISTORE(out, pairs);
     PG_RETURN_POINTER(out);
 }

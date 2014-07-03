@@ -3,12 +3,13 @@
 
 #include "postgres.h"
 #include "fmgr.h"
+#include "utils/array.h"
+
+extern void get_typlenbyvalalign(Oid eltype, int16 *i_typlen, bool *i_typbyval, char *i_typalign);
 
 struct ISPair {
     long key;
     long val;
-    int  keylen;
-    int  vallen;
 };
 
 typedef struct ISPair ISPair;
@@ -22,11 +23,12 @@ struct ISPairs {
 
 typedef struct ISPairs ISPairs;
 
-void Pairs_init(ISPairs *pairs, size_t initial_size);
-void Pairs_insert(ISPairs *pairs, long key, long val);
-int  Pairs_cmp(const void *a, const void *b);
-void Pairs_sort(ISPairs *pairs);
-void Pairs_debug(ISPairs *pairs);
+extern void is_pairs_init(ISPairs *pairs, size_t initial_size);
+extern void is_pairs_insert(ISPairs *pairs, long key, long val);
+extern int  is_pairs_cmp(const void *a, const void *b);
+extern void is_pairs_sort(ISPairs *pairs);
+extern void is_pairs_deinit(ISPairs *pairs);
+extern void is_pairs_debug(ISPairs *pairs);
 
 typedef struct AvlNode AvlNode;
 typedef struct AvlNode *Position;
@@ -41,17 +43,12 @@ struct AvlNode
     int      height;
 };
 
-AvlTree make_empty( AvlTree t );
-
-int compare( int key, AvlTree node );
-Position tree_find( int key, AvlTree t );
-AvlTree insert( int key, int value, AvlTree t );
-int tree_length(Position p);
-int tree_to_pairs(Position p, ISPairs *pairs, int n);
-
-
-/* TODO remove either that or the following macro */
-size_t get_digit_num(long number);
+extern AvlTree is_make_empty(AvlTree t);
+extern int is_compare(int key, AvlTree node);
+extern Position is_tree_find(int key, AvlTree t);
+extern AvlTree is_insert(int key, int value, AvlTree t);
+extern int is_tree_length(Position p);
+extern int is_tree_to_pairs(Position p, ISPairs *pairs, int n);
 
 #define DIGIT_WIDTH(_digit, _width) \
     do {                            \
@@ -65,23 +62,6 @@ size_t get_digit_num(long number);
             ++_width;               \
         }                           \
     } while (0)
-
-#define WKEY 0
-#define WVAL 1
-#define WEQ  2
-#define WGT  3
-#define WDEL 4
-
-struct ISParser {
-    char    *begin;
-    char    *ptr;
-    int      state;
-    AvlNode *tree;
-};
-
-typedef struct ISParser ISParser;
-
-void parse_istore(ISParser *parser);
 
 #define PAYLOAD(_pairs) _pairs->pairs
 #define PAYLOAD_SIZE(_pairs) (_pairs->used * sizeof(ISPair))
@@ -126,24 +106,17 @@ typedef struct
 
 #define FINALIZE_ISTORE(_istore, _pairs)                                    \
     do {                                                                    \
-        Pairs_sort(_pairs);                                                 \
+        is_pairs_sort(_pairs);                                                 \
         _istore = palloc(ISHDRSZ + PAYLOAD_SIZE(_pairs));                   \
         _istore->buflen = _pairs->buflen;                                   \
         _istore->len    = _pairs->used;                                     \
         SET_VARSIZE(_istore, ISHDRSZ + PAYLOAD_SIZE(_pairs));               \
         memcpy(FIRST_PAIR(_istore), PAYLOAD(_pairs), PAYLOAD_SIZE(_pairs)); \
+        is_pairs_deinit(_pairs);                                               \
     } while(0)
 
 
-Datum istore_in(PG_FUNCTION_ARGS);
-Datum istore_out(PG_FUNCTION_ARGS);
-
-ISPair* find(IStore *is, long key);
-
-Datum exist(PG_FUNCTION_ARGS);
-Datum fetchval(PG_FUNCTION_ARGS);
-Datum add(PG_FUNCTION_ARGS);
-Datum subtract(PG_FUNCTION_ARGS);
-Datum multiply(PG_FUNCTION_ARGS);
+ISPair* is_find(IStore *is, long key);
+Datum array_to_istore(Datum *data, int count, bool *nulls);
 
 #endif // ISTORE_H

@@ -16,14 +16,32 @@ CREATE OPERATOR + (
     procedure = add
 );
 
+CREATE OPERATOR + (
+    leftarg   = istore,
+    rightarg  = integer,
+    procedure = add
+);
+
 CREATE OPERATOR - (
     leftarg   = istore,
     rightarg  = istore,
     procedure = subtract
 );
 
+CREATE OPERATOR - (
+    leftarg   = istore,
+    rightarg  = integer,
+    procedure = subtract
+);
+
 CREATE OPERATOR * (
     leftarg   = istore,
     rightarg  = istore,
+    procedure = multiply
+);
+
+CREATE OPERATOR * (
+    leftarg   = istore,
+    rightarg  = integer,
     procedure = multiply
 );
