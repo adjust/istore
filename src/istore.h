@@ -10,6 +10,7 @@ extern void get_typlenbyvalalign(Oid eltype, int16 *i_typlen, bool *i_typbyval, 
 struct ISPair {
     long key;
     long val;
+    bool null;
 };
 
 typedef struct ISPair ISPair;
@@ -25,6 +26,7 @@ typedef struct ISPairs ISPairs;
 
 extern void is_pairs_init(ISPairs *pairs, size_t initial_size);
 extern void is_pairs_insert(ISPairs *pairs, long key, long val);
+extern void is_pairs_insert_null(ISPairs *pairs, long key);
 extern int  is_pairs_cmp(const void *a, const void *b);
 extern void is_pairs_sort(ISPairs *pairs);
 extern void is_pairs_deinit(ISPairs *pairs);

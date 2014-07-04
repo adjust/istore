@@ -2,6 +2,7 @@
 
 void is_pairs_init(ISPairs *pairs, size_t initial_size);
 void is_pairs_insert(ISPairs *pairs, long key, long val);
+void is_pairs_insert_null(ISPairs *pairs, long key);
 int  is_pairs_cmp(const void *a, const void *b);
 void is_pairs_sort(ISPairs *pairs);
 void is_pairs_deinit(ISPairs *pairs);
@@ -239,13 +240,33 @@ is_pairs_insert(ISPairs *pairs, long key, long val)
         pairs->pairs = repalloc(pairs->pairs, pairs->size * sizeof(ISPair));
     }
 
-    pairs->pairs[pairs->used].key = key;
-    pairs->pairs[pairs->used].val = val;
+    pairs->pairs[pairs->used].key  = key;
+    pairs->pairs[pairs->used].val  = val;
+    pairs->pairs[pairs->used].null = false;
     DIGIT_WIDTH(key, keylen);
     DIGIT_WIDTH(val, vallen);
     pairs->buflen += keylen + vallen + 7;
     pairs->used++;
 }
+
+void
+is_pairs_insert_null(ISPairs *pairs, long key)
+{
+    int keylen;
+
+    if (pairs->size == pairs->used) {
+        pairs->size *= 2;
+        pairs->pairs = repalloc(pairs->pairs, pairs->size * sizeof(ISPair));
+    }
+
+    pairs->pairs[pairs->used].key  = key;
+    pairs->pairs[pairs->used].val  = 0;
+    pairs->pairs[pairs->used].null = true;
+    DIGIT_WIDTH(key, keylen);
+    pairs->buflen += keylen + 10;
+    pairs->used++;
+}
+
 
 int
 is_pairs_cmp(const void *a, const void *b)

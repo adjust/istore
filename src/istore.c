@@ -270,12 +270,12 @@ is_multiply(PG_FUNCTION_ARGS)
     {
         if (pairs1[index1].key < pairs2[index2].key)
         {
-            is_pairs_insert(creator, pairs1[index1].key, 0);
+            is_pairs_insert_null(creator, pairs1[index1].key);
             ++index1;
         }
         else if (pairs1[index1].key > pairs2[index2].key)
         {
-            is_pairs_insert(creator, pairs2[index2].key, 0);
+            is_pairs_insert_null(creator, pairs2[index2].key);
             ++index2;
         }
         else
@@ -292,12 +292,12 @@ is_multiply(PG_FUNCTION_ARGS)
 
     while (index1 < is1->len)
     {
-        is_pairs_insert(creator, pairs1[index1].key, 0);
+        is_pairs_insert_null(creator, pairs1[index1].key);
         ++index1;
     }
     while (index2 < is2->len)
     {
-        is_pairs_insert(creator, pairs2[index2].key, 0);
+        is_pairs_insert_null(creator, pairs2[index2].key);
         ++index2;
     }
     FINALIZE_ISTORE(result, creator);

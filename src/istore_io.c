@@ -107,12 +107,23 @@ istore_out(PG_FUNCTION_ARGS)
     pairs = FIRST_PAIR(in);
     for (i = 0; i<in->len; ++i)
     {
-        ptr += sprintf(
-            out+ptr,
-            "\"%ld\"=>\"%ld\",",
-            pairs[i].key,
-            pairs[i].val
-        );
+        if (pairs[i].null)
+        {
+            ptr += sprintf(
+                out+ptr,
+                "\"%ld\"=>NULL,",
+                pairs[i].key
+            );
+        }
+        else
+        {
+            ptr += sprintf(
+                out+ptr,
+                "\"%ld\"=>\"%ld\",",
+                pairs[i].key,
+                pairs[i].val
+            );
+        }
     }
     out[in->buflen - 1] = '\0';
     PG_RETURN_CSTRING(out);
