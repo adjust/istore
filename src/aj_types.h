@@ -9,6 +9,8 @@
 
 #define CONST_STRING(s) (sizeof(s)/sizeof(s[0])), s
 
+#define CONST_STRING_LENGTH(s) (sizeof(s)/sizeof(s[0]) - 1)
+
 #define LOWER_STRING(s)       \
     do {                      \
     char *ptr = s;            \

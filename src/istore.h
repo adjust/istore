@@ -4,6 +4,11 @@
 #include "postgres.h"
 #include "fmgr.h"
 #include "utils/array.h"
+#include "device_type.h"
+
+#define NULL_VAL_ISTORE 0
+#define PLAIN_ISTORE    1
+#define DEVICE_ISTORE   2
 
 extern void get_typlenbyvalalign(Oid eltype, int16 *i_typlen, bool *i_typbyval, char *i_typalign);
 
@@ -20,13 +25,13 @@ struct ISPairs {
     size_t  size;
     int     used;
     int     buflen;
+    int     type;
 };
 
 typedef struct ISPairs ISPairs;
 
 extern void is_pairs_init(ISPairs *pairs, size_t initial_size);
-extern void is_pairs_insert(ISPairs *pairs, long key, long val);
-extern void is_pairs_insert_null(ISPairs *pairs, long key);
+extern void is_pairs_insert(ISPairs *pairs, long key, long val, int type);
 extern int  is_pairs_cmp(const void *a, const void *b);
 extern void is_pairs_sort(ISPairs *pairs);
 extern void is_pairs_deinit(ISPairs *pairs);
@@ -74,7 +79,7 @@ extern int is_tree_to_pairs(Position p, ISPairs *pairs, int n);
 
 #define IS_ESCAPED(_ptr, _escaped) \
     do {                           \
-        SKIP_SPACES(_ptr)          \
+        SKIP_SPACES(_ptr);         \
         _escaped = *_ptr == '"';   \
     } while(0)
 
@@ -86,11 +91,34 @@ extern int is_tree_to_pairs(Position p, ISPairs *pairs, int n);
             elog(ERROR, "expected '\"', got %c", *_ptr); \
     } while(0)
 
+#define COUNT_ALPHA(_ptr, _count) \
+    while (isalpha(*_ptr))        \
+    {                             \
+        ++_count;                 \
+        ++_ptr;                   \
+    }
+
 #define GET_PLAIN_KEY(_parser, _key, _escaped)      \
-    SKIP_SPACES(_parser->ptr)                       \
+    SKIP_SPACES(_parser->ptr);                      \
     SKIP_ESCAPED(_parser->ptr, _escaped);           \
     _key = strtol(_parser->ptr, &_parser->ptr, 10); \
     SKIP_ESCAPED(_parser->ptr, _escaped);
+
+#define GET_DEVICE_KEY(_parser, _key, _escaped) \
+    do {                                        \
+        char *_ptr,                             \
+             *_buf;                             \
+        int  _count = 0;                        \
+        SKIP_SPACES(_parser->ptr);              \
+        SKIP_ESCAPED(_parser->ptr, _escaped);   \
+        _ptr = _parser->ptr;                    \
+        COUNT_ALPHA(_ptr, _count);              \
+        _buf = pnstrdup(_parser->ptr, _count);  \
+        _parser->ptr = _ptr;                    \
+        SKIP_ESCAPED(_parser->ptr, _escaped);   \
+        _key = get_device_type_num(_buf);       \
+        pfree(_buf);                            \
+    } while (0)
 
 #define GET_VAL(_parser, _val, _escaped) \
     GET_PLAIN_KEY(_parser, _val, _escaped)
@@ -108,13 +136,13 @@ typedef struct
 
 #define FINALIZE_ISTORE(_istore, _pairs)                                    \
     do {                                                                    \
-        is_pairs_sort(_pairs);                                                 \
+        is_pairs_sort(_pairs);                                              \
         _istore = palloc(ISHDRSZ + PAYLOAD_SIZE(_pairs));                   \
         _istore->buflen = _pairs->buflen;                                   \
         _istore->len    = _pairs->used;                                     \
         SET_VARSIZE(_istore, ISHDRSZ + PAYLOAD_SIZE(_pairs));               \
         memcpy(FIRST_PAIR(_istore), PAYLOAD(_pairs), PAYLOAD_SIZE(_pairs)); \
-        is_pairs_deinit(_pairs);                                               \
+        is_pairs_deinit(_pairs);                                            \
     } while(0)
 
 

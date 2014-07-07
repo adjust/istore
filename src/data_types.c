@@ -1,8 +1,7 @@
 #include "istore.h"
 
 void is_pairs_init(ISPairs *pairs, size_t initial_size);
-void is_pairs_insert(ISPairs *pairs, long key, long val);
-void is_pairs_insert_null(ISPairs *pairs, long key);
+void is_pairs_insert(ISPairs *pairs, long key, long val, int type);
 int  is_pairs_cmp(const void *a, const void *b);
 void is_pairs_sort(ISPairs *pairs);
 void is_pairs_deinit(ISPairs *pairs);
@@ -214,7 +213,7 @@ is_tree_to_pairs(Position p, ISPairs *pairs, int n)
     if(p == NULL)
         return n;
     n = is_tree_to_pairs(p->left, pairs, n);
-    is_pairs_insert(pairs, p->key, p->value);
+    is_pairs_insert(pairs, p->key, p->value, pairs->type);
     ++n;
     n = is_tree_to_pairs(p->right, pairs, n);
     return n;
@@ -227,10 +226,11 @@ is_pairs_init(ISPairs *pairs, size_t initial_size)
     pairs->used   = 0;
     pairs->size   = initial_size;
     pairs->buflen = 0;
+    pairs->type   = PLAIN_ISTORE;
 }
 
 void
-is_pairs_insert(ISPairs *pairs, long key, long val)
+is_pairs_insert(ISPairs *pairs, long key, long val, int type)
 {
     int keylen,
         vallen;
@@ -242,31 +242,29 @@ is_pairs_insert(ISPairs *pairs, long key, long val)
 
     pairs->pairs[pairs->used].key  = key;
     pairs->pairs[pairs->used].val  = val;
-    pairs->pairs[pairs->used].null = false;
-    DIGIT_WIDTH(key, keylen);
-    DIGIT_WIDTH(val, vallen);
-    pairs->buflen += keylen + vallen + 7;
-    pairs->used++;
-}
-
-void
-is_pairs_insert_null(ISPairs *pairs, long key)
-{
-    int keylen;
-
-    if (pairs->size == pairs->used) {
-        pairs->size *= 2;
-        pairs->pairs = repalloc(pairs->pairs, pairs->size * sizeof(ISPair));
+    switch (type)
+    {
+        case (PLAIN_ISTORE):
+            DIGIT_WIDTH(key, keylen);
+            DIGIT_WIDTH(val, vallen);
+            pairs->pairs[pairs->used].null = false;
+            pairs->buflen += keylen + vallen + 7;
+            break;
+        case (NULL_VAL_ISTORE):
+            pairs->pairs[pairs->used].null = true;
+            DIGIT_WIDTH(key, keylen);
+            pairs->buflen += keylen + 10;
+            break;
+        case (DEVICE_ISTORE):
+            keylen = get_device_type_length(key);
+            DIGIT_WIDTH(val, vallen);
+            pairs->pairs[pairs->used].null = false;
+            pairs->buflen += keylen + vallen + 7;
+            break;
+        default: elog(ERROR, "unknown pairs type");
     }
-
-    pairs->pairs[pairs->used].key  = key;
-    pairs->pairs[pairs->used].val  = 0;
-    pairs->pairs[pairs->used].null = true;
-    DIGIT_WIDTH(key, keylen);
-    pairs->buflen += keylen + 10;
     pairs->used++;
 }
-
 
 int
 is_pairs_cmp(const void *a, const void *b)

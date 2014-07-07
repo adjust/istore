@@ -14,6 +14,18 @@ tablet => 10
 unknown => 0
 */
 
+static uint8 check_device_type_num(const char *str, device_type type);
+static int device_type_cmp_internal(device_type *a, device_type *b);
+
+PG_FUNCTION_INFO_V1(device_type_in);
+PG_FUNCTION_INFO_V1(device_type_out);
+PG_FUNCTION_INFO_V1(device_type_lt);
+PG_FUNCTION_INFO_V1(device_type_le);
+PG_FUNCTION_INFO_V1(device_type_eq);
+PG_FUNCTION_INFO_V1(device_type_ge);
+PG_FUNCTION_INFO_V1(device_type_gt);
+PG_FUNCTION_INFO_V1(device_type_cmp);
+
 Datum
 device_type_in(PG_FUNCTION_ARGS)
 {
@@ -32,7 +44,7 @@ Datum
 device_type_out(PG_FUNCTION_ARGS)
 {
     device_type *a = (device_type *) PG_GETARG_POINTER(0);
-    PG_RETURN_POINTER(get_device_type_string(a));
+    PG_RETURN_POINTER(get_device_type_string(*a));
 }
 
 Datum
@@ -94,9 +106,9 @@ device_type_cmp_internal(device_type * a, device_type * b)
 }
 
 char *
-get_device_type_string(uint8 *num)
+get_device_type_string(uint8 num)
 {
-    switch (*num)
+    switch (num)
     {
         case 1:  return create_string(CONST_STRING("bot"));
         case 2:  return create_string(CONST_STRING("console"));
@@ -112,10 +124,30 @@ get_device_type_string(uint8 *num)
     }
 }
 
+int
+get_device_type_length(uint8 num)
+{
+    switch (num)
+    {
+        case 1:  return (CONST_STRING_LENGTH("bot"));
+        case 2:  return (CONST_STRING_LENGTH("console"));
+        case 3:  return (CONST_STRING_LENGTH("ipod"));
+        case 4:  return (CONST_STRING_LENGTH("mac"));
+        case 5:  return (CONST_STRING_LENGTH("pc"));
+        case 6:  return (CONST_STRING_LENGTH("phone"));
+        case 7:  return (CONST_STRING_LENGTH("resolver"));
+        case 8:  return (CONST_STRING_LENGTH("server"));
+        case 9:  return (CONST_STRING_LENGTH("simulator"));
+        case 10: return (CONST_STRING_LENGTH("tablet"));
+        default: return (CONST_STRING_LENGTH("unknown"));
+    }
+}
+
+
 static uint8
 check_device_type_num(const char *str, device_type type)
 {
-    char * expected = get_device_type_string(&type);
+    char *expected = get_device_type_string(type);
     if (strcmp(expected, str) != 0)
     {
         pfree(expected);

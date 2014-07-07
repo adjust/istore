@@ -15,6 +15,23 @@ CREATE TYPE istore (
     OUTPUT = istore_out
 );
 
+CREATE TYPE device_istore;
+
+CREATE FUNCTION device_istore_in(cstring)
+    RETURNS device_istore
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION device_istore_out(device_istore)
+    RETURNS cstring
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE TYPE device_istore (
+    INPUT = device_istore_in,
+    OUTPUT = device_istore_out
+);
+
 CREATE FUNCTION exist(istore, integer)
     RETURNS boolean
     AS '$libdir/istore.so', 'is_exist'

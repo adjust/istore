@@ -1,10 +1,5 @@
 #include "istore.h"
 
-PG_FUNCTION_INFO_V1(istore_in);
-PG_FUNCTION_INFO_V1(istore_out);
-
-#define PLAIN_ISTORE  0
-
 #define WKEY 0
 #define WVAL 1
 #define WEQ  2
@@ -41,6 +36,9 @@ is_parse_istore(ISParser *parser)
             switch (parser->type) {
                 case PLAIN_ISTORE:
                     GET_PLAIN_KEY(parser, key, escaped);
+                    break;
+                case DEVICE_ISTORE:
+                    GET_DEVICE_KEY(parser, key, escaped);
                     break;
                 default:
                     elog(ERROR, "unknown parser type");
@@ -89,6 +87,7 @@ is_parse_istore(ISParser *parser)
     }
 }
 
+PG_FUNCTION_INFO_V1(istore_in);
 Datum
 istore_in(PG_FUNCTION_ARGS)
 {
@@ -98,6 +97,7 @@ istore_in(PG_FUNCTION_ARGS)
     parser.begin = PG_GETARG_CSTRING(0);
     parser.type  = PLAIN_ISTORE;
     pairs = palloc0(sizeof(ISPairs));
+    pairs->type = PLAIN_ISTORE;
     is_pairs_init(pairs, 200);
     is_parse_istore(&parser);
     is_tree_to_pairs(parser.tree, pairs, 0);
@@ -106,6 +106,7 @@ istore_in(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(out);
 }
 
+PG_FUNCTION_INFO_V1(istore_out);
 Datum
 istore_out(PG_FUNCTION_ARGS)
 {
@@ -138,3 +139,57 @@ istore_out(PG_FUNCTION_ARGS)
     out[in->buflen - 1] = '\0';
     PG_RETURN_CSTRING(out);
 }
+
+PG_FUNCTION_INFO_V1(device_istore_in);
+Datum
+device_istore_in(PG_FUNCTION_ARGS)
+{
+    ISParser  parser;
+    IStore   *out;
+    ISPairs  *pairs;
+    parser.begin = PG_GETARG_CSTRING(0);
+    parser.type  = DEVICE_ISTORE;
+    pairs = palloc0(sizeof(ISPairs));
+    is_pairs_init(pairs, 200);
+    pairs->type = DEVICE_ISTORE;
+    is_parse_istore(&parser);
+    is_tree_to_pairs(parser.tree, pairs, 0);
+    is_make_empty(parser.tree);
+    FINALIZE_ISTORE(out, pairs);
+    PG_RETURN_POINTER(out);
+}
+
+PG_FUNCTION_INFO_V1(device_istore_out);
+Datum
+device_istore_out(PG_FUNCTION_ARGS)
+{
+    IStore *in = PG_GETARG_IS(0);
+    ISPair *pairs;
+    int     i,
+            ptr = 0;
+    char   *out = palloc0(in->buflen);
+    pairs = FIRST_PAIR(in);
+    for (i = 0; i<in->len; ++i)
+    {
+        if (pairs[i].null)
+        {
+            ptr += sprintf(
+                out+ptr,
+                "\"%ld\"=>NULL,",
+                pairs[i].key
+            );
+        }
+        else
+        {
+            ptr += sprintf(
+                out+ptr,
+                "\"%s\"=>\"%ld\",",
+                get_device_type_string(pairs[i].key),
+                pairs[i].val
+            );
+        }
+    }
+    out[in->buflen - 1] = '\0';
+    PG_RETURN_CSTRING(out);
+}
+
