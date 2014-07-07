@@ -1,0 +1,15 @@
+SELECT aj_date_out('2012-01-32');
+SELECT aj_date_out('2012-01-31');
+SELECT aj_date_out('2012-02-29');
+SELECT aj_date_out('2013-02-29');
+SELECT aj_date_out('2013-00-28');
+SELECT aj_date_out('2013-13-28');
+SELECT aj_date_out('2013-113-28');
+SELECT aj_date_out('2013-3-28');
+SELECT aj_date_out('2011-03-28');
+SELECT aj_date_out('2180-03-28');
+SELECT aj_date_out('201a-11-28');
+SELECT aj_date_out('2012-1a-28');
+SELECT aj_date_out('2012-11-2a');
+SELECT aj_date_out('aaaa-aa-aa');
+SELECT aj_date_out('2030-03-28');

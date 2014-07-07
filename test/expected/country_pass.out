@@ -1,0 +1,1512 @@
+SELECT 'ad'::country;
+ country 
+---------
+ ad
+(1 row)
+
+SELECT 'ae'::country;
+ country 
+---------
+ ae
+(1 row)
+
+SELECT 'af'::country;
+ country 
+---------
+ af
+(1 row)
+
+SELECT 'ag'::country;
+ country 
+---------
+ ag
+(1 row)
+
+SELECT 'ai'::country;
+ country 
+---------
+ ai
+(1 row)
+
+SELECT 'al'::country;
+ country 
+---------
+ al
+(1 row)
+
+SELECT 'am'::country;
+ country 
+---------
+ am
+(1 row)
+
+SELECT 'ao'::country;
+ country 
+---------
+ ao
+(1 row)
+
+SELECT 'aq'::country;
+ country 
+---------
+ aq
+(1 row)
+
+SELECT 'ar'::country;
+ country 
+---------
+ ar
+(1 row)
+
+SELECT 'as'::country;
+ country 
+---------
+ as
+(1 row)
+
+SELECT 'at'::country;
+ country 
+---------
+ at
+(1 row)
+
+SELECT 'au'::country;
+ country 
+---------
+ au
+(1 row)
+
+SELECT 'aw'::country;
+ country 
+---------
+ aw
+(1 row)
+
+SELECT 'ax'::country;
+ country 
+---------
+ ax
+(1 row)
+
+SELECT 'az'::country;
+ country 
+---------
+ az
+(1 row)
+
+SELECT 'ba'::country;
+ country 
+---------
+ ba
+(1 row)
+
+SELECT 'bb'::country;
+ country 
+---------
+ bb
+(1 row)
+
+SELECT 'bd'::country;
+ country 
+---------
+ bd
+(1 row)
+
+SELECT 'be'::country;
+ country 
+---------
+ be
+(1 row)
+
+SELECT 'bf'::country;
+ country 
+---------
+ bf
+(1 row)
+
+SELECT 'bg'::country;
+ country 
+---------
+ bg
+(1 row)
+
+SELECT 'bh'::country;
+ country 
+---------
+ bh
+(1 row)
+
+SELECT 'bi'::country;
+ country 
+---------
+ bi
+(1 row)
+
+SELECT 'bj'::country;
+ country 
+---------
+ bj
+(1 row)
+
+SELECT 'bl'::country;
+ country 
+---------
+ bl
+(1 row)
+
+SELECT 'bm'::country;
+ country 
+---------
+ bm
+(1 row)
+
+SELECT 'bn'::country;
+ country 
+---------
+ bn
+(1 row)
+
+SELECT 'bo'::country;
+ country 
+---------
+ bo
+(1 row)
+
+SELECT 'bq'::country;
+ country 
+---------
+ bq
+(1 row)
+
+SELECT 'br'::country;
+ country 
+---------
+ br
+(1 row)
+
+SELECT 'bs'::country;
+ country 
+---------
+ bs
+(1 row)
+
+SELECT 'bt'::country;
+ country 
+---------
+ bt
+(1 row)
+
+SELECT 'bv'::country;
+ country 
+---------
+ bv
+(1 row)
+
+SELECT 'bw'::country;
+ country 
+---------
+ bw
+(1 row)
+
+SELECT 'by'::country;
+ country 
+---------
+ by
+(1 row)
+
+SELECT 'bz'::country;
+ country 
+---------
+ bz
+(1 row)
+
+SELECT 'ca'::country;
+ country 
+---------
+ ca
+(1 row)
+
+SELECT 'cc'::country;
+ country 
+---------
+ cc
+(1 row)
+
+SELECT 'cd'::country;
+ country 
+---------
+ cd
+(1 row)
+
+SELECT 'cf'::country;
+ country 
+---------
+ cf
+(1 row)
+
+SELECT 'cg'::country;
+ country 
+---------
+ cg
+(1 row)
+
+SELECT 'ch'::country;
+ country 
+---------
+ ch
+(1 row)
+
+SELECT 'ci'::country;
+ country 
+---------
+ ci
+(1 row)
+
+SELECT 'ck'::country;
+ country 
+---------
+ ck
+(1 row)
+
+SELECT 'cl'::country;
+ country 
+---------
+ cl
+(1 row)
+
+SELECT 'cm'::country;
+ country 
+---------
+ cm
+(1 row)
+
+SELECT 'cn'::country;
+ country 
+---------
+ cn
+(1 row)
+
+SELECT 'co'::country;
+ country 
+---------
+ co
+(1 row)
+
+SELECT 'cr'::country;
+ country 
+---------
+ cr
+(1 row)
+
+SELECT 'cu'::country;
+ country 
+---------
+ cu
+(1 row)
+
+SELECT 'cv'::country;
+ country 
+---------
+ cv
+(1 row)
+
+SELECT 'cw'::country;
+ country 
+---------
+ cw
+(1 row)
+
+SELECT 'cx'::country;
+ country 
+---------
+ cx
+(1 row)
+
+SELECT 'cy'::country;
+ country 
+---------
+ cy
+(1 row)
+
+SELECT 'cz'::country;
+ country 
+---------
+ cz
+(1 row)
+
+SELECT 'de'::country;
+ country 
+---------
+ de
+(1 row)
+
+SELECT 'dj'::country;
+ country 
+---------
+ dj
+(1 row)
+
+SELECT 'dk'::country;
+ country 
+---------
+ dk
+(1 row)
+
+SELECT 'dm'::country;
+ country 
+---------
+ dm
+(1 row)
+
+SELECT 'do'::country;
+ country 
+---------
+ do
+(1 row)
+
+SELECT 'dz'::country;
+ country 
+---------
+ dz
+(1 row)
+
+SELECT 'ec'::country;
+ country 
+---------
+ ec
+(1 row)
+
+SELECT 'ee'::country;
+ country 
+---------
+ ee
+(1 row)
+
+SELECT 'eg'::country;
+ country 
+---------
+ eg
+(1 row)
+
+SELECT 'eh'::country;
+ country 
+---------
+ eh
+(1 row)
+
+SELECT 'er'::country;
+ country 
+---------
+ er
+(1 row)
+
+SELECT 'es'::country;
+ country 
+---------
+ es
+(1 row)
+
+SELECT 'et'::country;
+ country 
+---------
+ et
+(1 row)
+
+SELECT 'fi'::country;
+ country 
+---------
+ fi
+(1 row)
+
+SELECT 'fj'::country;
+ country 
+---------
+ fj
+(1 row)
+
+SELECT 'fk'::country;
+ country 
+---------
+ fk
+(1 row)
+
+SELECT 'fm'::country;
+ country 
+---------
+ fm
+(1 row)
+
+SELECT 'fo'::country;
+ country 
+---------
+ fo
+(1 row)
+
+SELECT 'fr'::country;
+ country 
+---------
+ fr
+(1 row)
+
+SELECT 'ga'::country;
+ country 
+---------
+ ga
+(1 row)
+
+SELECT 'gb'::country;
+ country 
+---------
+ gb
+(1 row)
+
+SELECT 'gd'::country;
+ country 
+---------
+ gd
+(1 row)
+
+SELECT 'ge'::country;
+ country 
+---------
+ ge
+(1 row)
+
+SELECT 'gf'::country;
+ country 
+---------
+ gf
+(1 row)
+
+SELECT 'gg'::country;
+ country 
+---------
+ gg
+(1 row)
+
+SELECT 'gh'::country;
+ country 
+---------
+ gh
+(1 row)
+
+SELECT 'gi'::country;
+ country 
+---------
+ gi
+(1 row)
+
+SELECT 'gl'::country;
+ country 
+---------
+ gl
+(1 row)
+
+SELECT 'gm'::country;
+ country 
+---------
+ gm
+(1 row)
+
+SELECT 'gn'::country;
+ country 
+---------
+ gn
+(1 row)
+
+SELECT 'gp'::country;
+ country 
+---------
+ gp
+(1 row)
+
+SELECT 'gq'::country;
+ country 
+---------
+ gq
+(1 row)
+
+SELECT 'gr'::country;
+ country 
+---------
+ gr
+(1 row)
+
+SELECT 'gs'::country;
+ country 
+---------
+ gs
+(1 row)
+
+SELECT 'gt'::country;
+ country 
+---------
+ gt
+(1 row)
+
+SELECT 'gu'::country;
+ country 
+---------
+ gu
+(1 row)
+
+SELECT 'gw'::country;
+ country 
+---------
+ gw
+(1 row)
+
+SELECT 'gy'::country;
+ country 
+---------
+ gy
+(1 row)
+
+SELECT 'hk'::country;
+ country 
+---------
+ hk
+(1 row)
+
+SELECT 'hm'::country;
+ country 
+---------
+ hm
+(1 row)
+
+SELECT 'hn'::country;
+ country 
+---------
+ hn
+(1 row)
+
+SELECT 'hr'::country;
+ country 
+---------
+ hr
+(1 row)
+
+SELECT 'ht'::country;
+ country 
+---------
+ ht
+(1 row)
+
+SELECT 'hu'::country;
+ country 
+---------
+ hu
+(1 row)
+
+SELECT 'id'::country;
+ country 
+---------
+ id
+(1 row)
+
+SELECT 'ie'::country;
+ country 
+---------
+ ie
+(1 row)
+
+SELECT 'il'::country;
+ country 
+---------
+ il
+(1 row)
+
+SELECT 'im'::country;
+ country 
+---------
+ im
+(1 row)
+
+SELECT 'in'::country;
+ country 
+---------
+ in
+(1 row)
+
+SELECT 'io'::country;
+ country 
+---------
+ io
+(1 row)
+
+SELECT 'iq'::country;
+ country 
+---------
+ iq
+(1 row)
+
+SELECT 'ir'::country;
+ country 
+---------
+ ir
+(1 row)
+
+SELECT 'is'::country;
+ country 
+---------
+ is
+(1 row)
+
+SELECT 'it'::country;
+ country 
+---------
+ it
+(1 row)
+
+SELECT 'je'::country;
+ country 
+---------
+ je
+(1 row)
+
+SELECT 'jm'::country;
+ country 
+---------
+ jm
+(1 row)
+
+SELECT 'jo'::country;
+ country 
+---------
+ jo
+(1 row)
+
+SELECT 'jp'::country;
+ country 
+---------
+ jp
+(1 row)
+
+SELECT 'ke'::country;
+ country 
+---------
+ ke
+(1 row)
+
+SELECT 'kg'::country;
+ country 
+---------
+ kg
+(1 row)
+
+SELECT 'kh'::country;
+ country 
+---------
+ kh
+(1 row)
+
+SELECT 'ki'::country;
+ country 
+---------
+ ki
+(1 row)
+
+SELECT 'km'::country;
+ country 
+---------
+ km
+(1 row)
+
+SELECT 'kn'::country;
+ country 
+---------
+ kn
+(1 row)
+
+SELECT 'kp'::country;
+ country 
+---------
+ kp
+(1 row)
+
+SELECT 'kr'::country;
+ country 
+---------
+ kr
+(1 row)
+
+SELECT 'kw'::country;
+ country 
+---------
+ kw
+(1 row)
+
+SELECT 'ky'::country;
+ country 
+---------
+ ky
+(1 row)
+
+SELECT 'kz'::country;
+ country 
+---------
+ kz
+(1 row)
+
+SELECT 'la'::country;
+ country 
+---------
+ la
+(1 row)
+
+SELECT 'lb'::country;
+ country 
+---------
+ lb
+(1 row)
+
+SELECT 'lc'::country;
+ country 
+---------
+ lc
+(1 row)
+
+SELECT 'li'::country;
+ country 
+---------
+ li
+(1 row)
+
+SELECT 'lk'::country;
+ country 
+---------
+ lk
+(1 row)
+
+SELECT 'lr'::country;
+ country 
+---------
+ lr
+(1 row)
+
+SELECT 'ls'::country;
+ country 
+---------
+ ls
+(1 row)
+
+SELECT 'lt'::country;
+ country 
+---------
+ lt
+(1 row)
+
+SELECT 'lu'::country;
+ country 
+---------
+ lu
+(1 row)
+
+SELECT 'lv'::country;
+ country 
+---------
+ lv
+(1 row)
+
+SELECT 'ly'::country;
+ country 
+---------
+ ly
+(1 row)
+
+SELECT 'ma'::country;
+ country 
+---------
+ ma
+(1 row)
+
+SELECT 'mc'::country;
+ country 
+---------
+ mc
+(1 row)
+
+SELECT 'md'::country;
+ country 
+---------
+ md
+(1 row)
+
+SELECT 'me'::country;
+ country 
+---------
+ me
+(1 row)
+
+SELECT 'mf'::country;
+ country 
+---------
+ mf
+(1 row)
+
+SELECT 'mg'::country;
+ country 
+---------
+ mg
+(1 row)
+
+SELECT 'mh'::country;
+ country 
+---------
+ mh
+(1 row)
+
+SELECT 'mk'::country;
+ country 
+---------
+ mk
+(1 row)
+
+SELECT 'ml'::country;
+ country 
+---------
+ ml
+(1 row)
+
+SELECT 'mm'::country;
+ country 
+---------
+ mm
+(1 row)
+
+SELECT 'mn'::country;
+ country 
+---------
+ mn
+(1 row)
+
+SELECT 'mo'::country;
+ country 
+---------
+ mo
+(1 row)
+
+SELECT 'mp'::country;
+ country 
+---------
+ mp
+(1 row)
+
+SELECT 'mq'::country;
+ country 
+---------
+ mq
+(1 row)
+
+SELECT 'mr'::country;
+ country 
+---------
+ mr
+(1 row)
+
+SELECT 'ms'::country;
+ country 
+---------
+ ms
+(1 row)
+
+SELECT 'mt'::country;
+ country 
+---------
+ mt
+(1 row)
+
+SELECT 'mu'::country;
+ country 
+---------
+ mu
+(1 row)
+
+SELECT 'mv'::country;
+ country 
+---------
+ mv
+(1 row)
+
+SELECT 'mw'::country;
+ country 
+---------
+ mw
+(1 row)
+
+SELECT 'mx'::country;
+ country 
+---------
+ mx
+(1 row)
+
+SELECT 'my'::country;
+ country 
+---------
+ my
+(1 row)
+
+SELECT 'mz'::country;
+ country 
+---------
+ mz
+(1 row)
+
+SELECT 'na'::country;
+ country 
+---------
+ na
+(1 row)
+
+SELECT 'nc'::country;
+ country 
+---------
+ nc
+(1 row)
+
+SELECT 'ne'::country;
+ country 
+---------
+ ne
+(1 row)
+
+SELECT 'nf'::country;
+ country 
+---------
+ nf
+(1 row)
+
+SELECT 'ng'::country;
+ country 
+---------
+ ng
+(1 row)
+
+SELECT 'ni'::country;
+ country 
+---------
+ ni
+(1 row)
+
+SELECT 'nl'::country;
+ country 
+---------
+ nl
+(1 row)
+
+SELECT 'no'::country;
+ country 
+---------
+ no
+(1 row)
+
+SELECT 'np'::country;
+ country 
+---------
+ np
+(1 row)
+
+SELECT 'nr'::country;
+ country 
+---------
+ nr
+(1 row)
+
+SELECT 'nu'::country;
+ country 
+---------
+ nu
+(1 row)
+
+SELECT 'nz'::country;
+ country 
+---------
+ nz
+(1 row)
+
+SELECT 'om'::country;
+ country 
+---------
+ om
+(1 row)
+
+SELECT 'pa'::country;
+ country 
+---------
+ pa
+(1 row)
+
+SELECT 'pe'::country;
+ country 
+---------
+ pe
+(1 row)
+
+SELECT 'pf'::country;
+ country 
+---------
+ pf
+(1 row)
+
+SELECT 'pg'::country;
+ country 
+---------
+ pg
+(1 row)
+
+SELECT 'ph'::country;
+ country 
+---------
+ ph
+(1 row)
+
+SELECT 'pk'::country;
+ country 
+---------
+ pk
+(1 row)
+
+SELECT 'pl'::country;
+ country 
+---------
+ pl
+(1 row)
+
+SELECT 'pm'::country;
+ country 
+---------
+ pm
+(1 row)
+
+SELECT 'pn'::country;
+ country 
+---------
+ pn
+(1 row)
+
+SELECT 'pr'::country;
+ country 
+---------
+ pr
+(1 row)
+
+SELECT 'ps'::country;
+ country 
+---------
+ ps
+(1 row)
+
+SELECT 'pt'::country;
+ country 
+---------
+ pt
+(1 row)
+
+SELECT 'pw'::country;
+ country 
+---------
+ pw
+(1 row)
+
+SELECT 'py'::country;
+ country 
+---------
+ py
+(1 row)
+
+SELECT 'qa'::country;
+ country 
+---------
+ qa
+(1 row)
+
+SELECT 're'::country;
+ country 
+---------
+ re
+(1 row)
+
+SELECT 'ro'::country;
+ country 
+---------
+ ro
+(1 row)
+
+SELECT 'rs'::country;
+ country 
+---------
+ rs
+(1 row)
+
+SELECT 'ru'::country;
+ country 
+---------
+ ru
+(1 row)
+
+SELECT 'rw'::country;
+ country 
+---------
+ rw
+(1 row)
+
+SELECT 'sa'::country;
+ country 
+---------
+ sa
+(1 row)
+
+SELECT 'sb'::country;
+ country 
+---------
+ sb
+(1 row)
+
+SELECT 'sc'::country;
+ country 
+---------
+ sc
+(1 row)
+
+SELECT 'sd'::country;
+ country 
+---------
+ sd
+(1 row)
+
+SELECT 'se'::country;
+ country 
+---------
+ se
+(1 row)
+
+SELECT 'sg'::country;
+ country 
+---------
+ sg
+(1 row)
+
+SELECT 'sh'::country;
+ country 
+---------
+ sh
+(1 row)
+
+SELECT 'si'::country;
+ country 
+---------
+ si
+(1 row)
+
+SELECT 'sj'::country;
+ country 
+---------
+ sj
+(1 row)
+
+SELECT 'sk'::country;
+ country 
+---------
+ sk
+(1 row)
+
+SELECT 'sl'::country;
+ country 
+---------
+ sl
+(1 row)
+
+SELECT 'sm'::country;
+ country 
+---------
+ sm
+(1 row)
+
+SELECT 'sn'::country;
+ country 
+---------
+ sn
+(1 row)
+
+SELECT 'so'::country;
+ country 
+---------
+ so
+(1 row)
+
+SELECT 'sr'::country;
+ country 
+---------
+ sr
+(1 row)
+
+SELECT 'ss'::country;
+ country 
+---------
+ ss
+(1 row)
+
+SELECT 'st'::country;
+ country 
+---------
+ st
+(1 row)
+
+SELECT 'sv'::country;
+ country 
+---------
+ sv
+(1 row)
+
+SELECT 'sx'::country;
+ country 
+---------
+ sx
+(1 row)
+
+SELECT 'sy'::country;
+ country 
+---------
+ sy
+(1 row)
+
+SELECT 'sz'::country;
+ country 
+---------
+ sz
+(1 row)
+
+SELECT 'tc'::country;
+ country 
+---------
+ tc
+(1 row)
+
+SELECT 'td'::country;
+ country 
+---------
+ td
+(1 row)
+
+SELECT 'tf'::country;
+ country 
+---------
+ tf
+(1 row)
+
+SELECT 'tg'::country;
+ country 
+---------
+ tg
+(1 row)
+
+SELECT 'th'::country;
+ country 
+---------
+ th
+(1 row)
+
+SELECT 'tj'::country;
+ country 
+---------
+ tj
+(1 row)
+
+SELECT 'tk'::country;
+ country 
+---------
+ tk
+(1 row)
+
+SELECT 'tl'::country;
+ country 
+---------
+ tl
+(1 row)
+
+SELECT 'tm'::country;
+ country 
+---------
+ tm
+(1 row)
+
+SELECT 'tn'::country;
+ country 
+---------
+ tn
+(1 row)
+
+SELECT 'to'::country;
+ country 
+---------
+ to
+(1 row)
+
+SELECT 'tr'::country;
+ country 
+---------
+ tr
+(1 row)
+
+SELECT 'tt'::country;
+ country 
+---------
+ tt
+(1 row)
+
+SELECT 'tv'::country;
+ country 
+---------
+ tv
+(1 row)
+
+SELECT 'tw'::country;
+ country 
+---------
+ tw
+(1 row)
+
+SELECT 'tz'::country;
+ country 
+---------
+ tz
+(1 row)
+
+SELECT 'ua'::country;
+ country 
+---------
+ ua
+(1 row)
+
+SELECT 'ug'::country;
+ country 
+---------
+ ug
+(1 row)
+
+SELECT 'uk'::country;
+ country 
+---------
+ uk
+(1 row)
+
+SELECT 'um'::country;
+ country 
+---------
+ um
+(1 row)
+
+SELECT 'us'::country;
+ country 
+---------
+ us
+(1 row)
+
+SELECT 'uy'::country;
+ country 
+---------
+ uy
+(1 row)
+
+SELECT 'uz'::country;
+ country 
+---------
+ uz
+(1 row)
+
+SELECT 'va'::country;
+ country 
+---------
+ va
+(1 row)
+
+SELECT 'vc'::country;
+ country 
+---------
+ vc
+(1 row)
+
+SELECT 've'::country;
+ country 
+---------
+ ve
+(1 row)
+
+SELECT 'vg'::country;
+ country 
+---------
+ vg
+(1 row)
+
+SELECT 'vi'::country;
+ country 
+---------
+ vi
+(1 row)
+
+SELECT 'vn'::country;
+ country 
+---------
+ vn
+(1 row)
+
+SELECT 'vu'::country;
+ country 
+---------
+ vu
+(1 row)
+
+SELECT 'wf'::country;
+ country 
+---------
+ wf
+(1 row)
+
+SELECT 'ws'::country;
+ country 
+---------
+ ws
+(1 row)
+
+SELECT 'ye'::country;
+ country 
+---------
+ ye
+(1 row)
+
+SELECT 'yt'::country;
+ country 
+---------
+ yt
+(1 row)
+
+SELECT 'za'::country;
+ country 
+---------
+ za
+(1 row)
+
+SELECT 'zm'::country;
+ country 
+---------
+ zm
+(1 row)
+
+SELECT 'zw'::country;
+ country 
+---------
+ zw
+(1 row)
+
+SELECT 'a'::country;
+ country 
+---------
+ zz
+(1 row)
+
+SELECT 'aaa'::country;
+ country 
+---------
+ zz
+(1 row)
+
