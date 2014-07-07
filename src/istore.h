@@ -86,14 +86,14 @@ extern int is_tree_to_pairs(Position p, ISPairs *pairs, int n);
             elog(ERROR, "expected '\"', got %c", *_ptr); \
     } while(0)
 
-#define GET_KEY(_parser, _key, _escaped)            \
+#define GET_PLAIN_KEY(_parser, _key, _escaped)      \
     SKIP_SPACES(_parser->ptr)                       \
     SKIP_ESCAPED(_parser->ptr, _escaped);           \
     _key = strtol(_parser->ptr, &_parser->ptr, 10); \
     SKIP_ESCAPED(_parser->ptr, _escaped);
 
 #define GET_VAL(_parser, _val, _escaped) \
-    GET_KEY(_parser, _val, _escaped)
+    GET_PLAIN_KEY(_parser, _val, _escaped)
 
 typedef struct
 {

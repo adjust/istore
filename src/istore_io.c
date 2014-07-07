@@ -3,6 +3,8 @@
 PG_FUNCTION_INFO_V1(istore_in);
 PG_FUNCTION_INFO_V1(istore_out);
 
+#define PLAIN_ISTORE  0
+
 #define WKEY 0
 #define WVAL 1
 #define WEQ  2
@@ -14,6 +16,7 @@ struct ISParser {
     char    *ptr;
     int      state;
     AvlNode *tree;
+    int      type;
 };
 
 typedef struct ISParser ISParser;
@@ -35,7 +38,13 @@ is_parse_istore(ISParser *parser)
     {
         if (parser->state == WKEY)
         {
-            GET_KEY(parser, key, escaped);
+            switch (parser->type) {
+                case PLAIN_ISTORE:
+                    GET_PLAIN_KEY(parser, key, escaped);
+                    break;
+                default:
+                    elog(ERROR, "unknown parser type");
+            }
             parser->state = WEQ;
         }
         else if (parser->state == WEQ)
@@ -87,6 +96,7 @@ istore_in(PG_FUNCTION_ARGS)
     IStore   *out;
     ISPairs  *pairs;
     parser.begin = PG_GETARG_CSTRING(0);
+    parser.type  = PLAIN_ISTORE;
     pairs = palloc0(sizeof(ISPairs));
     is_pairs_init(pairs, 200);
     is_parse_istore(&parser);
