@@ -40,6 +40,12 @@ is_parse_istore(ISParser *parser)
                 case DEVICE_ISTORE:
                     GET_DEVICE_KEY(parser, key, escaped);
                     break;
+                case COUNTRY_ISTORE:
+                    GET_COUNTRY_KEY(parser, key, escaped);
+                    break;
+                case OS_NAME_ISTORE:
+                    GET_OS_NAME_KEY(parser, key, escaped);
+                    break;
                 default:
                     elog(ERROR, "unknown parser type");
             }
@@ -185,6 +191,112 @@ device_istore_out(PG_FUNCTION_ARGS)
                 out+ptr,
                 "\"%s\"=>\"%ld\",",
                 get_device_type_string(pairs[i].key),
+                pairs[i].val
+            );
+        }
+    }
+    out[in->buflen - 1] = '\0';
+    PG_RETURN_CSTRING(out);
+}
+
+PG_FUNCTION_INFO_V1(country_istore_in);
+Datum
+country_istore_in(PG_FUNCTION_ARGS)
+{
+    ISParser  parser;
+    IStore   *out;
+    ISPairs  *pairs;
+    parser.begin = PG_GETARG_CSTRING(0);
+    parser.type  = COUNTRY_ISTORE;
+    pairs = palloc0(sizeof(ISPairs));
+    is_pairs_init(pairs, 200);
+    pairs->type = COUNTRY_ISTORE;
+    is_parse_istore(&parser);
+    is_tree_to_pairs(parser.tree, pairs, 0);
+    is_make_empty(parser.tree);
+    FINALIZE_ISTORE(out, pairs);
+    PG_RETURN_POINTER(out);
+}
+
+PG_FUNCTION_INFO_V1(country_istore_out);
+Datum
+country_istore_out(PG_FUNCTION_ARGS)
+{
+    IStore *in = PG_GETARG_IS(0);
+    ISPair *pairs;
+    int     i,
+            ptr = 0;
+    char   *out = palloc0(in->buflen);
+    pairs = FIRST_PAIR(in);
+    for (i = 0; i<in->len; ++i)
+    {
+        if (pairs[i].null)
+        {
+            ptr += sprintf(
+                out+ptr,
+                "\"%ld\"=>NULL,",
+                pairs[i].key
+            );
+        }
+        else
+        {
+            ptr += sprintf(
+                out+ptr,
+                "\"%s\"=>\"%ld\",",
+                get_country_string(pairs[i].key),
+                pairs[i].val
+            );
+        }
+    }
+    out[in->buflen - 1] = '\0';
+    PG_RETURN_CSTRING(out);
+}
+
+PG_FUNCTION_INFO_V1(os_name_istore_in);
+Datum
+os_name_istore_in(PG_FUNCTION_ARGS)
+{
+    ISParser  parser;
+    IStore   *out;
+    ISPairs  *pairs;
+    parser.begin = PG_GETARG_CSTRING(0);
+    parser.type  = OS_NAME_ISTORE;
+    pairs = palloc0(sizeof(ISPairs));
+    is_pairs_init(pairs, 200);
+    pairs->type = OS_NAME_ISTORE;
+    is_parse_istore(&parser);
+    is_tree_to_pairs(parser.tree, pairs, 0);
+    is_make_empty(parser.tree);
+    FINALIZE_ISTORE(out, pairs);
+    PG_RETURN_POINTER(out);
+}
+
+PG_FUNCTION_INFO_V1(os_name_istore_out);
+Datum
+os_name_istore_out(PG_FUNCTION_ARGS)
+{
+    IStore *in = PG_GETARG_IS(0);
+    ISPair *pairs;
+    int     i,
+            ptr = 0;
+    char   *out = palloc0(in->buflen);
+    pairs = FIRST_PAIR(in);
+    for (i = 0; i<in->len; ++i)
+    {
+        if (pairs[i].null)
+        {
+            ptr += sprintf(
+                out+ptr,
+                "\"%ld\"=>NULL,",
+                pairs[i].key
+            );
+        }
+        else
+        {
+            ptr += sprintf(
+                out+ptr,
+                "\"%s\"=>\"%ld\",",
+                get_os_name_string(pairs[i].key),
                 pairs[i].val
             );
         }

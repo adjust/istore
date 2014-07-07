@@ -261,6 +261,18 @@ is_pairs_insert(ISPairs *pairs, long key, long val, int type)
             pairs->pairs[pairs->used].null = false;
             pairs->buflen += keylen + vallen + 7;
             break;
+        case (COUNTRY_ISTORE):
+            keylen = 2;
+            DIGIT_WIDTH(val, vallen);
+            pairs->pairs[pairs->used].null = false;
+            pairs->buflen += keylen + vallen + 7;
+            break;
+        case (OS_NAME_ISTORE):
+            keylen = get_device_type_length(key);
+            DIGIT_WIDTH(val, vallen);
+            pairs->pairs[pairs->used].null = false;
+            pairs->buflen += keylen + vallen + 7;
+            break;
         default: elog(ERROR, "unknown pairs type");
     }
     pairs->used++;

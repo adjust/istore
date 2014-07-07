@@ -1,5 +1,17 @@
 #include "os_name.h"
 
+static uint8 check_os_name_num(const char *str, os_name type);
+static int os_name_cmp_internal(os_name *a, os_name *b);
+
+PG_FUNCTION_INFO_V1(os_name_in);
+PG_FUNCTION_INFO_V1(os_name_out);
+PG_FUNCTION_INFO_V1(os_name_lt);
+PG_FUNCTION_INFO_V1(os_name_le);
+PG_FUNCTION_INFO_V1(os_name_eq);
+PG_FUNCTION_INFO_V1(os_name_ge);
+PG_FUNCTION_INFO_V1(os_name_gt);
+PG_FUNCTION_INFO_V1(os_name_cmp);
+
 Datum
 os_name_in(PG_FUNCTION_ARGS)
 {
@@ -18,7 +30,7 @@ Datum
 os_name_out(PG_FUNCTION_ARGS)
 {
     os_name *a = (os_name *) PG_GETARG_POINTER(0);
-    PG_RETURN_POINTER(get_os_name_string(a));
+    PG_RETURN_POINTER(get_os_name_string(*a));
 }
 
 Datum
@@ -80,9 +92,9 @@ os_name_cmp_internal(os_name * a, os_name * b)
 }
 
 char *
-get_os_name_string(uint8 *num)
+get_os_name_string(uint8 num)
 {
-    switch (*num)
+    switch (num)
     {
         case 1:  return create_string(CONST_STRING("android"));
         case 2:  return create_string(CONST_STRING("ios"));
@@ -92,10 +104,23 @@ get_os_name_string(uint8 *num)
     }
 }
 
+int
+get_os_name_length(uint8 num)
+{
+    switch (num)
+    {
+        case 1:  return (CONST_STRING_LENGTH("android"));
+        case 2:  return (CONST_STRING_LENGTH("ios"));
+        case 3:  return (CONST_STRING_LENGTH("windows"));
+        case 4:  return (CONST_STRING_LENGTH("windows-phone"));
+        default: return (CONST_STRING_LENGTH("unknown"));
+    }
+}
+
 static uint8
 check_os_name_num(const char *str, os_name os)
 {
-    char * expected = get_os_name_string(&os);
+    char * expected = get_os_name_string(os);
     if (strcmp(expected, str) != 0)
     {
         pfree(expected);

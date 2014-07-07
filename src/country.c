@@ -1,5 +1,15 @@
 #include "country.h"
 
+static int country_cmp_internal(country *a, country *b);
+PG_FUNCTION_INFO_V1(country_in);
+PG_FUNCTION_INFO_V1(country_out);
+PG_FUNCTION_INFO_V1(country_lt);
+PG_FUNCTION_INFO_V1(country_le);
+PG_FUNCTION_INFO_V1(country_eq);
+PG_FUNCTION_INFO_V1(country_ge);
+PG_FUNCTION_INFO_V1(country_gt);
+PG_FUNCTION_INFO_V1(country_cmp);
+
 Datum
 country_in(PG_FUNCTION_ARGS)
 {
@@ -18,7 +28,7 @@ Datum
 country_out(PG_FUNCTION_ARGS)
 {
     country *a = (country *) PG_GETARG_POINTER(0);
-    PG_RETURN_POINTER(get_country_string(a));
+    PG_RETURN_POINTER(get_country_string(*a));
 }
 
 Datum
@@ -104,9 +114,9 @@ get_country_num(char *str)
 }
 
 char *
-get_country_string(uint8 *num)
+get_country_string(uint8 num)
 {
-    switch (*num)
+    switch (num)
     {
         case 1:   return create_string(CONST_STRING("ad"));
         case 2:   return create_string(CONST_STRING("ae"));

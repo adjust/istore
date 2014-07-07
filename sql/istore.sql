@@ -32,6 +32,40 @@ CREATE TYPE device_istore (
     OUTPUT = device_istore_out
 );
 
+CREATE TYPE country_istore;
+
+CREATE FUNCTION country_istore_in(cstring)
+    RETURNS country_istore
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION country_istore_out(country_istore)
+    RETURNS cstring
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE TYPE country_istore (
+    INPUT = country_istore_in,
+    OUTPUT = country_istore_out
+);
+
+CREATE TYPE os_name_istore;
+
+CREATE FUNCTION os_name_istore_in(cstring)
+    RETURNS os_name_istore
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION os_name_istore_out(os_name_istore)
+    RETURNS cstring
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE TYPE os_name_istore (
+    INPUT = os_name_istore_in,
+    OUTPUT = os_name_istore_out
+);
+
 CREATE FUNCTION exist(istore, integer)
     RETURNS boolean
     AS '$libdir/istore.so', 'is_exist'

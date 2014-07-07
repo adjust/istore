@@ -5,10 +5,14 @@
 #include "fmgr.h"
 #include "utils/array.h"
 #include "device_type.h"
+#include "country.h"
+#include "os_name.h"
 
 #define NULL_VAL_ISTORE 0
 #define PLAIN_ISTORE    1
 #define DEVICE_ISTORE   2
+#define COUNTRY_ISTORE  3
+#define OS_NAME_ISTORE  4
 
 extern void get_typlenbyvalalign(Oid eltype, int16 *i_typlen, bool *i_typbyval, char *i_typalign);
 
@@ -98,26 +102,47 @@ extern int is_tree_to_pairs(Position p, ISPairs *pairs, int n);
         ++_ptr;                   \
     }
 
+#define EXTRACT_STRING(_str, _buf, _escaped) \
+    do {                                     \
+        char *_ptr;                          \
+        int  _count = 0;                     \
+        SKIP_SPACES(_str);                   \
+        SKIP_ESCAPED(_str, _escaped);        \
+        _ptr = _str;                         \
+        COUNT_ALPHA(_ptr, _count);           \
+        _buf = pnstrdup(_str, _count);       \
+        _str = _ptr;                         \
+        SKIP_ESCAPED(_str, _escaped);        \
+    } while (0)
+
 #define GET_PLAIN_KEY(_parser, _key, _escaped)      \
     SKIP_SPACES(_parser->ptr);                      \
     SKIP_ESCAPED(_parser->ptr, _escaped);           \
     _key = strtol(_parser->ptr, &_parser->ptr, 10); \
     SKIP_ESCAPED(_parser->ptr, _escaped);
 
-#define GET_DEVICE_KEY(_parser, _key, _escaped) \
-    do {                                        \
-        char *_ptr,                             \
-             *_buf;                             \
-        int  _count = 0;                        \
-        SKIP_SPACES(_parser->ptr);              \
-        SKIP_ESCAPED(_parser->ptr, _escaped);   \
-        _ptr = _parser->ptr;                    \
-        COUNT_ALPHA(_ptr, _count);              \
-        _buf = pnstrdup(_parser->ptr, _count);  \
-        _parser->ptr = _ptr;                    \
-        SKIP_ESCAPED(_parser->ptr, _escaped);   \
-        _key = get_device_type_num(_buf);       \
-        pfree(_buf);                            \
+#define GET_DEVICE_KEY(_parser, _key, _escaped)       \
+    do {                                              \
+        char *_buf;                                   \
+        EXTRACT_STRING(_parser->ptr, _buf, _escaped); \
+        _key = get_device_type_num(_buf);             \
+        pfree(_buf);                                  \
+    } while (0)
+
+#define GET_COUNTRY_KEY(_parser, _key, _escaped)      \
+    do {                                              \
+        char *_buf;                                   \
+        EXTRACT_STRING(_parser->ptr, _buf, _escaped); \
+        _key = get_country_num(_buf);                 \
+        pfree(_buf);                                  \
+    } while (0)
+
+#define GET_OS_NAME_KEY(_parser, _key, _escaped)      \
+    do {                                              \
+        char *_buf;                                   \
+        EXTRACT_STRING(_parser->ptr, _buf, _escaped); \
+        _key = get_os_name_num(_buf);                 \
+        pfree(_buf);                                  \
     } while (0)
 
 #define GET_VAL(_parser, _val, _escaped) \

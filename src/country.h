@@ -5,15 +5,6 @@
 
 typedef uint8 country;
 
-PG_FUNCTION_INFO_V1(country_in);
-PG_FUNCTION_INFO_V1(country_out);
-PG_FUNCTION_INFO_V1(country_lt);
-PG_FUNCTION_INFO_V1(country_le);
-PG_FUNCTION_INFO_V1(country_eq);
-PG_FUNCTION_INFO_V1(country_ge);
-PG_FUNCTION_INFO_V1(country_gt);
-PG_FUNCTION_INFO_V1(country_cmp);
-
 Datum country_in(PG_FUNCTION_ARGS);
 Datum country_out(PG_FUNCTION_ARGS);
 Datum country_lt(PG_FUNCTION_ARGS);
@@ -24,9 +15,7 @@ Datum country_gt(PG_FUNCTION_ARGS);
 Datum country_cmp(PG_FUNCTION_ARGS);
 
 uint8 get_country_num(char *str);
-char * get_country_string(uint8 *num);
-
-static int country_cmp_internal(country *a, country *b);
+char * get_country_string(uint8 num);
 
 uint8 get_country_num_a(char *str);
 uint8 get_country_num_b(char *str);
