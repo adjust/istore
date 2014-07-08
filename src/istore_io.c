@@ -16,14 +16,21 @@ struct ISParser {
 
 typedef struct ISParser ISParser;
 
-static void is_parse_istore(ISParser *parser);
+static Datum is_parse_istore(ISParser *parser);
 
-static void
+static Datum
 is_parse_istore(ISParser *parser)
 {
+    IStore   *out;
+    ISPairs  *pairs;
+
     long key;
     long val;
     bool escaped;
+
+    pairs = palloc0(sizeof(ISPairs));
+    is_pairs_init(pairs, 200);
+    pairs->type = parser->type;
 
     parser->state = WKEY;
     parser->ptr   = parser->begin;
@@ -91,6 +98,10 @@ is_parse_istore(ISParser *parser)
             elog(ERROR, "unknown parser state");
         }
     }
+    is_tree_to_pairs(parser->tree, pairs, 0);
+    is_make_empty(parser->tree);
+    FINALIZE_ISTORE(out, pairs);
+    PG_RETURN_POINTER(out);
 }
 
 PG_FUNCTION_INFO_V1(istore_in);
@@ -98,18 +109,9 @@ Datum
 istore_in(PG_FUNCTION_ARGS)
 {
     ISParser  parser;
-    IStore   *out;
-    ISPairs  *pairs;
     parser.begin = PG_GETARG_CSTRING(0);
     parser.type  = PLAIN_ISTORE;
-    pairs = palloc0(sizeof(ISPairs));
-    pairs->type = PLAIN_ISTORE;
-    is_pairs_init(pairs, 200);
-    is_parse_istore(&parser);
-    is_tree_to_pairs(parser.tree, pairs, 0);
-    is_make_empty(parser.tree);
-    FINALIZE_ISTORE(out, pairs);
-    PG_RETURN_POINTER(out);
+    return is_parse_istore(&parser);
 }
 
 PG_FUNCTION_INFO_V1(istore_out);
@@ -151,18 +153,9 @@ Datum
 device_istore_in(PG_FUNCTION_ARGS)
 {
     ISParser  parser;
-    IStore   *out;
-    ISPairs  *pairs;
     parser.begin = PG_GETARG_CSTRING(0);
     parser.type  = DEVICE_ISTORE;
-    pairs = palloc0(sizeof(ISPairs));
-    is_pairs_init(pairs, 200);
-    pairs->type = DEVICE_ISTORE;
-    is_parse_istore(&parser);
-    is_tree_to_pairs(parser.tree, pairs, 0);
-    is_make_empty(parser.tree);
-    FINALIZE_ISTORE(out, pairs);
-    PG_RETURN_POINTER(out);
+    return is_parse_istore(&parser);
 }
 
 PG_FUNCTION_INFO_V1(device_istore_out);
@@ -204,18 +197,9 @@ Datum
 country_istore_in(PG_FUNCTION_ARGS)
 {
     ISParser  parser;
-    IStore   *out;
-    ISPairs  *pairs;
     parser.begin = PG_GETARG_CSTRING(0);
     parser.type  = COUNTRY_ISTORE;
-    pairs = palloc0(sizeof(ISPairs));
-    is_pairs_init(pairs, 200);
-    pairs->type = COUNTRY_ISTORE;
-    is_parse_istore(&parser);
-    is_tree_to_pairs(parser.tree, pairs, 0);
-    is_make_empty(parser.tree);
-    FINALIZE_ISTORE(out, pairs);
-    PG_RETURN_POINTER(out);
+    return is_parse_istore(&parser);
 }
 
 PG_FUNCTION_INFO_V1(country_istore_out);
@@ -257,18 +241,9 @@ Datum
 os_name_istore_in(PG_FUNCTION_ARGS)
 {
     ISParser  parser;
-    IStore   *out;
-    ISPairs  *pairs;
     parser.begin = PG_GETARG_CSTRING(0);
     parser.type  = OS_NAME_ISTORE;
-    pairs = palloc0(sizeof(ISPairs));
-    is_pairs_init(pairs, 200);
-    pairs->type = OS_NAME_ISTORE;
-    is_parse_istore(&parser);
-    is_tree_to_pairs(parser.tree, pairs, 0);
-    is_make_empty(parser.tree);
-    FINALIZE_ISTORE(out, pairs);
-    PG_RETURN_POINTER(out);
+    return is_parse_istore(&parser);
 }
 
 PG_FUNCTION_INFO_V1(os_name_istore_out);
