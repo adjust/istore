@@ -11,7 +11,7 @@ struct ISParser {
     char    *ptr;
     int      state;
     AvlNode *tree;
-    int      type;
+    uint8    type;
 };
 
 typedef struct ISParser ISParser;
@@ -104,6 +104,73 @@ is_parse_istore(ISParser *parser)
     PG_RETURN_POINTER(out);
 }
 
+static Datum is_serialize_istore(IStore *in);
+
+static Datum
+is_serialize_istore(IStore *in)
+{
+    int   i,
+          ptr = 0;
+    char *out;
+    ISPair *pairs;
+
+    out = palloc0(in->buflen);
+    pairs = FIRST_PAIR(in);
+    for (i = 0; i<in->len; ++i)
+    {
+        if (pairs[i].null)
+        {
+            ptr += sprintf(
+                out+ptr,
+                "\"%ld\"=>NULL,",
+                pairs[i].key
+            );
+        }
+        else
+        {
+            switch (in->type)
+            {
+                case PLAIN_ISTORE:
+                    ptr += sprintf(
+                        out+ptr,
+                        "\"%ld\"=>\"%ld\",",
+                        pairs[i].key,
+                        pairs[i].val
+                    );
+                    break;
+                case DEVICE_ISTORE:
+                    ptr += sprintf(
+                        out+ptr,
+                        "\"%s\"=>\"%ld\",",
+                        get_device_type_string(pairs[i].key),
+                        pairs[i].val
+                    );
+                    break;
+                case COUNTRY_ISTORE:
+                    ptr += sprintf(
+                        out+ptr,
+                        "\"%s\"=>\"%ld\",",
+                        get_country_string(pairs[i].key),
+                        pairs[i].val
+                    );
+                    break;
+                case OS_NAME_ISTORE:
+                    ptr += sprintf(
+                        out+ptr,
+                        "\"%s\"=>\"%ld\",",
+                        get_os_name_string(pairs[i].key),
+                        pairs[i].val
+                    );
+                    break;
+                default:
+                    elog(ERROR, "serializer: unknown istore type");
+            }
+        }
+    }
+    out[in->buflen - 1] = '\0';
+    PG_RETURN_CSTRING(out);
+}
+
 PG_FUNCTION_INFO_V1(istore_in);
 Datum
 istore_in(PG_FUNCTION_ARGS)
@@ -119,33 +186,7 @@ Datum
 istore_out(PG_FUNCTION_ARGS)
 {
     IStore *in = PG_GETARG_IS(0);
-    ISPair *pairs;
-    int     i,
-            ptr = 0;
-    char   *out = palloc0(in->buflen);
-    pairs = FIRST_PAIR(in);
-    for (i = 0; i<in->len; ++i)
-    {
-        if (pairs[i].null)
-        {
-            ptr += sprintf(
-                out+ptr,
-                "\"%ld\"=>NULL,",
-                pairs[i].key
-            );
-        }
-        else
-        {
-            ptr += sprintf(
-                out+ptr,
-                "\"%ld\"=>\"%ld\",",
-                pairs[i].key,
-                pairs[i].val
-            );
-        }
-    }
-    out[in->buflen - 1] = '\0';
-    PG_RETURN_CSTRING(out);
+    return is_serialize_istore(in);
 }
 
 PG_FUNCTION_INFO_V1(device_istore_in);
@@ -158,40 +199,6 @@ device_istore_in(PG_FUNCTION_ARGS)
     return is_parse_istore(&parser);
 }
 
-PG_FUNCTION_INFO_V1(device_istore_out);
-Datum
-device_istore_out(PG_FUNCTION_ARGS)
-{
-    IStore *in = PG_GETARG_IS(0);
-    ISPair *pairs;
-    int     i,
-            ptr = 0;
-    char   *out = palloc0(in->buflen);
-    pairs = FIRST_PAIR(in);
-    for (i = 0; i<in->len; ++i)
-    {
-        if (pairs[i].null)
-        {
-            ptr += sprintf(
-                out+ptr,
-                "\"%ld\"=>NULL,",
-                pairs[i].key
-            );
-        }
-        else
-        {
-            ptr += sprintf(
-                out+ptr,
-                "\"%s\"=>\"%ld\",",
-                get_device_type_string(pairs[i].key),
-                pairs[i].val
-            );
-        }
-    }
-    out[in->buflen - 1] = '\0';
-    PG_RETURN_CSTRING(out);
-}
-
 PG_FUNCTION_INFO_V1(country_istore_in);
 Datum
 country_istore_in(PG_FUNCTION_ARGS)
@@ -200,40 +207,6 @@ country_istore_in(PG_FUNCTION_ARGS)
     parser.begin = PG_GETARG_CSTRING(0);
     parser.type  = COUNTRY_ISTORE;
     return is_parse_istore(&parser);
-}
-
-PG_FUNCTION_INFO_V1(country_istore_out);
-Datum
-country_istore_out(PG_FUNCTION_ARGS)
-{
-    IStore *in = PG_GETARG_IS(0);
-    ISPair *pairs;
-    int     i,
-            ptr = 0;
-    char   *out = palloc0(in->buflen);
-    pairs = FIRST_PAIR(in);
-    for (i = 0; i<in->len; ++i)
-    {
-        if (pairs[i].null)
-        {
-            ptr += sprintf(
-                out+ptr,
-                "\"%ld\"=>NULL,",
-                pairs[i].key
-            );
-        }
-        else
-        {
-            ptr += sprintf(
-                out+ptr,
-                "\"%s\"=>\"%ld\",",
-                get_country_string(pairs[i].key),
-                pairs[i].val
-            );
-        }
-    }
-    out[in->buflen - 1] = '\0';
-    PG_RETURN_CSTRING(out);
 }
 
 PG_FUNCTION_INFO_V1(os_name_istore_in);
@@ -245,38 +218,3 @@ os_name_istore_in(PG_FUNCTION_ARGS)
     parser.type  = OS_NAME_ISTORE;
     return is_parse_istore(&parser);
 }
-
-PG_FUNCTION_INFO_V1(os_name_istore_out);
-Datum
-os_name_istore_out(PG_FUNCTION_ARGS)
-{
-    IStore *in = PG_GETARG_IS(0);
-    ISPair *pairs;
-    int     i,
-            ptr = 0;
-    char   *out = palloc0(in->buflen);
-    pairs = FIRST_PAIR(in);
-    for (i = 0; i<in->len; ++i)
-    {
-        if (pairs[i].null)
-        {
-            ptr += sprintf(
-                out+ptr,
-                "\"%ld\"=>NULL,",
-                pairs[i].key
-            );
-        }
-        else
-        {
-            ptr += sprintf(
-                out+ptr,
-                "\"%s\"=>\"%ld\",",
-                get_os_name_string(pairs[i].key),
-                pairs[i].val
-            );
-        }
-    }
-    out[in->buflen - 1] = '\0';
-    PG_RETURN_CSTRING(out);
-}
-

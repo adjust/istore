@@ -131,7 +131,7 @@ CREATE FUNCTION device_istore_in(cstring)
 
 CREATE FUNCTION device_istore_out(device_istore)
     RETURNS cstring
-    AS '$libdir/istore.so'
+    AS '$libdir/istore.so', 'istore_out'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE TYPE device_istore (
@@ -148,7 +148,7 @@ CREATE FUNCTION country_istore_in(cstring)
 
 CREATE FUNCTION country_istore_out(country_istore)
     RETURNS cstring
-    AS '$libdir/istore.so'
+    AS '$libdir/istore.so', 'istore_out'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE TYPE country_istore (
@@ -165,7 +165,7 @@ CREATE FUNCTION os_name_istore_in(cstring)
 
 CREATE FUNCTION os_name_istore_out(os_name_istore)
     RETURNS cstring
-    AS '$libdir/istore.so'
+    AS '$libdir/istore.so', 'istore_out'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE TYPE os_name_istore (

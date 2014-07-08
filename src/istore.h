@@ -29,7 +29,7 @@ struct ISPairs {
     size_t  size;
     int     used;
     int     buflen;
-    int     type;
+    uint8   type;
 };
 
 typedef struct ISPairs ISPairs;
@@ -153,10 +153,11 @@ typedef struct
     int32   __varlen;
     int     buflen;
     int     len;
+    uint8   type;
 } IStore;
 
 #define PG_GETARG_IS(x) (IStore *)PG_DETOAST_DATUM(PG_GETARG_DATUM(x))
-#define ISHDRSZ VARHDRSZ + sizeof(int) + sizeof(int)
+#define ISHDRSZ VARHDRSZ + sizeof(int) + sizeof(int) + sizeof(uint8)
 #define FIRST_PAIR(x) ((ISPair*)((char *) x + ISHDRSZ))
 
 #define FINALIZE_ISTORE(_istore, _pairs)                                    \
@@ -165,6 +166,7 @@ typedef struct
         _istore = palloc(ISHDRSZ + PAYLOAD_SIZE(_pairs));                   \
         _istore->buflen = _pairs->buflen;                                   \
         _istore->len    = _pairs->used;                                     \
+        _istore->type   = _pairs->type;                                     \
         SET_VARSIZE(_istore, ISHDRSZ + PAYLOAD_SIZE(_pairs));               \
         memcpy(FIRST_PAIR(_istore), PAYLOAD(_pairs), PAYLOAD_SIZE(_pairs)); \
         is_pairs_deinit(_pairs);                                            \
