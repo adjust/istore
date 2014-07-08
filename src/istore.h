@@ -28,7 +28,7 @@ struct ISPairs {
 
 typedef struct ISPairs ISPairs;
 
-extern void is_pairs_init(ISPairs *pairs, size_t initial_size);
+extern void is_pairs_init(ISPairs *pairs, size_t initial_size, int type);
 extern void is_pairs_insert(ISPairs *pairs, int key, long val, int type);
 extern int  is_pairs_cmp(const void *a, const void *b);
 extern void is_pairs_sort(ISPairs *pairs);
@@ -141,6 +141,31 @@ extern int is_tree_to_pairs(Position p, ISPairs *pairs, int n);
 
 #define GET_VAL(_parser, _val, _escaped) \
     GET_PLAIN_KEY(_parser, _val, _escaped)
+
+#define GET_KEYARG_BY_TYPE(_istore, _key)                     \
+    do {                                                      \
+        char *type = NULL;                                    \
+        switch (_istore->type)                                \
+        {                                                     \
+            case PLAIN_ISTORE:                                \
+                key = PG_GETARG_INT32(1);                     \
+                break;                                        \
+            case DEVICE_ISTORE:                               \
+                type = PG_GETARG_CSTRING(1);                  \
+                key = get_device_type_num(type);              \
+                break;                                        \
+            case COUNTRY_ISTORE:                              \
+                type = PG_GETARG_CSTRING(1);                  \
+                key = get_country_num(type);                  \
+                break;                                        \
+            case OS_NAME_ISTORE:                              \
+                type = PG_GETARG_CSTRING(1);                  \
+                key = get_os_name_num(type);                  \
+                break;                                        \
+            default:                                          \
+                elog(ERROR, "is_exist: unknown istore type"); \
+            }                                                 \
+    } while(0)
 
 typedef struct
 {

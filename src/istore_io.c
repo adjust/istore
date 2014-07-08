@@ -29,8 +29,7 @@ is_parse_istore(ISParser *parser)
     bool escaped;
 
     pairs = palloc0(sizeof(ISPairs));
-    is_pairs_init(pairs, 200);
-    pairs->type = parser->type;
+    is_pairs_init(pairs, 200, parser->type);
 
     parser->state = WKEY;
     parser->ptr   = parser->begin;

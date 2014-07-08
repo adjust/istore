@@ -79,3 +79,156 @@ CREATE OPERATOR CLASS country_ops
         OPERATOR        4       >= ,
         OPERATOR        5       > ,
         FUNCTION        1       country_cmp(country,country);
+
+CREATE TYPE country_istore;
+
+CREATE FUNCTION country_istore_in(cstring)
+    RETURNS country_istore
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION country_istore_out(country_istore)
+    RETURNS cstring
+    AS '$libdir/istore.so', 'istore_out'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE TYPE country_istore (
+    INPUT = country_istore_in,
+    OUTPUT = country_istore_out
+);
+
+CREATE FUNCTION country_istore_to_istore(country_istore)
+    RETURNS istore
+    AS '$libdir/istore.so', 'type_istore_to_istore'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE CAST (country_istore AS istore)
+    WITH FUNCTION country_istore_to_istore(country_istore) AS IMPLICIT;
+
+CREATE FUNCTION istore_to_country_istore(istore)
+    RETURNS country_istore
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE CAST (istore AS country_istore)
+    WITH FUNCTION istore_to_country_istore(istore) AS IMPLICIT;
+
+CREATE FUNCTION exist(country_istore, cstring)
+    RETURNS boolean
+    AS '$libdir/istore.so', 'is_exist'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION fetchval(country_istore, cstring)
+    RETURNS bigint
+    AS '$libdir/istore.so', 'is_fetchval'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION add(country_istore, country_istore)
+    RETURNS country_istore
+    AS '$libdir/istore.so', 'is_add'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION add(country_istore, integer)
+    RETURNS country_istore
+    AS '$libdir/istore.so', 'is_add_integer'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION subtract(country_istore, country_istore)
+    RETURNS country_istore
+    AS '$libdir/istore.so', 'is_subtract'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION subtract(country_istore, integer)
+    RETURNS country_istore
+    AS '$libdir/istore.so', 'is_subtract_integer'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION multiply(country_istore, country_istore)
+    RETURNS country_istore
+    AS '$libdir/istore.so', 'is_multiply'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION multiply(country_istore, integer)
+    RETURNS country_istore
+    AS '$libdir/istore.so', 'is_multiply_integer'
+    LANGUAGE C IMMUTABLE STRICT;
+
+--CREATE FUNCTION country_istore_from_array(integer[])
+--    RETURNS country_istore
+--    AS '$libdir/istore.so'
+--    LANGUAGE C IMMUTABLE STRICT;
+
+--CREATE FUNCTION country_istore_agg(country_istore[])
+--    RETURNS country_istore
+--    AS '$libdir/istore.so'
+--    LANGUAGE C IMMUTABLE STRICT;
+
+--CREATE FUNCTION country_istore_agg_finalfn(internal)
+--    RETURNS country_istore
+--    AS '$libdir/istore.so'
+--    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION country_istore_sum_up(country_istore)
+    RETURNS bigint
+    AS '$libdir/istore.so', 'istore_sum_up'
+    LANGUAGE C IMMUTABLE STRICT;
+
+--CREATE FUNCTION country_istore_array_add(integer[], integer[])
+--    RETURNS country_istore
+--    AS '$libdir/istore.so'
+--    LANGUAGE C IMMUTABLE STRICT;
+
+--CREATE AGGREGATE SUM (
+--    sfunc = array_agg_transfn,
+--    basetype = country_istore,
+--    stype = internal,
+--    finalfunc = country_istore_agg_finalfn
+--);
+
+CREATE OPERATOR -> (
+    leftarg   = country_istore,
+    rightarg  = cstring,
+    procedure = fetchval
+);
+
+CREATE OPERATOR ? (
+    leftarg   = country_istore,
+    rightarg  = cstring,
+    procedure = exist
+);
+
+CREATE OPERATOR + (
+    leftarg   = country_istore,
+    rightarg  = country_istore,
+    procedure = add
+);
+
+CREATE OPERATOR + (
+    leftarg   = country_istore,
+    rightarg  = integer,
+    procedure = add
+);
+
+CREATE OPERATOR - (
+    leftarg   = country_istore,
+    rightarg  = country_istore,
+    procedure = subtract
+);
+
+CREATE OPERATOR - (
+    leftarg   = country_istore,
+    rightarg  = integer,
+    procedure = subtract
+);
+
+CREATE OPERATOR * (
+    leftarg   = country_istore,
+    rightarg  = country_istore,
+    procedure = multiply
+);
+
+CREATE OPERATOR * (
+    leftarg   = country_istore,
+    rightarg  = integer,
+    procedure = multiply
+);

@@ -1,6 +1,6 @@
 #include "istore.h"
 
-void is_pairs_init(ISPairs *pairs, size_t initial_size);
+void is_pairs_init(ISPairs *pairs, size_t initial_size, int type);
 void is_pairs_insert(ISPairs *pairs, int key, long val, int type);
 int  is_pairs_cmp(const void *a, const void *b);
 void is_pairs_sort(ISPairs *pairs);
@@ -220,13 +220,13 @@ is_tree_to_pairs(Position p, ISPairs *pairs, int n)
 }
 
 void
-is_pairs_init(ISPairs *pairs, size_t initial_size)
+is_pairs_init(ISPairs *pairs, size_t initial_size, int type)
 {
     pairs->pairs  = palloc(initial_size * sizeof(ISPair));
     pairs->used   = 0;
     pairs->size   = initial_size;
     pairs->buflen = 0;
-    pairs->type   = PLAIN_ISTORE;
+    pairs->type   = type;
 }
 
 void
