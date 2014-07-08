@@ -24,7 +24,7 @@ is_parse_istore(ISParser *parser)
     IStore   *out;
     ISPairs  *pairs;
 
-    long key;
+    int  key;
     long val;
     bool escaped;
 
@@ -122,7 +122,7 @@ is_serialize_istore(IStore *in)
         {
             ptr += sprintf(
                 out+ptr,
-                "\"%ld\"=>NULL,",
+                "\"%d\"=>NULL,",
                 pairs[i].key
             );
         }
@@ -133,7 +133,7 @@ is_serialize_istore(IStore *in)
                 case PLAIN_ISTORE:
                     ptr += sprintf(
                         out+ptr,
-                        "\"%ld\"=>\"%ld\",",
+                        "\"%d\"=>\"%ld\",",
                         pairs[i].key,
                         pairs[i].val
                     );

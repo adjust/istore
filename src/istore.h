@@ -17,7 +17,7 @@
 extern void get_typlenbyvalalign(Oid eltype, int16 *i_typlen, bool *i_typbyval, char *i_typalign);
 
 struct ISPair {
-    long key;
+    int  key;
     long val;
     bool null;
 };
@@ -35,7 +35,7 @@ struct ISPairs {
 typedef struct ISPairs ISPairs;
 
 extern void is_pairs_init(ISPairs *pairs, size_t initial_size);
-extern void is_pairs_insert(ISPairs *pairs, long key, long val, int type);
+extern void is_pairs_insert(ISPairs *pairs, int key, long val, int type);
 extern int  is_pairs_cmp(const void *a, const void *b);
 extern void is_pairs_sort(ISPairs *pairs);
 extern void is_pairs_deinit(ISPairs *pairs);
@@ -173,7 +173,7 @@ typedef struct
     } while(0)
 
 
-ISPair* is_find(IStore *is, long key);
+ISPair* is_find(IStore *is, int key);
 Datum array_to_istore(Datum *data, int count, bool *nulls);
 
 #endif // ISTORE_H

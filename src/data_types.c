@@ -1,7 +1,7 @@
 #include "istore.h"
 
 void is_pairs_init(ISPairs *pairs, size_t initial_size);
-void is_pairs_insert(ISPairs *pairs, long key, long val, int type);
+void is_pairs_insert(ISPairs *pairs, int key, long val, int type);
 int  is_pairs_cmp(const void *a, const void *b);
 void is_pairs_sort(ISPairs *pairs);
 void is_pairs_deinit(ISPairs *pairs);
@@ -230,7 +230,7 @@ is_pairs_init(ISPairs *pairs, size_t initial_size)
 }
 
 void
-is_pairs_insert(ISPairs *pairs, long key, long val, int type)
+is_pairs_insert(ISPairs *pairs, int key, long val, int type)
 {
     int keylen,
         vallen;
@@ -309,6 +309,6 @@ is_pairs_debug(ISPairs *pairs)
     int i;
     for (i = 0; i < pairs->used; ++i)
     {
-        elog(INFO, "key: %ld, val: %ld", pairs->pairs[i].key, pairs->pairs[i].val);
+        elog(INFO, "key: %d, val: %ld", pairs->pairs[i].key, pairs->pairs[i].val);
     }
 }

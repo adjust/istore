@@ -22,7 +22,7 @@ istore_sum_up(PG_FUNCTION_ARGS)
 }
 
 ISPair*
-is_find(IStore *is, long key)
+is_find(IStore *is, int key)
 {
     ISPair *pairs  = FIRST_PAIR(is);
     ISPair *result = NULL;

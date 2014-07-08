@@ -10,9 +10,7 @@ OBJS = src/istore.o \
        src/device_type.o \
        src/country.o \
        src/aj_types.o \
-       src/aj_time.o \
-       src/os_name.o \
-       src/aj_date.o
+       src/os_name.o
 
 TESTS        = setup $(filter-out test/sql/setup.sql test/sql/update.sql, $(wildcard test/sql/*.sql))
 
