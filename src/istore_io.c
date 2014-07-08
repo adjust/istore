@@ -171,14 +171,101 @@ is_serialize_istore(IStore *in)
     PG_RETURN_CSTRING(out);
 }
 
-PG_FUNCTION_INFO_V1(istore_in);
+/*
+ * casts for istores
+ */
+PG_FUNCTION_INFO_V1(type_istore_to_istore);
 Datum
-istore_in(PG_FUNCTION_ARGS)
+type_istore_to_istore(PG_FUNCTION_ARGS)
 {
-    ISParser  parser;
-    parser.begin = PG_GETARG_CSTRING(0);
-    parser.type  = PLAIN_ISTORE;
-    return is_parse_istore(&parser);
+    IStore *in,
+           *result;
+    ISPair *pairs;
+    int i;
+
+    in = PG_GETARG_IS(0);
+    COPY_ISTORE(result, in);
+    result->type = PLAIN_ISTORE;
+    pairs = FIRST_PAIR(result);
+    result->buflen = 0;
+    for (i = 0; i < result->len; ++i)
+    {
+        int keylen,
+            vallen;
+        DIGIT_WIDTH(pairs[i].key, keylen);
+        DIGIT_WIDTH(pairs[i].val, vallen);
+        result->buflen += keylen + vallen + 7;
+    }
+    PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(istore_to_device_istore);
+Datum
+istore_to_device_istore(PG_FUNCTION_ARGS)
+{
+    IStore *in,
+           *result;
+    ISPair *pairs;
+    int i;
+
+    in = PG_GETARG_IS(0);
+    COPY_ISTORE(result, in);
+    pairs = FIRST_PAIR(result);
+    result->type   = DEVICE_ISTORE;
+    result->buflen = 0;
+    for (i = 0; i < result->len; ++i)
+    {
+        int vallen;
+        DIGIT_WIDTH(pairs[i].val, vallen);
+        result->buflen += get_device_type_length(pairs[i].key) + vallen + 7;
+    }
+    PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(istore_to_country_istore);
+Datum
+istore_to_country_istore(PG_FUNCTION_ARGS)
+{
+    IStore *in,
+           *result;
+    ISPair *pairs;
+    int i;
+
+    in = PG_GETARG_IS(0);
+    COPY_ISTORE(result, in);
+    pairs = FIRST_PAIR(result);
+    result->type   = COUNTRY_ISTORE;
+    result->buflen = 0;
+    for (i = 0; i < result->len; ++i)
+    {
+        int vallen;
+        DIGIT_WIDTH(pairs[i].val, vallen);
+        result->buflen += 2 + vallen + 7;
+    }
+    PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(istore_to_os_name_istore);
+Datum
+istore_to_os_name_istore(PG_FUNCTION_ARGS)
+{
+    IStore *in,
+           *result;
+    ISPair *pairs;
+    int i;
+
+    in = PG_GETARG_IS(0);
+    COPY_ISTORE(result, in);
+    pairs = FIRST_PAIR(result);
+    result->type   = OS_NAME_ISTORE;
+    result->buflen = 0;
+    for (i = 0; i < result->len; ++i)
+    {
+        int vallen;
+        DIGIT_WIDTH(pairs[i].val, vallen);
+        result->buflen += get_os_name_length(pairs[i].key) + vallen + 7;
+    }
+    PG_RETURN_POINTER(result);
 }
 
 PG_FUNCTION_INFO_V1(istore_out);
@@ -187,6 +274,16 @@ istore_out(PG_FUNCTION_ARGS)
 {
     IStore *in = PG_GETARG_IS(0);
     return is_serialize_istore(in);
+}
+
+PG_FUNCTION_INFO_V1(istore_in);
+Datum
+istore_in(PG_FUNCTION_ARGS)
+{
+    ISParser  parser;
+    parser.begin = PG_GETARG_CSTRING(0);
+    parser.type  = PLAIN_ISTORE;
+    return is_parse_istore(&parser);
 }
 
 PG_FUNCTION_INFO_V1(device_istore_in);

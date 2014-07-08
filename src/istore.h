@@ -8,12 +8,6 @@
 #include "country.h"
 #include "os_name.h"
 
-#define NULL_VAL_ISTORE 0
-#define PLAIN_ISTORE    1
-#define DEVICE_ISTORE   2
-#define COUNTRY_ISTORE  3
-#define OS_NAME_ISTORE  4
-
 extern void get_typlenbyvalalign(Oid eltype, int16 *i_typlen, bool *i_typbyval, char *i_typalign);
 
 struct ISPair {
@@ -156,9 +150,22 @@ typedef struct
     uint8   type;
 } IStore;
 
+#define NULL_VAL_ISTORE 0
+#define PLAIN_ISTORE    1
+#define DEVICE_ISTORE   2
+#define COUNTRY_ISTORE  3
+#define OS_NAME_ISTORE  4
+
 #define PG_GETARG_IS(x) (IStore *)PG_DETOAST_DATUM(PG_GETARG_DATUM(x))
 #define ISHDRSZ VARHDRSZ + sizeof(int) + sizeof(int) + sizeof(uint8)
+#define ISTORE_SIZE(x) (ISHDRSZ + x->len * sizeof(ISPair))
 #define FIRST_PAIR(x) ((ISPair*)((char *) x + ISHDRSZ))
+
+#define COPY_ISTORE(_dst, _src)               \
+    do {                                      \
+        _dst = palloc(ISTORE_SIZE(_src));      \
+        memcpy(_dst, _src, ISTORE_SIZE(_src)); \
+    } while(0)
 
 #define FINALIZE_ISTORE(_istore, _pairs)                                    \
     do {                                                                    \

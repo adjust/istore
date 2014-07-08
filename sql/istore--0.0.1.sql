@@ -114,6 +114,22 @@ CREATE TYPE device_istore (
     OUTPUT = device_istore_out
 );
 
+CREATE FUNCTION device_istore_to_istore(device_istore)
+    RETURNS istore
+    AS '$libdir/istore.so', 'type_istore_to_istore'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE CAST (device_istore AS istore)
+    WITH FUNCTION device_istore_to_istore(device_istore) AS IMPLICIT;
+
+CREATE FUNCTION istore_to_device_istore(istore)
+    RETURNS device_istore
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE CAST (istore AS device_istore)
+    WITH FUNCTION istore_to_device_istore(istore) AS IMPLICIT;
+
 CREATE TYPE country_istore;
 
 CREATE FUNCTION country_istore_in(cstring)
@@ -131,6 +147,22 @@ CREATE TYPE country_istore (
     OUTPUT = country_istore_out
 );
 
+CREATE FUNCTION country_istore_to_istore(country_istore)
+    RETURNS istore
+    AS '$libdir/istore.so', 'type_istore_to_istore'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE CAST (country_istore AS istore)
+    WITH FUNCTION country_istore_to_istore(country_istore) AS IMPLICIT;
+
+CREATE FUNCTION istore_to_country_istore(istore)
+    RETURNS country_istore
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE CAST (istore AS country_istore)
+    WITH FUNCTION istore_to_country_istore(istore) AS IMPLICIT;
+
 CREATE TYPE os_name_istore;
 
 CREATE FUNCTION os_name_istore_in(cstring)
@@ -147,6 +179,22 @@ CREATE TYPE os_name_istore (
     INPUT = os_name_istore_in,
     OUTPUT = os_name_istore_out
 );
+
+CREATE FUNCTION os_name_istore_to_istore(os_name_istore)
+    RETURNS istore
+    AS '$libdir/istore.so', 'type_istore_to_istore'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE CAST (os_name_istore AS istore)
+    WITH FUNCTION os_name_istore_to_istore(os_name_istore) AS IMPLICIT;
+
+CREATE FUNCTION istore_to_os_name_istore(istore)
+    RETURNS os_name_istore
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE CAST (istore AS os_name_istore)
+    WITH FUNCTION istore_to_os_name_istore(istore) AS IMPLICIT;
 
 CREATE FUNCTION exist(istore, integer)
     RETURNS boolean
