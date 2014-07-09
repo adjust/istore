@@ -1,0 +1,332 @@
+SELECT exist('phone=>1'::device_istore, 'phone');
+ exist 
+-------
+ t
+(1 row)
+
+SELECT exist('phone=>1'::device_istore, 'tablet');
+ exist 
+-------
+ f
+(1 row)
+
+SELECT exist('phone=>1, bot=>0'::device_istore, 'bot');
+ exist 
+-------
+ t
+(1 row)
+
+SELECT exist('phone=>1, bot=>0'::device_istore, 'kermit');
+ exist 
+-------
+ f
+(1 row)
+
+SELECT fetchval('phone=>1'::device_istore, 'phone');
+ fetchval 
+----------
+        1
+(1 row)
+
+SELECT fetchval('resolver=>1'::device_istore, 'phone');
+ fetchval 
+----------
+         
+(1 row)
+
+SELECT fetchval('phone=>1, phone=>1'::device_istore, 'tablet');
+ fetchval 
+----------
+         
+(1 row)
+
+SELECT fetchval('phone=>1, phone=>1'::device_istore, 'phone');
+ fetchval 
+----------
+        2
+(1 row)
+
+SELECT add('phone=>1, resolver=>1'::device_istore, 'phone=>1, resolver=>1'::device_istore);
+             add              
+------------------------------
+ "phone"=>"2","resolver"=>"2"
+(1 row)
+
+SELECT add('phone=>1, resolver=>1'::device_istore, 'bot=>1, resolver=>1'::device_istore);
+                   add                   
+-----------------------------------------
+ "bot"=>"1","phone"=>"1","resolver"=>"2"
+(1 row)
+
+SELECT add('phone=>1, resolver=>1'::device_istore, 'bot=>-1, resolver=>1'::device_istore);
+                   add                    
+------------------------------------------
+ "bot"=>"-1","phone"=>"1","resolver"=>"2"
+(1 row)
+
+SELECT add('bot=>1, resolver=>1'::device_istore, 'bot=>-1, resolver=>1'::device_istore);
+            add             
+----------------------------
+ "bot"=>"0","resolver"=>"2"
+(1 row)
+
+SELECT add('bot=>-1, resolver=>1'::device_istore, 'bot=>-1, resolver=>1'::device_istore);
+             add             
+-----------------------------
+ "bot"=>"-2","resolver"=>"2"
+(1 row)
+
+SELECT add('bot=>-1, resolver=>1'::device_istore, 1);
+            add             
+----------------------------
+ "bot"=>"0","resolver"=>"2"
+(1 row)
+
+SELECT add('bot=>-1, resolver=>1'::device_istore, -1);
+             add             
+-----------------------------
+ "bot"=>"-2","resolver"=>"0"
+(1 row)
+
+SELECT add('bot=>-1, resolver=>1'::device_istore, 0);
+             add             
+-----------------------------
+ "bot"=>"-1","resolver"=>"1"
+(1 row)
+
+SELECT subtract('phone=>1, resolver=>1'::device_istore, 'phone=>1, resolver=>1'::device_istore);
+           subtract           
+------------------------------
+ "phone"=>"0","resolver"=>"0"
+(1 row)
+
+SELECT subtract('phone=>1, resolver=>1'::device_istore, 'bot=>1, resolver=>1'::device_istore);
+                 subtract                 
+------------------------------------------
+ "bot"=>"-1","phone"=>"1","resolver"=>"0"
+(1 row)
+
+SELECT subtract('phone=>1, resolver=>1'::device_istore, 'bot=>-1, resolver=>1'::device_istore);
+                subtract                 
+-----------------------------------------
+ "bot"=>"1","phone"=>"1","resolver"=>"0"
+(1 row)
+
+SELECT subtract('bot=>1, resolver=>1'::device_istore, 'bot=>-1, resolver=>1'::device_istore);
+          subtract          
+----------------------------
+ "bot"=>"2","resolver"=>"0"
+(1 row)
+
+SELECT subtract('bot=>-1, resolver=>1'::device_istore, 'bot=>-1, resolver=>1'::device_istore);
+          subtract          
+----------------------------
+ "bot"=>"0","resolver"=>"0"
+(1 row)
+
+SELECT subtract('bot=>-1, resolver=>1'::device_istore, 1);
+          subtract           
+-----------------------------
+ "bot"=>"-2","resolver"=>"0"
+(1 row)
+
+SELECT subtract('bot=>-1, resolver=>1'::device_istore, -1);
+          subtract          
+----------------------------
+ "bot"=>"0","resolver"=>"2"
+(1 row)
+
+SELECT subtract('bot=>-1, resolver=>1'::device_istore, 0);
+          subtract           
+-----------------------------
+ "bot"=>"-1","resolver"=>"1"
+(1 row)
+
+SELECT multiply('phone=>1, resolver=>1'::device_istore, 'phone=>1, resolver=>1'::device_istore);
+           multiply           
+------------------------------
+ "phone"=>"1","resolver"=>"1"
+(1 row)
+
+SELECT multiply('phone=>1, resolver=>1'::device_istore, 'bot=>1, resolver=>1'::device_istore);
+                 multiply                  
+-------------------------------------------
+ "bot"=>NULL,"phone"=>NULL,"resolver"=>"1"
+(1 row)
+
+SELECT multiply('phone=>1, resolver=>1'::device_istore, 'bot=>-1, resolver=>1'::device_istore);
+                 multiply                  
+-------------------------------------------
+ "bot"=>NULL,"phone"=>NULL,"resolver"=>"1"
+(1 row)
+
+SELECT multiply('bot=>1, resolver=>1'::device_istore, 'bot=>-1, resolver=>1'::device_istore);
+          multiply           
+-----------------------------
+ "bot"=>"-1","resolver"=>"1"
+(1 row)
+
+SELECT multiply('bot=>-1, resolver=>1'::device_istore, 'bot=>-1, resolver=>1'::device_istore);
+          multiply          
+----------------------------
+ "bot"=>"1","resolver"=>"1"
+(1 row)
+
+SELECT multiply('bot=>-1, resolver=>1'::device_istore, 1);
+          multiply           
+-----------------------------
+ "bot"=>"-1","resolver"=>"1"
+(1 row)
+
+SELECT multiply('bot=>-1, resolver=>1'::device_istore, -1);
+          multiply           
+-----------------------------
+ "bot"=>"1","resolver"=>"-1"
+(1 row)
+
+SELECT multiply('bot=>-1, resolver=>1'::device_istore, 0);
+          multiply          
+----------------------------
+ "bot"=>"0","resolver"=>"0"
+(1 row)
+
+SELECT device_istore_from_array(ARRAY['bot']);
+ device_istore_from_array 
+--------------------------
+ "bot"=>"1"
+(1 row)
+
+SELECT device_istore_from_array(ARRAY['bot','bot','bot','bot']);
+ device_istore_from_array 
+--------------------------
+ "bot"=>"4"
+(1 row)
+
+SELECT device_istore_from_array(NULL::text[]);
+ device_istore_from_array 
+--------------------------
+ 
+(1 row)
+
+SELECT device_istore_from_array(ARRAY['bot','phone','resolver','mac']);
+              device_istore_from_array              
+----------------------------------------------------
+ "bot"=>"1","mac"=>"1","phone"=>"1","resolver"=>"1"
+(1 row)
+
+SELECT device_istore_from_array(ARRAY['bot','phone','resolver','mac','bot','phone','resolver','mac']);
+              device_istore_from_array              
+----------------------------------------------------
+ "bot"=>"2","mac"=>"2","phone"=>"2","resolver"=>"2"
+(1 row)
+
+SELECT device_istore_from_array(ARRAY['bot','phone','resolver','mac','bot','phone','resolver','mac',NULL]);
+              device_istore_from_array              
+----------------------------------------------------
+ "bot"=>"2","mac"=>"2","phone"=>"2","resolver"=>"2"
+(1 row)
+
+SELECT device_istore_from_array(ARRAY[NULL,'bot','phone','resolver','mac','bot','phone','resolver','mac']);
+              device_istore_from_array              
+----------------------------------------------------
+ "bot"=>"2","mac"=>"2","phone"=>"2","resolver"=>"2"
+(1 row)
+
+SELECT device_istore_from_array(ARRAY[NULL,'bot','phone','resolver','mac','bot','phone','resolver','mac',NULL]);
+              device_istore_from_array              
+----------------------------------------------------
+ "bot"=>"2","mac"=>"2","phone"=>"2","resolver"=>"2"
+(1 row)
+
+SELECT device_istore_from_array(ARRAY['bot','phone','resolver','mac','bot','phone','resolver','mac',NULL,'bot',NULL,'bot','phone','resolver','mac','bot','phone','resolver','mac']);
+              device_istore_from_array              
+----------------------------------------------------
+ "bot"=>"5","mac"=>"4","phone"=>"4","resolver"=>"4"
+(1 row)
+
+SELECT device_istore_agg(ARRAY['phone=>1']::device_istore[]);
+ device_istore_agg 
+-------------------
+ "phone"=>"1"
+(1 row)
+
+SELECT device_istore_agg(ARRAY['phone=>1','phone=>1']::device_istore[]);
+ device_istore_agg 
+-------------------
+ "phone"=>"2"
+(1 row)
+
+SELECT device_istore_agg(ARRAY['phone=>1,resolver=>1','phone=>1,resolver=>-1']::device_istore[]);
+      device_istore_agg       
+------------------------------
+ "phone"=>"2","resolver"=>"0"
+(1 row)
+
+SELECT device_istore_agg(ARRAY['phone=>1,resolver=>1','phone=>1,resolver=>-1',NULL]::device_istore[]);
+      device_istore_agg       
+------------------------------
+ "phone"=>"2","resolver"=>"0"
+(1 row)
+
+SELECT device_istore_agg(ARRAY[NULL,'phone=>1,resolver=>1','phone=>1,resolver=>-1']::device_istore[]);
+      device_istore_agg       
+------------------------------
+ "phone"=>"2","resolver"=>"0"
+(1 row)
+
+SELECT device_istore_agg(ARRAY[NULL,'phone=>1,resolver=>1','phone=>1,resolver=>-1',NULL]::device_istore[]);
+      device_istore_agg       
+------------------------------
+ "phone"=>"2","resolver"=>"0"
+(1 row)
+
+SELECT device_istore_sum_up('phone=>1'::device_istore);
+ device_istore_sum_up 
+----------------------
+                    1
+(1 row)
+
+SELECT device_istore_sum_up(NULL::device_istore);
+ device_istore_sum_up 
+----------------------
+                     
+(1 row)
+
+SELECT device_istore_sum_up('phone=>1, resolver=>1'::device_istore);
+ device_istore_sum_up 
+----------------------
+                    2
+(1 row)
+
+SELECT device_istore_sum_up('phone=>1 ,resolver=>-1, phone=>1'::device_istore);
+ device_istore_sum_up 
+----------------------
+                    1
+(1 row)
+
+BEGIN;
+CREATE TABLE test (a device_istore);
+INSERT INTO test VALUES('phone=>1');
+INSERT INTO test VALUES('resolver=>1');
+INSERT INTO test VALUES('mac=>1');
+SELECT SUM(a) FROM test;
+                   sum                   
+-----------------------------------------
+ "mac"=>"1","phone"=>"1","resolver"=>"1"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+CREATE TABLE test (a device_istore);
+INSERT INTO test VALUES('phone=>1');
+INSERT INTO test VALUES('resolver=>1');
+INSERT INTO test VALUES('mac=>1');
+INSERT INTO test VALUES(NULL);
+INSERT INTO test VALUES('mac=>3');
+SELECT SUM(a) FROM test;
+                   sum                   
+-----------------------------------------
+ "mac"=>"4","phone"=>"1","resolver"=>"1"
+(1 row)
+
+ROLLBACK;

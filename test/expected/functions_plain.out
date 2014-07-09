@@ -16,7 +16,7 @@ SELECT exist('1=>1, -1=>0'::istore, 2);
  f
 (1 row)
 
-SELECT exist('1=>1, -1=>0', -1);
+SELECT exist('1=>1, -1=>0'::istore, -1);
  exist 
 -------
  t
@@ -149,15 +149,15 @@ SELECT multiply('1=>1, 2=>1'::istore, '1=>1, 2=>1'::istore);
 (1 row)
 
 SELECT multiply('1=>1, 2=>1'::istore, '-1=>1, 2=>1'::istore);
-            multiply            
---------------------------------
- "-1"=>NULL,"1"=>NULL,"2"=>"1",
+           multiply            
+-------------------------------
+ "-1"=>NULL,"1"=>NULL,"2"=>"1"
 (1 row)
 
 SELECT multiply('1=>1, 2=>1'::istore, '-1=>-1, 2=>1'::istore);
-            multiply            
---------------------------------
- "-1"=>NULL,"1"=>NULL,"2"=>"1",
+           multiply            
+-------------------------------
+ "-1"=>NULL,"1"=>NULL,"2"=>"1"
 (1 row)
 
 SELECT multiply('-1=>1, 2=>1'::istore, '-1=>-1, 2=>1'::istore);

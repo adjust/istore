@@ -1,7 +1,7 @@
 SELECT exist('1=>1'::istore, 1);
 SELECT exist('1=>1'::istore, 2);
 SELECT exist('1=>1, -1=>0'::istore, 2);
-SELECT exist('1=>1, -1=>0', -1);
+SELECT exist('1=>1, -1=>0'::istore, -1);
 
 SELECT fetchval('1=>1'::istore, 1);
 SELECT fetchval('2=>1'::istore, 1);
@@ -74,3 +74,4 @@ INSERT INTO test VALUES(NULL);
 INSERT INTO test VALUES('3=>3');
 SELECT SUM(a) FROM test;
 ROLLBACK;
+

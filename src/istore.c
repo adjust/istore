@@ -261,7 +261,8 @@ is_multiply(PG_FUNCTION_ARGS)
     ISPairs *creator = NULL;
 
     int     index1 = 0,
-            index2 = 0;
+            index2 = 0,
+            nulltype;
     /* TODO NULL handling */
     is1 = PG_GETARG_IS(0);
     is2 = PG_GETARG_IS(1);
@@ -269,16 +270,17 @@ is_multiply(PG_FUNCTION_ARGS)
     pairs2 = FIRST_PAIR(is2);
     creator = palloc0(sizeof *creator);
     is_pairs_init(creator, 200, is1->type);
+    NULL_TYPE_FOR(is1->type, nulltype);
     while (index1 < is1->len && index2 < is2->len)
     {
         if (pairs1[index1].key < pairs2[index2].key)
         {
-            is_pairs_insert(creator, pairs1[index1].key, 0, NULL_VAL_ISTORE);
+            is_pairs_insert(creator, pairs1[index1].key, 0, nulltype);
             ++index1;
         }
         else if (pairs1[index1].key > pairs2[index2].key)
         {
-            is_pairs_insert(creator, pairs2[index2].key, 0, NULL_VAL_ISTORE);
+            is_pairs_insert(creator, pairs2[index2].key, 0, nulltype);
             ++index2;
         }
         else
@@ -296,12 +298,12 @@ is_multiply(PG_FUNCTION_ARGS)
 
     while (index1 < is1->len)
     {
-        is_pairs_insert(creator, pairs1[index1].key, 0, NULL_VAL_ISTORE);
+        is_pairs_insert(creator, pairs1[index1].key, 0, nulltype);
         ++index1;
     }
     while (index2 < is2->len)
     {
-        is_pairs_insert(creator, pairs2[index2].key, 0, NULL_VAL_ISTORE);
+        is_pairs_insert(creator, pairs2[index2].key, 0, nulltype);
         ++index2;
     }
     FINALIZE_ISTORE(result, creator);
@@ -334,12 +336,10 @@ is_multiply_integer(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(istore_from_array);
-Datum
-istore_from_array(PG_FUNCTION_ARGS)
+static Datum
+type_istore_from_int_array(ArrayType *input, int type)
 {
     IStore    *result;
-    ArrayType *input;
     Datum     *i_data;
     bool      *nulls;
     int        n;
@@ -352,11 +352,7 @@ istore_from_array(PG_FUNCTION_ARGS)
     Position position;
     int      key,
              i;
-
-    if (PG_ARGISNULL(0))
-        PG_RETURN_NULL();
-
-    input = PG_GETARG_ARRAYTYPE_P(0);
+    uint8   *work_var;
 
     i_eltype = ARR_ELEMTYPE(input);
 
@@ -378,16 +374,24 @@ istore_from_array(PG_FUNCTION_ARGS)
             &n
             );
 
-    if (n == 0 || (n == 1 && nulls[0]))
-        PG_RETURN_NULL();
-
     tree = is_make_empty(NULL);
 
     for (i = 0; i < n; ++i)
     {
         if (nulls[i])
             continue;
-        key = DatumGetInt32(i_data[i]);
+        switch (type)
+        {
+            case PLAIN_ISTORE:
+                key = DatumGetInt32(i_data[i]);
+                break;
+            case DEVICE_ISTORE:
+            case COUNTRY_ISTORE:
+            case OS_NAME_ISTORE:
+                work_var = (uint8 *)i_data[i];
+                key = *work_var;
+                break;
+        }
         if (key < 0)
             elog(ERROR, "cannot count array that has negative integers");
         position = is_tree_find(key, tree);
@@ -396,13 +400,161 @@ istore_from_array(PG_FUNCTION_ARGS)
         else
             position->value += 1;
     }
+
     n = is_tree_length(tree);
     pairs = palloc0(sizeof *pairs);
-    is_pairs_init(pairs, 200, PLAIN_ISTORE);
+    is_pairs_init(pairs, 200, type);
     is_tree_to_pairs(tree, pairs, 0);
     is_make_empty(tree);
     FINALIZE_ISTORE(result, pairs);
     PG_RETURN_POINTER(result);
+}
+
+static Datum
+type_istore_from_text_array(ArrayType *input, int type)
+{
+    IStore    *result;
+    Datum     *i_data;
+    bool      *nulls;
+    int        n;
+    int16      i_typlen;
+    bool       i_typbyval;
+    char       i_typalign;
+    Oid        i_eltype;
+    AvlTree  tree;
+    ISPairs   *pairs;
+    Position position;
+    int      key,
+             i;
+    size_t   len;
+
+    i_eltype = ARR_ELEMTYPE(input);
+
+    get_typlenbyvalalign(
+            i_eltype,
+            &i_typlen,
+            &i_typbyval,
+            &i_typalign
+            );
+
+    deconstruct_array(
+            input,
+            i_eltype,
+            i_typlen,
+            i_typbyval,
+            i_typalign,
+            &i_data,
+            &nulls,
+            &n
+            );
+
+    tree = is_make_empty(NULL);
+
+    for (i = 0; i < n; ++i)
+    {
+        char    *str = NULL;
+        if (nulls[i])
+            continue;
+        switch (type)
+        {
+            case PLAIN_ISTORE:
+                elog(ERROR, "text array is not allowed for PLAIN_ISTORE");
+                break;
+            case DEVICE_ISTORE:
+                DATUM_TO_CSTRING(i_data[i], str, len);
+                key = get_device_type_num(str);
+                break;
+            case COUNTRY_ISTORE:
+                DATUM_TO_CSTRING(i_data[i], str, len);
+                key = get_country_num(str);
+                break;
+            case OS_NAME_ISTORE:
+                DATUM_TO_CSTRING(i_data[i], str, len);
+                key = get_os_name_num(str);
+                break;
+        }
+        if (key < 0)
+            elog(ERROR, "cannot count array that has negative integers");
+        position = is_tree_find(key, tree);
+        if (position == NULL)
+            tree = is_insert(key, 1, tree);
+        else
+            position->value += 1;
+    }
+
+    n = is_tree_length(tree);
+    pairs = palloc0(sizeof *pairs);
+    is_pairs_init(pairs, 200, type);
+    is_tree_to_pairs(tree, pairs, 0);
+    is_make_empty(tree);
+    FINALIZE_ISTORE(result, pairs);
+    PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(istore_from_array);
+Datum
+istore_from_array(PG_FUNCTION_ARGS)
+{
+    ArrayType *input;
+
+    if (PG_ARGISNULL(0))
+        PG_RETURN_NULL();
+    input = PG_GETARG_ARRAYTYPE_P(0);
+    return type_istore_from_int_array(input, PLAIN_ISTORE);
+}
+
+PG_FUNCTION_INFO_V1(device_istore_from_array);
+Datum
+device_istore_from_array(PG_FUNCTION_ARGS)
+{
+    ArrayType *input;
+    Oid        i_eltype;
+
+    if (PG_ARGISNULL(0))
+        PG_RETURN_NULL();
+
+    input = PG_GETARG_ARRAYTYPE_P(0);
+    i_eltype = ARR_ELEMTYPE(input);
+    if (i_eltype == TEXTOID)
+        return type_istore_from_text_array(input, DEVICE_ISTORE);
+    else
+        return type_istore_from_int_array(input, DEVICE_ISTORE);
+}
+
+PG_FUNCTION_INFO_V1(country_istore_from_array);
+Datum
+country_istore_from_array(PG_FUNCTION_ARGS)
+{
+    ArrayType *input;
+    Oid        i_eltype;
+
+    if (PG_ARGISNULL(0))
+        PG_RETURN_NULL();
+
+    input = PG_GETARG_ARRAYTYPE_P(0);
+    i_eltype = ARR_ELEMTYPE(input);
+    if (i_eltype == TEXTOID)
+        return type_istore_from_text_array(input, COUNTRY_ISTORE);
+    else
+        return type_istore_from_int_array(input, COUNTRY_ISTORE);
+}
+
+PG_FUNCTION_INFO_V1(os_name_istore_from_array);
+Datum
+os_name_istore_from_array(PG_FUNCTION_ARGS)
+{
+    ArrayType *input;
+    Oid        i_eltype;
+
+    if (PG_ARGISNULL(0))
+        PG_RETURN_NULL();
+
+    input = PG_GETARG_ARRAYTYPE_P(0);
+    i_eltype = ARR_ELEMTYPE(input);
+    if (i_eltype == TEXTOID)
+        return type_istore_from_text_array(input, OS_NAME_ISTORE);
+    else
+        return type_istore_from_int_array(input, OS_NAME_ISTORE);
 }
 
 Datum
@@ -412,6 +564,7 @@ array_to_istore(Datum *data, int count, bool *nulls)
            *istore;
     AvlTree  tree;
     int i,
+        type = -1,
         index;
     ISPair *payload;
     ISPairs   *pairs;
@@ -424,6 +577,11 @@ array_to_istore(Datum *data, int count, bool *nulls)
         if (nulls[i])
             continue;
         istore = (IStore *) data[i];
+        if (type == -1)
+            type = istore->type;
+        else if (type != istore->type)
+            elog(ERROR, "inconsistent istore types in array");
+
         for (index = 0; index < istore->len; ++index)
         {
             payload = FIRST_PAIR(istore) + index;
@@ -435,7 +593,7 @@ array_to_istore(Datum *data, int count, bool *nulls)
         }
     }
     pairs = palloc(sizeof *pairs);
-    is_pairs_init(pairs, 200, PLAIN_ISTORE);
+    is_pairs_init(pairs, 200, type);
     is_tree_to_pairs(tree, pairs, 0);
     is_make_empty(tree);
     FINALIZE_ISTORE(out, pairs);
@@ -497,7 +655,6 @@ istore_agg_finalfn(PG_FUNCTION_ARGS)
 
     if (PG_ARGISNULL(0))
         PG_RETURN_NULL();
-
     Assert(AggCheckCallContext(fcinfo, NULL));
 
     input = (ArrayBuildState *) PG_GETARG_POINTER(0);

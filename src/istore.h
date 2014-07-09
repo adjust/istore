@@ -7,6 +7,19 @@
 #include "device_type.h"
 #include "country.h"
 #include "os_name.h"
+#include "catalog/pg_type.h"
+
+/*
+ * macro to create a c string representation of a
+ * varlena postgres text. allocates extra memory with palloc.
+ * expects the datum to be NULL terminated
+ */
+#define DATUM_TO_CSTRING(_datum, _str, _len) \
+    do {                                     \
+    _len = VARSIZE(_datum) - VARHDRSZ;       \
+    _str = palloc0(_len + 1);                \
+    memcpy(_str, VARDATA(_datum), _len);     \
+    } while(0)
 
 extern void get_typlenbyvalalign(Oid eltype, int16 *i_typlen, bool *i_typbyval, char *i_typalign);
 
@@ -81,19 +94,23 @@ extern int is_tree_to_pairs(Position p, ISPairs *pairs, int n);
         _escaped = *_ptr == '"';   \
     } while(0)
 
+/* TODO really respect quotes and dont just skip them */
 #define SKIP_ESCAPED(_ptr, _escaped)                     \
     do {                                                 \
         if (_escaped && *_ptr == '"')                    \
             _ptr++;                                      \
         else if (_escaped && *_ptr != '"')               \
             elog(ERROR, "expected '\"', got %c", *_ptr); \
+        else if (!_escaped && *_ptr == '"')              \
+            elog(ERROR, "inconsistent escaping");        \
     } while(0)
 
-#define COUNT_ALPHA(_ptr, _count) \
-    while (isalpha(*_ptr))        \
-    {                             \
-        ++_count;                 \
-        ++_ptr;                   \
+/* TODO: alpha + minus correct? */
+#define COUNT_ALPHA(_ptr, _count)          \
+    while (isalpha(*_ptr) || *_ptr == '-') \
+    {                                      \
+        ++_count;                          \
+        ++_ptr;                            \
     }
 
 #define EXTRACT_STRING(_str, _buf, _escaped) \
@@ -127,7 +144,10 @@ extern int is_tree_to_pairs(Position p, ISPairs *pairs, int n);
     do {                                              \
         char *_buf;                                   \
         EXTRACT_STRING(_parser->ptr, _buf, _escaped); \
-        _key = get_country_num(_buf);                 \
+        if (strlen(_buf) == 2)                        \
+            _key = get_country_num(_buf);             \
+        else                                          \
+            _key = 0;                                 \
         pfree(_buf);                                  \
     } while (0)
 
@@ -175,11 +195,35 @@ typedef struct
     uint8   type;
 } IStore;
 
-#define NULL_VAL_ISTORE 0
-#define PLAIN_ISTORE    1
-#define DEVICE_ISTORE   2
-#define COUNTRY_ISTORE  3
-#define OS_NAME_ISTORE  4
+#define PLAIN_ISTORE        1
+#define NULL_VAL_ISTORE     2
+#define DEVICE_ISTORE       3
+#define NULL_DEVICE_ISTORE  4
+#define COUNTRY_ISTORE      5
+#define NULL_COUNTRY_ISTORE 6
+#define OS_NAME_ISTORE      7
+#define NULL_OS_NAME_ISTORE 8
+
+#define NULL_TYPE_FOR(_type, _nulltype)             \
+    do {                                            \
+        switch (_type)                              \
+        {                                           \
+            case PLAIN_ISTORE:                      \
+                _nulltype = NULL_VAL_ISTORE;        \
+                break;                              \
+            case DEVICE_ISTORE:                     \
+                _nulltype = NULL_DEVICE_ISTORE;     \
+                break;                              \
+            case COUNTRY_ISTORE:                    \
+                _nulltype = NULL_COUNTRY_ISTORE;    \
+                break;                              \
+            case OS_NAME_ISTORE:                    \
+                _nulltype = NULL_OS_NAME_ISTORE;    \
+                break;                              \
+            default:                                \
+                elog(ERROR, "unknown istore type"); \
+        }                                           \
+    } while (0)
 
 #define PG_GETARG_IS(x) (IStore *)PG_DETOAST_DATUM(PG_GETARG_DATUM(x))
 #define ISHDRSZ VARHDRSZ + sizeof(int) + sizeof(int) + sizeof(uint8)

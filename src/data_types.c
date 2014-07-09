@@ -251,9 +251,9 @@ is_pairs_insert(ISPairs *pairs, int key, long val, int type)
             pairs->buflen += keylen + vallen + 7;
             break;
         case (NULL_VAL_ISTORE):
-            pairs->pairs[pairs->used].null = true;
             DIGIT_WIDTH(key, keylen);
-            pairs->buflen += keylen + 10;
+            pairs->pairs[pairs->used].null = true;
+            pairs->buflen += keylen + 9;
             break;
         case (DEVICE_ISTORE):
             keylen = get_device_type_length(key);
@@ -261,17 +261,32 @@ is_pairs_insert(ISPairs *pairs, int key, long val, int type)
             pairs->pairs[pairs->used].null = false;
             pairs->buflen += keylen + vallen + 7;
             break;
+        case (NULL_DEVICE_ISTORE):
+            keylen = get_device_type_length(key);
+            pairs->pairs[pairs->used].null = true;
+            pairs->buflen += keylen + 9;
+            break;
         case (COUNTRY_ISTORE):
             keylen = 2;
             DIGIT_WIDTH(val, vallen);
             pairs->pairs[pairs->used].null = false;
             pairs->buflen += keylen + vallen + 7;
             break;
+        case (NULL_COUNTRY_ISTORE):
+            keylen = 2;
+            pairs->pairs[pairs->used].null = true;
+            pairs->buflen += keylen + 9;
+            break;
         case (OS_NAME_ISTORE):
             keylen = get_os_name_length(key);
             DIGIT_WIDTH(val, vallen);
             pairs->pairs[pairs->used].null = false;
             pairs->buflen += keylen + vallen + 7;
+            break;
+        case (NULL_OS_NAME_ISTORE):
+            keylen = get_os_name_length(key);
+            pairs->pairs[pairs->used].null = true;
+            pairs->buflen += keylen + 9;
             break;
         default: elog(ERROR, "unknown pairs type");
     }

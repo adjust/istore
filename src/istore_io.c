@@ -119,11 +119,39 @@ is_serialize_istore(IStore *in)
     {
         if (pairs[i].null)
         {
-            ptr += sprintf(
-                out+ptr,
-                "\"%d\"=>NULL,",
-                pairs[i].key
-            );
+            switch (in->type)
+            {
+                case PLAIN_ISTORE:
+                    ptr += sprintf(
+                        out+ptr,
+                        "\"%d\"=>NULL,",
+                        pairs[i].key
+                    );
+                    break;
+                case DEVICE_ISTORE:
+                    ptr += sprintf(
+                        out+ptr,
+                        "\"%s\"=>NULL,",
+                        get_device_type_string(pairs[i].key)
+                    );
+                    break;
+                case COUNTRY_ISTORE:
+                    ptr += sprintf(
+                        out+ptr,
+                        "\"%s\"=>NULL,",
+                        get_country_string(pairs[i].key)
+                    );
+                    break;
+                case OS_NAME_ISTORE:
+                    ptr += sprintf(
+                        out+ptr,
+                        "\"%s\"=>NULL,",
+                        get_os_name_string(pairs[i].key)
+                    );
+                    break;
+                default:
+                    elog(ERROR, "unknown istore type");
+            }
         }
         else
         {

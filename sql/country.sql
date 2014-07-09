@@ -2,12 +2,12 @@ CREATE TYPE country;
 
 CREATE FUNCTION country_in(cstring)
     RETURNS country
-    AS '$libdir/aj-types.so'
+    AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION country_out(country)
     RETURNS cstring
-    AS '$libdir/aj-types.so'
+    AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE TYPE country (
@@ -18,23 +18,23 @@ CREATE TYPE country (
 );
 
 CREATE FUNCTION country_lt(country,country) RETURNS bool
-    AS '$libdir/aj-types.so'
+    AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION country_le(country,country) RETURNS bool
-    AS '$libdir/aj-types.so'
+    AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION country_eq(country,country) RETURNS bool
-    AS '$libdir/aj-types.so'
+    AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION country_ge(country,country) RETURNS bool
-    AS '$libdir/aj-types.so'
+    AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION country_gt(country,country) RETURNS bool
-    AS '$libdir/aj-types.so'
+    AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE OPERATOR < (
@@ -68,7 +68,7 @@ CREATE OPERATOR > (
 );
 
 CREATE FUNCTION country_cmp(country,country) RETURNS int4
-    AS '$libdir/aj-types.so'
+    AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE OPERATOR CLASS country_ops
@@ -153,20 +153,25 @@ CREATE FUNCTION multiply(country_istore, integer)
     AS '$libdir/istore.so', 'is_multiply_integer'
     LANGUAGE C IMMUTABLE STRICT;
 
---CREATE FUNCTION country_istore_from_array(integer[])
---    RETURNS country_istore
---    AS '$libdir/istore.so'
---    LANGUAGE C IMMUTABLE STRICT;
+CREATE FUNCTION country_istore_from_array(text[])
+    RETURNS country_istore
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
 
---CREATE FUNCTION country_istore_agg(country_istore[])
---    RETURNS country_istore
---    AS '$libdir/istore.so'
---    LANGUAGE C IMMUTABLE STRICT;
+CREATE FUNCTION country_istore_from_array(country[])
+    RETURNS country_istore
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
 
---CREATE FUNCTION country_istore_agg_finalfn(internal)
---    RETURNS country_istore
---    AS '$libdir/istore.so'
---    LANGUAGE C IMMUTABLE STRICT;
+CREATE FUNCTION country_istore_agg(country_istore[])
+    RETURNS country_istore
+    AS '$libdir/istore.so', 'istore_agg'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION country_istore_agg_finalfn(internal)
+    RETURNS country_istore
+    AS '$libdir/istore.so', 'istore_agg_finalfn'
+    LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION country_istore_sum_up(country_istore)
     RETURNS bigint
@@ -178,12 +183,12 @@ CREATE FUNCTION country_istore_sum_up(country_istore)
 --    AS '$libdir/istore.so'
 --    LANGUAGE C IMMUTABLE STRICT;
 
---CREATE AGGREGATE SUM (
---    sfunc = array_agg_transfn,
---    basetype = country_istore,
---    stype = internal,
---    finalfunc = country_istore_agg_finalfn
---);
+CREATE AGGREGATE SUM (
+    sfunc = array_agg_transfn,
+    basetype = country_istore,
+    stype = internal,
+    finalfunc = country_istore_agg_finalfn
+);
 
 CREATE OPERATOR -> (
     leftarg   = country_istore,

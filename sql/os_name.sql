@@ -2,12 +2,12 @@ CREATE TYPE os_name;
 
 CREATE FUNCTION os_name_in(cstring)
     RETURNS os_name
-    AS '$libdir/aj-types.so'
+    AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION os_name_out(os_name)
     RETURNS cstring
-    AS '$libdir/aj-types.so'
+    AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE TYPE os_name (
@@ -18,23 +18,23 @@ CREATE TYPE os_name (
 );
 
 CREATE FUNCTION os_name_lt(os_name,os_name) RETURNS bool
-    AS '$libdir/aj-types.so'
+    AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION os_name_le(os_name,os_name) RETURNS bool
-    AS '$libdir/aj-types.so'
+    AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION os_name_eq(os_name,os_name) RETURNS bool
-    AS '$libdir/aj-types.so'
+    AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION os_name_ge(os_name,os_name) RETURNS bool
-    AS '$libdir/aj-types.so'
+    AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION os_name_gt(os_name,os_name) RETURNS bool
-    AS '$libdir/aj-types.so'
+    AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE OPERATOR < (
@@ -68,7 +68,7 @@ CREATE OPERATOR > (
 );
 
 CREATE FUNCTION os_name_cmp(os_name,os_name) RETURNS int4
-    AS '$libdir/aj-types.so'
+    AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE OPERATOR CLASS os_name_ops
@@ -153,20 +153,25 @@ CREATE FUNCTION multiply(os_name_istore, integer)
     AS '$libdir/istore.so', 'is_multiply_integer'
     LANGUAGE C IMMUTABLE STRICT;
 
---CREATE FUNCTION os_name_istore_from_array(integer[])
---    RETURNS os_name_istore
---    AS '$libdir/istore.so'
---    LANGUAGE C IMMUTABLE STRICT;
+CREATE FUNCTION os_name_istore_from_array(text[])
+    RETURNS os_name_istore
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
 
---CREATE FUNCTION os_name_istore_agg(os_name_istore[])
---    RETURNS os_name_istore
---    AS '$libdir/istore.so'
---    LANGUAGE C IMMUTABLE STRICT;
+CREATE FUNCTION os_name_istore_from_array(os_name[])
+    RETURNS os_name_istore
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
 
---CREATE FUNCTION os_name_istore_agg_finalfn(internal)
---    RETURNS os_name_istore
---    AS '$libdir/istore.so'
---    LANGUAGE C IMMUTABLE STRICT;
+CREATE FUNCTION os_name_istore_agg(os_name_istore[])
+    RETURNS os_name_istore
+    AS '$libdir/istore.so', 'istore_agg'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION os_name_istore_agg_finalfn(internal)
+    RETURNS os_name_istore
+    AS '$libdir/istore.so', 'istore_agg_finalfn'
+    LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION os_name_istore_sum_up(os_name_istore)
     RETURNS bigint
@@ -178,12 +183,12 @@ CREATE FUNCTION os_name_istore_sum_up(os_name_istore)
 --    AS '$libdir/istore.so'
 --    LANGUAGE C IMMUTABLE STRICT;
 
---CREATE AGGREGATE SUM (
---    sfunc = array_agg_transfn,
---    basetype = os_name_istore,
---    stype = internal,
---    finalfunc = os_name_istore_agg_finalfn
---);
+CREATE AGGREGATE SUM (
+    sfunc = array_agg_transfn,
+    basetype = os_name_istore,
+    stype = internal,
+    finalfunc = os_name_istore_agg_finalfn
+);
 
 CREATE OPERATOR -> (
     leftarg   = os_name_istore,

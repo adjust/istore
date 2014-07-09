@@ -1,0 +1,90 @@
+BEGIN;
+CREATE TABLE device_istore_io AS SELECT 'bot=>1,mac=>2'::device_istore;
+SELECT * FROM device_istore_io;
+     device_istore     
+-----------------------
+ "bot"=>"1","mac"=>"2"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+CREATE TABLE device_istore_io AS SELECT '"bot"=>"1","bot"=>"2"'::device_istore;
+SELECT * FROM device_istore_io;
+ device_istore 
+---------------
+ "bot"=>"3"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+CREATE TABLE device_istore_io AS SELECT '"bot"=>"1","mac"=>"2"'::device_istore;
+SELECT * FROM device_istore_io;
+     device_istore     
+-----------------------
+ "bot"=>"1","mac"=>"2"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+CREATE TABLE device_istore_io AS SELECT '"mac"=>"+1","bot"=>"2"'::device_istore;
+SELECT * FROM device_istore_io;
+     device_istore     
+-----------------------
+ "bot"=>"2","mac"=>"1"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+CREATE TABLE device_istore_io AS SELECT ' "mac"=>"+1","bot"=>"2"'::device_istore;
+SELECT * FROM device_istore_io;
+     device_istore     
+-----------------------
+ "bot"=>"2","mac"=>"1"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+CREATE TABLE device_istore_io AS SELECT '"mac"=> "+1","bot"=>"2"'::device_istore;
+SELECT * FROM device_istore_io;
+     device_istore     
+-----------------------
+ "bot"=>"2","mac"=>"1"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+CREATE TABLE device_istore_io AS SELECT '"mac"=>"+1" ,"bot"=>"2"'::device_istore;
+SELECT * FROM device_istore_io;
+     device_istore     
+-----------------------
+ "bot"=>"2","mac"=>"1"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+CREATE TABLE device_istore_io AS SELECT '"mac"=>"+1", "bot"=>"2"'::device_istore;
+SELECT * FROM device_istore_io;
+     device_istore     
+-----------------------
+ "bot"=>"2","mac"=>"1"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+CREATE TABLE device_istore_io AS SELECT '"mac"=>"+1","bot"=>"2" '::device_istore;
+SELECT * FROM device_istore_io;
+     device_istore     
+-----------------------
+ "bot"=>"2","mac"=>"1"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+CREATE TABLE device_istore_io AS SELECT '"mac"=>"+1","bot"=>"2" '::device_istore;
+SELECT * FROM device_istore_io;
+     device_istore     
+-----------------------
+ "bot"=>"2","mac"=>"1"
+(1 row)
+
+ROLLBACK;
