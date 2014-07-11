@@ -9,6 +9,18 @@
 #include "os_name.h"
 #include "catalog/pg_type.h"
 
+#define PLAIN_ISTORE         1
+#define NULL_VAL_ISTORE      2
+#define DEVICE_ISTORE        3
+#define NULL_DEVICE_ISTORE   4
+#define COUNTRY_ISTORE       5
+#define NULL_COUNTRY_ISTORE  6
+#define OS_NAME_ISTORE       7
+#define NULL_OS_NAME_ISTORE  8
+#define C_ISTORE             9
+#define NULL_C_ISTORE       10
+#define C_ISTORE_COHORT     11
+
 /*
  * macro to create a c string representation of a
  * varlena postgres text. allocates extra memory with palloc.
@@ -95,22 +107,35 @@ extern int is_tree_to_pairs(Position p, ISPairs *pairs, int n);
     } while(0)
 
 /* TODO really respect quotes and dont just skip them */
-#define SKIP_ESCAPED(_ptr, _escaped)                     \
-    do {                                                 \
-        if (_escaped && *_ptr == '"')                    \
-            _ptr++;                                      \
-        else if (_escaped && *_ptr != '"')               \
-            elog(ERROR, "expected '\"', got %c", *_ptr); \
-        else if (!_escaped && *_ptr == '"')              \
-            elog(ERROR, "inconsistent escaping");        \
+#define SKIP_ESCAPED(_ptr, _escaped) \
+    if (*_ptr == '"')                \
+            _ptr++;
+
+/* TODO this looks ugly :( */
+#define SKIP_COLON_DELIM(_ptr, _moved)       \
+    do {                                     \
+        if (*_ptr == ':')                    \
+            ++_ptr;                          \
+        else                                 \
+        {                                    \
+            _moved = 0;                      \
+            break;                           \
+        }                                    \
+        if (*_ptr == ':')                    \
+            ++_ptr;                          \
+        else                                 \
+            elog(ERROR, "incomplete delim"); \
+        _moved = 2;                          \
     } while(0)
 
 /* TODO: alpha + minus correct? */
-#define COUNT_ALPHA(_ptr, _count)          \
-    while (isalpha(*_ptr) || *_ptr == '-') \
-    {                                      \
-        ++_count;                          \
-        ++_ptr;                            \
+#define COUNT_ALPHA(_ptr, _count) \
+    while (  isalpha(*_ptr)       \
+           || *_ptr == '-'        \
+          )                       \
+    {                             \
+        ++_count;                 \
+        ++_ptr;                   \
     }
 
 #define EXTRACT_STRING(_str, _buf, _escaped) \
@@ -126,11 +151,13 @@ extern int is_tree_to_pairs(Position p, ISPairs *pairs, int n);
         SKIP_ESCAPED(_str, _escaped);        \
     } while (0)
 
-#define GET_PLAIN_KEY(_parser, _key, _escaped)      \
-    SKIP_SPACES(_parser->ptr);                      \
-    SKIP_ESCAPED(_parser->ptr, _escaped);           \
-    _key = strtol(_parser->ptr, &_parser->ptr, 10); \
-    SKIP_ESCAPED(_parser->ptr, _escaped);
+#define GET_PLAIN_KEY(_parser, _key, _escaped)          \
+    do {                                                \
+        SKIP_SPACES(_parser->ptr);                      \
+        SKIP_ESCAPED(_parser->ptr, _escaped);           \
+        _key = strtol(_parser->ptr, &_parser->ptr, 10); \
+        SKIP_ESCAPED(_parser->ptr, _escaped);           \
+    } while (0)
 
 #define GET_DEVICE_KEY(_parser, _key, _escaped)       \
     do {                                              \
@@ -159,8 +186,62 @@ extern int is_tree_to_pairs(Position p, ISPairs *pairs, int n);
         pfree(_buf);                                  \
     } while (0)
 
+#define GET_COHORT_SIZE(_parser, _key) \
+    GET_PLAIN_KEY(_parser, _key, false)
+
+#define GET_C_ISTORE(_parser, _key, _escaped)      \
+    do {                                                  \
+        int _country_key,                                 \
+            _device_key,                                  \
+            _os_name_key,                                 \
+            _cohort_size = 0,                             \
+            _delim_found;                                 \
+        _key = 0;                                         \
+        GET_COUNTRY_KEY(_parser, _country_key, escaped); \
+        SKIP_COLON_DELIM(_parser->ptr, _delim_found);     \
+        GET_DEVICE_KEY(_parser, _device_key, false);   \
+        SKIP_COLON_DELIM(_parser->ptr, _delim_found);     \
+        GET_OS_NAME_KEY(_parser, _os_name_key, false); \
+        SKIP_COLON_DELIM(_parser->ptr, _delim_found);     \
+        if (_delim_found)                                 \
+        {                                                 \
+            GET_COHORT_SIZE(_parser, _cohort_size);       \
+            parser->type = C_ISTORE_COHORT;               \
+        }                                                 \
+        else\
+        {\
+            parser->type = C_ISTORE;               \
+        }\
+        _key = _key | _cohort_size;                       \
+        _key = _key | _os_name_key << 8;                  \
+        _key = _key | _device_key  << 16;                 \
+        _key = _key | _country_key << 24;                 \
+    } while (0)
+
 #define GET_VAL(_parser, _val, _escaped) \
     GET_PLAIN_KEY(_parser, _val, _escaped)
+
+#define C_ISTORE_GET_COHORT_SIZE(_key) ((_key & 0x000000FF))
+#define C_ISTORE_GET_OS_NAME_KEY(_key) ((_key & 0x0000FF00) >> 8)
+#define C_ISTORE_GET_DEVICE_KEY(_key)  ((_key & 0x00FF0000) >> 16)
+#define C_ISTORE_GET_COUNTRY_KEY(_key) ((_key & 0xFF000000) >> 24)
+
+#define C_ISTORE_KEY_LEN(_key, _keylen)                                 \
+    do {                                                                \
+        _keylen = get_os_name_length(C_ISTORE_GET_OS_NAME_KEY(_key))    \
+                + get_device_type_length(C_ISTORE_GET_DEVICE_KEY(_key)) \
+                + 2 + 4;                                                \
+    } while (0)
+
+#define C_ISTORE_COHORT_KEY_LEN(_key, _keylen)                                 \
+    do {                                                                \
+        int _cohort_width = 0; \
+        DIGIT_WIDTH(C_ISTORE_GET_COHORT_SIZE(_key),_cohort_width);      \
+        _keylen = get_os_name_length(C_ISTORE_GET_OS_NAME_KEY(_key))    \
+                + get_device_type_length(C_ISTORE_GET_DEVICE_KEY(_key)) \
+                + _cohort_width + 2 + 6;                                                \
+    } while (0)
+
 
 #define GET_KEYARG_BY_TYPE(_istore, _key)                     \
     do {                                                      \
@@ -195,15 +276,6 @@ typedef struct
     uint8   type;
 } IStore;
 
-#define PLAIN_ISTORE        1
-#define NULL_VAL_ISTORE     2
-#define DEVICE_ISTORE       3
-#define NULL_DEVICE_ISTORE  4
-#define COUNTRY_ISTORE      5
-#define NULL_COUNTRY_ISTORE 6
-#define OS_NAME_ISTORE      7
-#define NULL_OS_NAME_ISTORE 8
-
 #define NULL_TYPE_FOR(_type, _nulltype)             \
     do {                                            \
         switch (_type)                              \
@@ -219,6 +291,12 @@ typedef struct
                 break;                              \
             case OS_NAME_ISTORE:                    \
                 _nulltype = NULL_OS_NAME_ISTORE;    \
+                break;                              \
+            case C_ISTORE:                          \
+                _nulltype = NULL_C_ISTORE;          \
+                break;                              \
+            case C_ISTORE_COHORT:                   \
+                _nulltype = NULL_C_ISTORE;          \
                 break;                              \
             default:                                \
                 elog(ERROR, "unknown istore type"); \

@@ -288,6 +288,18 @@ is_pairs_insert(ISPairs *pairs, int key, long val, int type)
             pairs->pairs[pairs->used].null = true;
             pairs->buflen += keylen + 9;
             break;
+        case (C_ISTORE):
+            C_ISTORE_KEY_LEN(key, keylen);
+            DIGIT_WIDTH(val, vallen);
+            pairs->pairs[pairs->used].null = false;
+            pairs->buflen += keylen + vallen + 7;
+            break;
+        case (C_ISTORE_COHORT):
+            C_ISTORE_COHORT_KEY_LEN(key, keylen);
+            DIGIT_WIDTH(val, vallen);
+            pairs->pairs[pairs->used].null = false;
+            pairs->buflen += keylen + vallen + 7;
+            break;
         default: elog(ERROR, "unknown pairs type");
     }
     pairs->used++;

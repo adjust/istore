@@ -26,10 +26,8 @@ is_parse_istore(ISParser *parser)
 
     int  key;
     long val;
-    bool escaped;
-
-    pairs = palloc0(sizeof(ISPairs));
-    is_pairs_init(pairs, 200, parser->type);
+    bool escaped,
+         first = true;
 
     parser->state = WKEY;
     parser->ptr   = parser->begin;
@@ -52,9 +50,20 @@ is_parse_istore(ISParser *parser)
                 case OS_NAME_ISTORE:
                     GET_OS_NAME_KEY(parser, key, escaped);
                     break;
+                case C_ISTORE:
+                    GET_C_ISTORE(parser, key, escaped);
+                    if (parser->type == C_ISTORE_COHORT && !first)
+                        elog(ERROR, "cannot mix cistores with and without cohort size");
+                    break;
+                case C_ISTORE_COHORT:
+                    GET_C_ISTORE(parser, key, escaped);
+                    if (parser->type == C_ISTORE)
+                        elog(ERROR, "cannot mix cistores with and without cohort size");
+                    break;
                 default:
                     elog(ERROR, "unknown parser type");
             }
+            first = false;
             parser->state = WEQ;
         }
         else if (parser->state == WEQ)
@@ -97,6 +106,8 @@ is_parse_istore(ISParser *parser)
             elog(ERROR, "unknown parser state");
         }
     }
+    pairs = palloc0(sizeof(ISPairs));
+    is_pairs_init(pairs, 200, parser->type);
     is_tree_to_pairs(parser->tree, pairs, 0);
     is_make_empty(parser->tree);
     FINALIZE_ISTORE(out, pairs);
@@ -189,8 +200,29 @@ is_serialize_istore(IStore *in)
                         pairs[i].val
                     );
                     break;
+                case C_ISTORE:
+                    ptr += sprintf(
+                        out+ptr,
+                        "\"%s::%s::%s\"=>\"%ld\",",
+                        get_country_string(C_ISTORE_GET_COUNTRY_KEY(pairs[i].key)),
+                        get_device_type_string(C_ISTORE_GET_DEVICE_KEY(pairs[i].key)),
+                        get_os_name_string(C_ISTORE_GET_OS_NAME_KEY(pairs[i].key)),
+                        pairs[i].val
+                    );
+                    break;
+                case C_ISTORE_COHORT:
+                    ptr += sprintf(
+                        out+ptr,
+                        "\"%s::%s::%s::%d\"=>\"%ld\",",
+                        get_country_string(C_ISTORE_GET_COUNTRY_KEY(pairs[i].key)),
+                        get_device_type_string(C_ISTORE_GET_DEVICE_KEY(pairs[i].key)),
+                        get_os_name_string(C_ISTORE_GET_OS_NAME_KEY(pairs[i].key)),
+                        C_ISTORE_GET_COHORT_SIZE(pairs[i].key),
+                        pairs[i].val
+                    );
+                    break;
                 default:
-                    elog(ERROR, "serializer: unknown istore type");
+                    elog(ERROR, "serializer: unknown istore type %d", in->type);
             }
         }
     }
@@ -310,6 +342,24 @@ istore_in(PG_FUNCTION_ARGS)
     ISParser  parser;
     parser.begin = PG_GETARG_CSTRING(0);
     parser.type  = PLAIN_ISTORE;
+    return is_parse_istore(&parser);
+}
+
+PG_FUNCTION_INFO_V1(cistore_out);
+Datum
+cistore_out(PG_FUNCTION_ARGS)
+{
+    IStore *in = PG_GETARG_IS(0);
+    return is_serialize_istore(in);
+}
+
+PG_FUNCTION_INFO_V1(cistore_in);
+Datum
+cistore_in(PG_FUNCTION_ARGS)
+{
+    ISParser  parser;
+    parser.begin = PG_GETARG_CSTRING(0);
+    parser.type  = C_ISTORE;
     return is_parse_istore(&parser);
 }
 

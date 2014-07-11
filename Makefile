@@ -22,6 +22,7 @@ all: concat
 concat:
 	echo > sql/$(EXTENSION)--$(EXTVERSION).sql
 	cat sql/istore.sql \
+	    sql/cistore.sql \
 	    sql/country.sql \
 		sql/device_type.sql \
 		sql/os_name.sql >> sql/$(EXTENSION)--$(EXTVERSION).sql
