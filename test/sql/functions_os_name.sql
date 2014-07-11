@@ -45,6 +45,16 @@ SELECT os_name_istore_from_array(ARRAY[NULL,'ios','windows','windows-phone','and
 SELECT os_name_istore_from_array(ARRAY[NULL,'ios','windows','windows-phone','android','ios','windows',NULL]);
 SELECT os_name_istore_from_array(ARRAY['android','ios','windows',NULL,'android',NULL,'windows','windows-phone','android','ios','windows']);
 
+SELECT os_name_istore_from_array(ARRAY['android'::os_name]);
+SELECT os_name_istore_from_array(ARRAY['android'::os_name,'android'::os_name,'android'::os_name,'android'::os_name]);
+SELECT os_name_istore_from_array(NULL::text[]);
+SELECT os_name_istore_from_array(ARRAY['android'::os_name,'ios'::os_name,'windows'::os_name,'windows-phone'::os_name]);
+SELECT os_name_istore_from_array(ARRAY['android'::os_name,'ios'::os_name,'windows'::os_name,'windows-phone'::os_name,'android'::os_name,'ios'::os_name,'windows'::os_name,'windows-phone'::os_name]);
+SELECT os_name_istore_from_array(ARRAY['android'::os_name,'ios'::os_name,'windows'::os_name,'windows-phone'::os_name,'android'::os_name,'ios'::os_name,'windows'::os_name,NULL]);
+SELECT os_name_istore_from_array(ARRAY[NULL,'ios'::os_name,'windows'::os_name,'windows-phone'::os_name,'android'::os_name,'ios'::os_name,'windows'::os_name,'windows-phone'::os_name]);
+SELECT os_name_istore_from_array(ARRAY[NULL,'ios'::os_name,'windows'::os_name,'windows-phone'::os_name,'android'::os_name,'ios'::os_name,'windows'::os_name,NULL]);
+SELECT os_name_istore_from_array(ARRAY['android'::os_name,'ios'::os_name,'windows'::os_name,NULL,'android'::os_name,NULL,'windows'::os_name,'windows-phone'::os_name,'android'::os_name,'ios'::os_name,'windows'::os_name]);
+
 SELECT os_name_istore_agg(ARRAY['ios=>1']::os_name_istore[]);
 SELECT os_name_istore_agg(ARRAY['ios=>1','ios=>1']::os_name_istore[]);
 SELECT os_name_istore_agg(ARRAY['ios=>1,windows=>1','ios=>1,windows=>-1']::os_name_istore[]);

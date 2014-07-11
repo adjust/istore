@@ -244,6 +244,60 @@ SELECT device_istore_from_array(ARRAY['bot','phone','resolver','mac','bot','phon
  "bot"=>"5","mac"=>"4","phone"=>"4","resolver"=>"4"
 (1 row)
 
+SELECT device_istore_from_array(ARRAY['bot'::device_type]);
+ device_istore_from_array 
+--------------------------
+ "bot"=>"1"
+(1 row)
+
+SELECT device_istore_from_array(ARRAY['bot'::device_type,'bot'::device_type,'bot'::device_type,'bot'::device_type]);
+ device_istore_from_array 
+--------------------------
+ "bot"=>"4"
+(1 row)
+
+SELECT device_istore_from_array(NULL::text[]);
+ device_istore_from_array 
+--------------------------
+ 
+(1 row)
+
+SELECT device_istore_from_array(ARRAY['bot'::device_type,'phone'::device_type,'resolver'::device_type,'mac'::device_type]);
+              device_istore_from_array              
+----------------------------------------------------
+ "bot"=>"1","mac"=>"1","phone"=>"1","resolver"=>"1"
+(1 row)
+
+SELECT device_istore_from_array(ARRAY['bot'::device_type,'phone'::device_type,'resolver'::device_type,'mac'::device_type,'bot'::device_type,'phone'::device_type,'resolver'::device_type,'mac'::device_type]);
+              device_istore_from_array              
+----------------------------------------------------
+ "bot"=>"2","mac"=>"2","phone"=>"2","resolver"=>"2"
+(1 row)
+
+SELECT device_istore_from_array(ARRAY['bot'::device_type,'phone'::device_type,'resolver'::device_type,'mac'::device_type,'bot'::device_type,'phone'::device_type,'resolver'::device_type,'mac'::device_type,NULL]);
+              device_istore_from_array              
+----------------------------------------------------
+ "bot"=>"2","mac"=>"2","phone"=>"2","resolver"=>"2"
+(1 row)
+
+SELECT device_istore_from_array(ARRAY[NULL,'bot'::device_type,'phone'::device_type,'resolver'::device_type,'mac'::device_type,'bot'::device_type,'phone'::device_type,'resolver'::device_type,'mac'::device_type]);
+              device_istore_from_array              
+----------------------------------------------------
+ "bot"=>"2","mac"=>"2","phone"=>"2","resolver"=>"2"
+(1 row)
+
+SELECT device_istore_from_array(ARRAY[NULL,'bot'::device_type,'phone'::device_type,'resolver'::device_type,'mac'::device_type,'bot'::device_type,'phone'::device_type,'resolver'::device_type,'mac'::device_type,NULL]);
+              device_istore_from_array              
+----------------------------------------------------
+ "bot"=>"2","mac"=>"2","phone"=>"2","resolver"=>"2"
+(1 row)
+
+SELECT device_istore_from_array(ARRAY['bot'::device_type,'phone'::device_type,'resolver'::device_type,'mac'::device_type,'bot'::device_type,'phone'::device_type,'resolver'::device_type,'mac'::device_type,NULL,'bot'::device_type,NULL,'bot'::device_type,'phone'::device_type,'resolver'::device_type,'mac'::device_type,'bot'::device_type,'phone'::device_type,'resolver'::device_type,'mac'::device_type]);
+              device_istore_from_array              
+----------------------------------------------------
+ "bot"=>"5","mac"=>"4","phone"=>"4","resolver"=>"4"
+(1 row)
+
 SELECT device_istore_agg(ARRAY['phone=>1']::device_istore[]);
  device_istore_agg 
 -------------------

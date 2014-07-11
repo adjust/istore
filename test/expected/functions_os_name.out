@@ -244,6 +244,60 @@ SELECT os_name_istore_from_array(ARRAY['android','ios','windows',NULL,'android',
  "android"=>"3","ios"=>"2","windows"=>"3","windows-phone"=>"1"
 (1 row)
 
+SELECT os_name_istore_from_array(ARRAY['android'::os_name]);
+ os_name_istore_from_array 
+---------------------------
+ "android"=>"1"
+(1 row)
+
+SELECT os_name_istore_from_array(ARRAY['android'::os_name,'android'::os_name,'android'::os_name,'android'::os_name]);
+ os_name_istore_from_array 
+---------------------------
+ "android"=>"4"
+(1 row)
+
+SELECT os_name_istore_from_array(NULL::text[]);
+ os_name_istore_from_array 
+---------------------------
+ 
+(1 row)
+
+SELECT os_name_istore_from_array(ARRAY['android'::os_name,'ios'::os_name,'windows'::os_name,'windows-phone'::os_name]);
+                   os_name_istore_from_array                   
+---------------------------------------------------------------
+ "android"=>"1","ios"=>"1","windows"=>"1","windows-phone"=>"1"
+(1 row)
+
+SELECT os_name_istore_from_array(ARRAY['android'::os_name,'ios'::os_name,'windows'::os_name,'windows-phone'::os_name,'android'::os_name,'ios'::os_name,'windows'::os_name,'windows-phone'::os_name]);
+                   os_name_istore_from_array                   
+---------------------------------------------------------------
+ "android"=>"2","ios"=>"2","windows"=>"2","windows-phone"=>"2"
+(1 row)
+
+SELECT os_name_istore_from_array(ARRAY['android'::os_name,'ios'::os_name,'windows'::os_name,'windows-phone'::os_name,'android'::os_name,'ios'::os_name,'windows'::os_name,NULL]);
+                   os_name_istore_from_array                   
+---------------------------------------------------------------
+ "android"=>"2","ios"=>"2","windows"=>"2","windows-phone"=>"1"
+(1 row)
+
+SELECT os_name_istore_from_array(ARRAY[NULL,'ios'::os_name,'windows'::os_name,'windows-phone'::os_name,'android'::os_name,'ios'::os_name,'windows'::os_name,'windows-phone'::os_name]);
+                   os_name_istore_from_array                   
+---------------------------------------------------------------
+ "android"=>"1","ios"=>"2","windows"=>"2","windows-phone"=>"2"
+(1 row)
+
+SELECT os_name_istore_from_array(ARRAY[NULL,'ios'::os_name,'windows'::os_name,'windows-phone'::os_name,'android'::os_name,'ios'::os_name,'windows'::os_name,NULL]);
+                   os_name_istore_from_array                   
+---------------------------------------------------------------
+ "android"=>"1","ios"=>"2","windows"=>"2","windows-phone"=>"1"
+(1 row)
+
+SELECT os_name_istore_from_array(ARRAY['android'::os_name,'ios'::os_name,'windows'::os_name,NULL,'android'::os_name,NULL,'windows'::os_name,'windows-phone'::os_name,'android'::os_name,'ios'::os_name,'windows'::os_name]);
+                   os_name_istore_from_array                   
+---------------------------------------------------------------
+ "android"=>"3","ios"=>"2","windows"=>"3","windows-phone"=>"1"
+(1 row)
+
 SELECT os_name_istore_agg(ARRAY['ios=>1']::os_name_istore[]);
  os_name_istore_agg 
 --------------------

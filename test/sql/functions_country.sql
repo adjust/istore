@@ -45,6 +45,17 @@ SELECT country_istore_from_array(ARRAY[NULL,'de','es','io','us','de','es','io','
 SELECT country_istore_from_array(ARRAY[NULL,'de','es','io','us','de','es','io','us',NULL]);
 SELECT country_istore_from_array(ARRAY['de','es','io','us','de','es','io','us',NULL,'de',NULL,'de','es','io','us','de','es','io','us']);
 
+SELECT country_istore_from_array(ARRAY['de'::country]);
+SELECT country_istore_from_array(ARRAY['de'::country,'de'::country,'de'::country,'de'::country]);
+SELECT country_istore_from_array(NULL::text[]);
+SELECT country_istore_from_array(ARRAY['de'::country,'es'::country,'io'::country,'us'::country]);
+SELECT country_istore_from_array(ARRAY['de'::country,'es'::country,'io'::country,'us'::country,'de'::country,'es'::country,'io'::country,'us'::country]);
+SELECT country_istore_from_array(ARRAY['de'::country,'es'::country,'io'::country,'us'::country,'de'::country,'es'::country,'io'::country,'us'::country,NULL]);
+SELECT country_istore_from_array(ARRAY[NULL,'de'::country,'es'::country,'io'::country,'us'::country,'de'::country,'es'::country,'io'::country,'us'::country]);
+SELECT country_istore_from_array(ARRAY[NULL,'de'::country,'es'::country,'io'::country,'us'::country,'de'::country,'es'::country,'io'::country,'us'::country,NULL]);
+SELECT country_istore_from_array(ARRAY['de'::country,'es'::country,'io'::country,'us'::country,'de'::country,'es'::country,'io'::country,'us'::country,NULL,'de'::country,NULL,'de'::country,'es'::country,'io'::country,'us'::country,'de'::country,'es'::country,'io'::country,'us'::country]);
+
+
 SELECT country_istore_agg(ARRAY['de=>1']::country_istore[]);
 SELECT country_istore_agg(ARRAY['de=>1','de=>1']::country_istore[]);
 SELECT country_istore_agg(ARRAY['de=>1,us=>1','de=>1,us=>-1']::country_istore[]);

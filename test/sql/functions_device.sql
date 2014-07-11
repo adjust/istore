@@ -45,6 +45,17 @@ SELECT device_istore_from_array(ARRAY[NULL,'bot','phone','resolver','mac','bot',
 SELECT device_istore_from_array(ARRAY[NULL,'bot','phone','resolver','mac','bot','phone','resolver','mac',NULL]);
 SELECT device_istore_from_array(ARRAY['bot','phone','resolver','mac','bot','phone','resolver','mac',NULL,'bot',NULL,'bot','phone','resolver','mac','bot','phone','resolver','mac']);
 
+SELECT device_istore_from_array(ARRAY['bot'::device_type]);
+SELECT device_istore_from_array(ARRAY['bot'::device_type,'bot'::device_type,'bot'::device_type,'bot'::device_type]);
+SELECT device_istore_from_array(NULL::text[]);
+SELECT device_istore_from_array(ARRAY['bot'::device_type,'phone'::device_type,'resolver'::device_type,'mac'::device_type]);
+SELECT device_istore_from_array(ARRAY['bot'::device_type,'phone'::device_type,'resolver'::device_type,'mac'::device_type,'bot'::device_type,'phone'::device_type,'resolver'::device_type,'mac'::device_type]);
+SELECT device_istore_from_array(ARRAY['bot'::device_type,'phone'::device_type,'resolver'::device_type,'mac'::device_type,'bot'::device_type,'phone'::device_type,'resolver'::device_type,'mac'::device_type,NULL]);
+SELECT device_istore_from_array(ARRAY[NULL,'bot'::device_type,'phone'::device_type,'resolver'::device_type,'mac'::device_type,'bot'::device_type,'phone'::device_type,'resolver'::device_type,'mac'::device_type]);
+SELECT device_istore_from_array(ARRAY[NULL,'bot'::device_type,'phone'::device_type,'resolver'::device_type,'mac'::device_type,'bot'::device_type,'phone'::device_type,'resolver'::device_type,'mac'::device_type,NULL]);
+SELECT device_istore_from_array(ARRAY['bot'::device_type,'phone'::device_type,'resolver'::device_type,'mac'::device_type,'bot'::device_type,'phone'::device_type,'resolver'::device_type,'mac'::device_type,NULL,'bot'::device_type,NULL,'bot'::device_type,'phone'::device_type,'resolver'::device_type,'mac'::device_type,'bot'::device_type,'phone'::device_type,'resolver'::device_type,'mac'::device_type]);
+
+
 SELECT device_istore_agg(ARRAY['phone=>1']::device_istore[]);
 SELECT device_istore_agg(ARRAY['phone=>1','phone=>1']::device_istore[]);
 SELECT device_istore_agg(ARRAY['phone=>1,resolver=>1','phone=>1,resolver=>-1']::device_istore[]);
