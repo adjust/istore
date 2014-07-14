@@ -22,10 +22,10 @@ all: concat
 concat:
 	echo > sql/$(EXTENSION)--$(EXTVERSION).sql
 	cat sql/istore.sql \
-	    sql/cistore.sql \
+	    sql/os_name.sql \
 	    sql/country.sql \
 		sql/device_type.sql \
-		sql/os_name.sql >> sql/$(EXTENSION)--$(EXTVERSION).sql
+		sql/cistore.sql >> sql/$(EXTENSION)--$(EXTVERSION).sql
 
 
 PG_CONFIG = pg_config

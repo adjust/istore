@@ -212,14 +212,24 @@ extern int is_tree_to_pairs(Position p, ISPairs *pairs, int n);
         {\
             parser->type = C_ISTORE;               \
         }\
-        _key = _key | _cohort_size;                       \
-        _key = _key | _os_name_key << 8;                  \
-        _key = _key | _device_key  << 16;                 \
-        _key = _key | _country_key << 24;                 \
+        C_ISTORE_CREATE_KEY(\
+            _key,\
+            _country_key,\
+            _device_key,\
+            _os_name_key,\
+            _cohort_size\
+        );\
     } while (0)
 
 #define GET_VAL(_parser, _val, _escaped) \
     GET_PLAIN_KEY(_parser, _val, _escaped)
+
+#define C_ISTORE_CREATE_KEY(_key, _c, _d, _o, _s) \
+    _key = _key | _s;                             \
+    _key = _key | _o << 8;                        \
+    _key = _key | _d << 16;                       \
+    _key = _key | _c << 24;                       \
+
 
 #define C_ISTORE_GET_COHORT_SIZE(_key) ((_key & 0x000000FF))
 #define C_ISTORE_GET_OS_NAME_KEY(_key) ((_key & 0x0000FF00) >> 8)

@@ -392,3 +392,74 @@ os_name_istore_in(PG_FUNCTION_ARGS)
     parser.type  = OS_NAME_ISTORE;
     return is_parse_istore(&parser);
 }
+
+PG_FUNCTION_INFO_V1(cistore_from_types);
+Datum
+cistore_from_types(PG_FUNCTION_ARGS)
+{
+    ISParser  parser;
+    int key = 0,
+        keylen,
+        vallen,
+        ptr = 0;
+    char *out;
+    country     *c  = (country *)    PG_GETARG_POINTER(0);
+    device_type *d  = (device_type *)PG_GETARG_POINTER(1);
+    os_name     *o  = (os_name *)    PG_GETARG_POINTER(2);
+    long        val = PG_GETARG_INT64(3);
+
+    C_ISTORE_CREATE_KEY(key, *c, *d, *o, 0);
+    C_ISTORE_KEY_LEN(key, keylen);
+    DIGIT_WIDTH(val, vallen);
+
+    out = palloc(vallen + keylen + 6);
+
+    ptr += sprintf(
+        out+ptr,
+        "\"%s::%s::%s\"=>\"%ld\"",
+        get_country_string(C_ISTORE_GET_COUNTRY_KEY(key)),
+        get_device_type_string(C_ISTORE_GET_DEVICE_KEY(key)),
+        get_os_name_string(C_ISTORE_GET_OS_NAME_KEY(key)),
+        val
+    );
+
+    parser.begin = out;
+    parser.type  = C_ISTORE;
+    return is_parse_istore(&parser);
+}
+
+PG_FUNCTION_INFO_V1(cistore_cohort_from_types);
+Datum
+cistore_cohort_from_types(PG_FUNCTION_ARGS)
+{
+    ISParser  parser;
+    int key = 0,
+        keylen,
+        vallen,
+        ptr = 0;
+    char *out;
+    country     *c  = (country *)    PG_GETARG_POINTER(0);
+    device_type *d  = (device_type *)PG_GETARG_POINTER(1);
+    os_name     *o  = (os_name *)    PG_GETARG_POINTER(2);
+    uint16       s  = PG_GETARG_UINT16(3);
+    long        val = PG_GETARG_INT64(4);
+
+    C_ISTORE_CREATE_KEY(key, *c, *d, *o, s);
+    C_ISTORE_COHORT_KEY_LEN(key, keylen);
+    DIGIT_WIDTH(val, vallen);
+
+    out = palloc(vallen + keylen + 6);
+    ptr += sprintf(
+        out+ptr,
+        "\"%s::%s::%s::%d\"=>\"%ld\"",
+        get_country_string(C_ISTORE_GET_COUNTRY_KEY(key)),
+        get_device_type_string(C_ISTORE_GET_DEVICE_KEY(key)),
+        get_os_name_string(C_ISTORE_GET_OS_NAME_KEY(key)),
+        C_ISTORE_GET_COHORT_SIZE(key),
+        val
+    );
+
+    parser.begin = out;
+    parser.type  = C_ISTORE;
+    return is_parse_istore(&parser);
+}
