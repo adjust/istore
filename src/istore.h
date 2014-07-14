@@ -105,47 +105,39 @@ extern int is_tree_to_pairs(Position p, ISPairs *pairs, int n);
 #define DELIM     ':'
 #define DELIM_NUM 2
 
-#define SKIP_COLON_DELIM(_parser, _moved)                   \
-    do {                                                    \
-        for (_moved = 0; _moved < DELIM_NUM; ++_moved)      \
-            if (*(_parser->ptr) != DELIM)                   \
-                break;                                      \
-            else                                            \
-                _parser->ptr++;                             \
-        switch (_moved)                                     \
-        {                                                   \
-            case 0: _parser->type = C_ISTORE; break;        \
-            case 1: elog(ERROR, "incomplete delimiter");    \
-            case 2: _parser->type = C_ISTORE_COHORT; break; \
-        }                                                   \
+#define SKIP_COLON_DELIM(_parser, _moved)                    \
+    do {                                                     \
+        for (_moved = 0; _moved < DELIM_NUM; ++_moved)       \
+            if (*(_parser->ptr) != DELIM)                    \
+                break;                                       \
+            else                                             \
+                _parser->ptr++;                              \
+        switch (_moved)                                      \
+        {                                                    \
+            case 0:  _parser->type = C_ISTORE; break;        \
+            case 1:  elog(ERROR, "incomplete delimiter");    \
+            case 2:  _parser->type = C_ISTORE_COHORT; break; \
+            default: elog(ERROR, "too long delimiter");      \
+        }                                                    \
     } while(0)
 
-#define COUNT_ALPHA(_ptr, _count)          \
-    while (isalpha(*_ptr) || *_ptr == '-') \
-    {                                      \
-        ++_count;                          \
-        ++_ptr;                            \
-    }
+#define COUNT_ALPHA(_ptr, _count)                   \
+    for (;isalpha(*_ptr) || *_ptr == '-'; ++_count) \
+        ++_ptr;
 
 #define EXTRACT_STRING(_str, _buf)           \
     do {                                     \
         char *_ptr;                          \
         int  _count = 0;                     \
-        SKIP_SPACES(_str);                   \
-        SKIP_ESCAPED(_str);                  \
         _ptr = _str;                         \
         COUNT_ALPHA(_ptr, _count);           \
         _buf = pnstrdup(_str, _count);       \
         _str = _ptr;                         \
-        SKIP_ESCAPED(_str);                  \
     } while (0)
 
 #define GET_PLAIN_KEY(_parser, _key)                    \
     do {                                                \
-        SKIP_SPACES(_parser->ptr);                      \
-        SKIP_ESCAPED(_parser->ptr);                     \
         _key = strtol(_parser->ptr, &_parser->ptr, 10); \
-        SKIP_ESCAPED(_parser->ptr);                     \
     } while (0)
 
 #define GET_DEVICE_KEY(_parser, _key)       \
@@ -212,7 +204,7 @@ extern int is_tree_to_pairs(Position p, ISPairs *pairs, int n);
     do {                                                                \
         _keylen = get_os_name_length(C_ISTORE_GET_OS_NAME_KEY(_key))    \
                 + get_device_type_length(C_ISTORE_GET_DEVICE_KEY(_key)) \
-                + DELIM_NUM * 2 + 4;                                    \
+                + DELIM_NUM * 2 + 2;                                    \
     } while (0)
 
 #define C_ISTORE_COHORT_KEY_LEN(_key, _keylen)                          \

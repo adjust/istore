@@ -35,6 +35,8 @@ is_parse_istore(ISParser *parser)
     {
         if (parser->state == WKEY)
         {
+            SKIP_SPACES(parser->ptr);
+            SKIP_ESCAPED(parser->ptr);
             switch (parser->type)
             {
                 case PLAIN_ISTORE:
@@ -64,6 +66,7 @@ is_parse_istore(ISParser *parser)
             }
             first = false;
             parser->state = WEQ;
+            SKIP_ESCAPED(parser->ptr);
         }
         else if (parser->state == WEQ)
         {
@@ -88,7 +91,10 @@ is_parse_istore(ISParser *parser)
         }
         else if (parser->state == WVAL)
         {
+            SKIP_SPACES(parser->ptr);
+            SKIP_ESCAPED(parser->ptr);
             GET_VAL(parser, val);
+            SKIP_ESCAPED(parser->ptr);
             parser->state = WDEL;
             parser->tree = is_insert(key, val, parser->tree);
         }
@@ -433,9 +439,9 @@ cistore_cohort_from_types(PG_FUNCTION_ARGS)
 {
     ISParser  parser;
     int32 key = 0,
-        keylen,
-        vallen,
-        ptr = 0;
+          keylen,
+          vallen,
+          ptr = 0;
     char *out;
     country     *c  = (country *)    PG_GETARG_POINTER(0);
     device_type *d  = (device_type *)PG_GETARG_POINTER(1);
