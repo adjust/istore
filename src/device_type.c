@@ -31,12 +31,12 @@ device_type_in(PG_FUNCTION_ARGS)
 {
     char *str = PG_GETARG_CSTRING(0);
     device_type *result = palloc0(sizeof *result);
-    if ( str == NULL )
-    {
-        PG_RETURN_POINTER(result);
-    }
+    if (str == NULL)
+        elog(ERROR, "NULL input for device_type not defined");
     LOWER_STRING(str);
     *result = get_device_type_num(str);
+    if (*result == 0)
+        elog(ERROR, "unknown input device_type");
     PG_RETURN_POINTER(result);
 }
 
@@ -120,7 +120,8 @@ get_device_type_string(uint8 num)
         case 8:  return create_string(CONST_STRING("server"));
         case 9:  return create_string(CONST_STRING("simulator"));
         case 10: return create_string(CONST_STRING("tablet"));
-        default: return create_string(CONST_STRING("unknown"));
+        case 11: return create_string(CONST_STRING("unknown"));
+        default: elog(ERROR, "unknown device_type num");
     }
 }
 
@@ -139,7 +140,8 @@ get_device_type_length(uint8 num)
         case 8:  return (CONST_STRING_LENGTH("server"));
         case 9:  return (CONST_STRING_LENGTH("simulator"));
         case 10: return (CONST_STRING_LENGTH("tablet"));
-        default: return (CONST_STRING_LENGTH("unknown"));
+        case 11: return (CONST_STRING_LENGTH("unknown"));
+        default: elog(ERROR, "unknown device_type num");
     }
 }
 
@@ -170,6 +172,7 @@ get_device_type_num(char *str)
         case 'r': return check_device_type_num(str, 7);
         case 's': return get_device_type_num_s(str);
         case 't': return check_device_type_num(str, 10);
+        case 'u': return check_device_type_num(str, 11);
         default : return 0;
     }
 }

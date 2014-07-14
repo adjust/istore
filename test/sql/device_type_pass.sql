@@ -1,0 +1,12 @@
+SELECT 'bot'::device_type;
+SELECT 'console'::device_type;
+SELECT 'ipod'::device_type;
+SELECT 'mac'::device_type;
+SELECT 'pc'::device_type;
+SELECT 'phone'::device_type;
+SELECT 'resolver'::device_type;
+SELECT 'server'::device_type;
+SELECT 'simulator'::device_type;
+SELECT 'tablet'::device_type;
+SELECT 'unknown'::device_type;
+SELECT 'kermit'::device_type;
