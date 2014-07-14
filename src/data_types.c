@@ -1,15 +1,15 @@
 #include "istore.h"
 
 void is_pairs_init(ISPairs *pairs, size_t initial_size, int type);
-void is_pairs_insert(ISPairs *pairs, int key, long val, int type);
+void is_pairs_insert(ISPairs *pairs, int32 key, long val, int type);
 int  is_pairs_cmp(const void *a, const void *b);
 void is_pairs_sort(ISPairs *pairs);
 void is_pairs_deinit(ISPairs *pairs);
 void is_pairs_debug(ISPairs *pairs);
 
-int is_compare(int key, AvlTree node);
-Position is_tree_find(int key, AvlTree t);
-AvlTree is_insert(int key, int value, AvlTree t);
+int is_compare(int32 key, AvlTree node);
+Position is_tree_find(int32 key, AvlTree t);
+AvlTree is_insert(int32 key, int value, AvlTree t);
 int is_tree_length(Position p);
 int is_tree_to_pairs(Position p, ISPairs *pairs, int n);
 
@@ -48,7 +48,7 @@ is_make_empty(AvlTree t)
 }
 
 int
-is_compare(int key, AvlTree node)
+is_compare(int32 key, AvlTree node)
 {
     if (key == node->key)
         return 0;
@@ -59,7 +59,7 @@ is_compare(int key, AvlTree node)
 }
 
 Position
-is_tree_find(int key, AvlTree t)
+is_tree_find(int32 key, AvlTree t)
 {
     int cmp;
 
@@ -142,7 +142,7 @@ doubleRotateWithRight(Position k1)
 }
 
 AvlTree
-is_insert(int key, int value, AvlTree t)
+is_insert(int32 key, int value, AvlTree t)
 {
     if(t == NULL)
     {
@@ -230,7 +230,7 @@ is_pairs_init(ISPairs *pairs, size_t initial_size, int type)
 }
 
 void
-is_pairs_insert(ISPairs *pairs, int key, long val, int type)
+is_pairs_insert(ISPairs *pairs, int32 key, long val, int type)
 {
     int keylen,
         vallen;

@@ -26,37 +26,36 @@ is_parse_istore(ISParser *parser)
 
     int  key;
     long val;
-    bool escaped,
-         first = true;
+    bool first = true;
 
     parser->state = WKEY;
     parser->ptr   = parser->begin;
     parser->tree  = NULL;
-    IS_ESCAPED(parser->ptr, escaped);
     while(1)
     {
         if (parser->state == WKEY)
         {
-            switch (parser->type) {
+            switch (parser->type)
+            {
                 case PLAIN_ISTORE:
-                    GET_PLAIN_KEY(parser, key, escaped);
+                    GET_PLAIN_KEY(parser, key);
                     break;
                 case DEVICE_ISTORE:
-                    GET_DEVICE_KEY(parser, key, escaped);
+                    GET_DEVICE_KEY(parser, key);
                     break;
                 case COUNTRY_ISTORE:
-                    GET_COUNTRY_KEY(parser, key, escaped);
+                    GET_COUNTRY_KEY(parser, key);
                     break;
                 case OS_NAME_ISTORE:
-                    GET_OS_NAME_KEY(parser, key, escaped);
+                    GET_OS_NAME_KEY(parser, key);
                     break;
                 case C_ISTORE:
-                    GET_C_ISTORE(parser, key, escaped);
+                    GET_C_ISTORE(parser, key);
                     if (parser->type == C_ISTORE_COHORT && !first)
                         elog(ERROR, "cannot mix cistores with and without cohort size");
                     break;
                 case C_ISTORE_COHORT:
-                    GET_C_ISTORE(parser, key, escaped);
+                    GET_C_ISTORE(parser, key);
                     if (parser->type == C_ISTORE)
                         elog(ERROR, "cannot mix cistores with and without cohort size");
                     break;
@@ -89,7 +88,7 @@ is_parse_istore(ISParser *parser)
         }
         else if (parser->state == WVAL)
         {
-            GET_VAL(parser, val, escaped);
+            GET_VAL(parser, val);
             parser->state = WDEL;
             parser->tree = is_insert(key, val, parser->tree);
         }
@@ -398,10 +397,10 @@ Datum
 cistore_from_types(PG_FUNCTION_ARGS)
 {
     ISParser  parser;
-    int key = 0,
-        keylen,
-        vallen,
-        ptr = 0;
+    int32 key = 0,
+          keylen,
+          vallen,
+          ptr = 0;
     char *out;
     country     *c  = (country *)    PG_GETARG_POINTER(0);
     device_type *d  = (device_type *)PG_GETARG_POINTER(1);
@@ -433,7 +432,7 @@ Datum
 cistore_cohort_from_types(PG_FUNCTION_ARGS)
 {
     ISParser  parser;
-    int key = 0,
+    int32 key = 0,
         keylen,
         vallen,
         ptr = 0;

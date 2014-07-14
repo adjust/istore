@@ -22,7 +22,7 @@ istore_sum_up(PG_FUNCTION_ARGS)
 }
 
 ISPair*
-is_find(IStore *is, int key)
+is_find(IStore *is, int32 key)
 {
     ISPair *pairs  = FIRST_PAIR(is);
     ISPair *result = NULL;
@@ -751,7 +751,7 @@ istore_array_add(PG_FUNCTION_ARGS)
     {
         if (nulls1[i] || nulls2[i])
             continue;
-        key   = DatumGetInt64(i_data1[i]);
+        key   = DatumGetInt32(i_data1[i]);
         value = DatumGetInt64(i_data2[i]);
         position = is_tree_find(key, tree);
         if (position == NULL)

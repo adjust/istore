@@ -16,8 +16,8 @@ country_in(PG_FUNCTION_ARGS)
     char *str = PG_GETARG_CSTRING(0);
     country *result = palloc0(sizeof *result);
 
-    if (str == NULL || strlen(str) != 2)
-        elog(ERROR, "unknown input country type");
+    if (str == NULL)
+        elog(ERROR, "NULL input is not allowed for country type");
 
     LOWER_STRING(str);
     *result = get_country_num(str);
@@ -84,6 +84,9 @@ country_cmp(PG_FUNCTION_ARGS)
 uint8
 get_country_num(char *str)
 {
+    if (strlen(str) != 2)
+        elog(ERROR, "invalid length for country input");
+
     switch (str[0])
     {
         case 'a': return get_country_num_a(str);

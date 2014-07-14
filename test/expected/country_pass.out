@@ -1505,7 +1505,7 @@ SELECT 'zz'::country;
 (1 row)
 
 SELECT 'a'::country;
-ERROR:  unknown input country type
+ERROR:  invalid length for country input
 LINE 1: SELECT 'a'::country;
                ^
 SELECT 'aa'::country;
@@ -1513,6 +1513,6 @@ ERROR:  unknown input country type
 LINE 1: SELECT 'aa'::country;
                ^
 SELECT 'aaa'::country;
-ERROR:  unknown input country type
+ERROR:  invalid length for country input
 LINE 1: SELECT 'aaa'::country;
                ^
