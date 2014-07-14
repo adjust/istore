@@ -1498,15 +1498,21 @@ SELECT 'zw'::country;
  zw
 (1 row)
 
+SELECT 'zz'::country;
+ country 
+---------
+ zz
+(1 row)
+
 SELECT 'a'::country;
- country 
----------
- zz
-(1 row)
-
+ERROR:  unknown input country type
+LINE 1: SELECT 'a'::country;
+               ^
+SELECT 'aa'::country;
+ERROR:  unknown input country type
+LINE 1: SELECT 'aa'::country;
+               ^
 SELECT 'aaa'::country;
- country 
----------
- zz
-(1 row)
-
+ERROR:  unknown input country type
+LINE 1: SELECT 'aaa'::country;
+               ^

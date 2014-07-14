@@ -248,5 +248,7 @@ SELECT 'yt'::country;
 SELECT 'za'::country;
 SELECT 'zm'::country;
 SELECT 'zw'::country;
+SELECT 'zz'::country;
 SELECT 'a'::country;
+SELECT 'aa'::country;
 SELECT 'aaa'::country;
