@@ -18,11 +18,11 @@ os_name_in(PG_FUNCTION_ARGS)
     char *str = PG_GETARG_CSTRING(0);
     os_name *result = palloc0(sizeof *result);
     if ( str == NULL )
-    {
-        PG_RETURN_POINTER(result);
-    }
+        elog(ERROR, "unknown input os_name");
     LOWER_STRING(str);
     *result = get_os_name_num(str);
+    if (*result == 0)
+        elog(ERROR, "unknown input os_name");
     PG_RETURN_POINTER(result);
 }
 
@@ -100,7 +100,8 @@ get_os_name_string(uint8 num)
         case 2:  return create_string(CONST_STRING("ios"));
         case 3:  return create_string(CONST_STRING("windows"));
         case 4:  return create_string(CONST_STRING("windows-phone"));
-        default: return create_string(CONST_STRING("unknown"));
+        case 5:  return create_string(CONST_STRING("unknown"));
+        default: return NULL;
     }
 }
 
@@ -113,7 +114,8 @@ get_os_name_length(uint8 num)
         case 2:  return (CONST_STRING_LENGTH("ios"));
         case 3:  return (CONST_STRING_LENGTH("windows"));
         case 4:  return (CONST_STRING_LENGTH("windows-phone"));
-        default: return (CONST_STRING_LENGTH("unknown"));
+        case 5:  return (CONST_STRING_LENGTH("unknown"));
+        default: elog(ERROR, "unknown os_name type");
     }
 }
 
@@ -142,6 +144,7 @@ get_os_name_num(char *str)
                       return check_os_name_num(str, 4);
                   else
                       return check_os_name_num(str, 3);
+        case 'u': return check_os_name_num(str, 5);
         default : return 0;
     }
 }

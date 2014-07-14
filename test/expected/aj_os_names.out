@@ -29,8 +29,6 @@ SELECT 'unknown'::os_name;
 (1 row)
 
 SELECT 'kermit'::os_name;
- os_name 
----------
- unknown
-(1 row)
-
+ERROR:  unknown input os_name
+LINE 1: SELECT 'kermit'::os_name;
+               ^
