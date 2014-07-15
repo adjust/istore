@@ -10,9 +10,21 @@ CREATE FUNCTION istore_out(istore)
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION istore_send(istore)
+    RETURNS bytea
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION istore_recv(internal)
+    RETURNS istore
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE TYPE istore (
     INPUT = istore_in,
-    OUTPUT = istore_out
+    OUTPUT = istore_out,
+    receive = istore_recv,
+    send = istore_send
 );
 
 CREATE FUNCTION exist(istore, integer)

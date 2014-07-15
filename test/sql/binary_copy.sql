@@ -39,3 +39,18 @@ WITH (FORMAT binary);
 SELECT * FROM after;
 DROP TABLE before;
 DROP TABLE after;
+
+CREATE TABLE before (a istore);
+INSERT INTO before values('1=>1');
+INSERT INTO before values('1=>2');
+INSERT INTO before values('1=>3');
+INSERT INTO before values('2=>1');
+INSERT INTO before values('2=>2');
+CREATE TABLE after (a istore);
+COPY after
+FROM PROGRAM 'psql -U postgres -c "COPY before TO STDOUT WITH (FORMAT binary)" contrib_regression '
+WITH (FORMAT binary);
+SELECT * FROM after;
+DROP TABLE before;
+DROP TABLE after;
+

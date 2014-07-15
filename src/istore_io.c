@@ -350,6 +350,59 @@ istore_in(PG_FUNCTION_ARGS)
     return is_parse_istore(&parser);
 }
 
+PG_FUNCTION_INFO_V1(istore_recv);
+Datum
+istore_recv(PG_FUNCTION_ARGS)
+{
+    IStore *result;
+    StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
+    int i = 0;
+    ISPairs *creator = palloc0(sizeof *creator);
+    int32 len = pq_getmsgint(buf, 4);
+    uint8 type = pq_getmsgbyte(buf);
+    is_pairs_init(creator, len, type);
+    for (i = 0; i < len; ++i)
+    {
+        int32 key  = pq_getmsgint(buf, 4);
+        long  val  = pq_getmsgint64(buf);
+        bool  null = pq_getmsgbyte(buf);
+        if (null)
+            is_pairs_insert(creator, key, val, NULL_VAL_ISTORE);
+        else
+            is_pairs_insert(creator, key, val, type);
+    }
+    FINALIZE_ISTORE(result, creator);
+    PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(istore_send);
+Datum
+istore_send(PG_FUNCTION_ARGS)
+{
+    IStore *in = PG_GETARG_IS(0);
+    ISPair *pairs;
+    int i, len;
+    uint8 type;
+    StringInfoData buf;
+    pq_begintypsend(&buf);
+    pairs = FIRST_PAIR(in);
+    //pq_sendint(&buf, is->buflen, 4);
+    elog(INFO, "%d",in->len);
+    len = in->len;
+    type = in->type;
+    pq_sendint(&buf, len, 4);
+    pq_sendbyte(&buf, type);
+    for (i = 0; i < in->len; ++i)
+    {
+        int32 key = pairs[i].key;
+        int32 val = pairs[i].val;
+        pq_sendint(&buf, key, 4);
+        pq_sendint64(&buf, val);
+        pq_sendbyte(&buf, pairs[i].null);
+    }
+    PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+}
+
 PG_FUNCTION_INFO_V1(cistore_out);
 Datum
 cistore_out(PG_FUNCTION_ARGS)
