@@ -68,6 +68,7 @@ struct AvlNode
 {
     int32    key;
     long     value;
+    bool     null;
     AvlTree  left;
     AvlTree  right;
     int      height;
@@ -76,7 +77,7 @@ struct AvlNode
 extern AvlTree is_make_empty(AvlTree t);
 extern int is_compare(int32 key, AvlTree node);
 extern Position is_tree_find(int32 key, AvlTree t);
-extern AvlTree is_insert(int32 key, int value, AvlTree t);
+extern AvlTree is_insert(int32 key, long value, bool null, AvlTree t);
 extern int is_tree_length(Position p);
 extern int is_tree_to_pairs(Position p, ISPairs *pairs, int n);
 
@@ -186,7 +187,21 @@ extern int is_tree_to_pairs(Position p, ISPairs *pairs, int n);
         C_ISTORE_CREATE_KEY(_key, _c_key, _d_key, _o_key, _c_size); \
     } while (0)
 
-#define GET_VAL(_parser, _val) GET_PLAIN_KEY(_parser, _val)
+#define VALID_NULL(x)                                                 \
+        (  (x[0] == 'N' && x[1] == 'U' && x[2] == 'L' && x[3] == 'L') \
+        || (x[0] == 'n' && x[1] == 'u' && x[2] == 'l' && x[3] == 'l') \
+        )
+
+#define GET_VAL(_parser, _val, _null) \
+    do {\
+        _val = -1;\
+        GET_PLAIN_KEY(_parser, _val);\
+        if (_val == 0 && VALID_NULL(_parser->ptr))\
+        {\
+            _null = true; \
+            _parser->ptr = _parser->ptr + 4;\
+        }\
+    } while (0)
 
 #define C_ISTORE_CREATE_KEY(_key, _c, _d, _o, _s) \
     _key = _key | _s;                             \
@@ -250,32 +265,7 @@ typedef struct
     uint8   type;
 } IStore;
 
-#define NULL_TYPE_FOR(_type, _nulltype)             \
-    do {                                            \
-        switch (_type)                              \
-        {                                           \
-            case PLAIN_ISTORE:                      \
-                _nulltype = NULL_VAL_ISTORE;        \
-                break;                              \
-            case DEVICE_ISTORE:                     \
-                _nulltype = NULL_DEVICE_ISTORE;     \
-                break;                              \
-            case COUNTRY_ISTORE:                    \
-                _nulltype = NULL_COUNTRY_ISTORE;    \
-                break;                              \
-            case OS_NAME_ISTORE:                    \
-                _nulltype = NULL_OS_NAME_ISTORE;    \
-                break;                              \
-            case C_ISTORE:                          \
-                _nulltype = NULL_C_ISTORE;          \
-                break;                              \
-            case C_ISTORE_COHORT:                   \
-                _nulltype = NULL_C_ISTORE;          \
-                break;                              \
-            default:                                \
-                elog(ERROR, "unknown istore type"); \
-        }                                           \
-    } while (0)
+uint8 null_type_for(uint8 type);
 
 #define PG_GETARG_IS(x) (IStore *)PG_DETOAST_DATUM(PG_GETARG_DATUM(x))
 #define ISHDRSZ VARHDRSZ + sizeof(int32) + sizeof(int32) + sizeof(uint8)

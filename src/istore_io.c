@@ -91,12 +91,13 @@ is_parse_istore(ISParser *parser)
         }
         else if (parser->state == WVAL)
         {
+            bool null = false;
             SKIP_SPACES(parser->ptr);
             SKIP_ESCAPED(parser->ptr);
-            GET_VAL(parser, val);
+            GET_VAL(parser, val, null);
             SKIP_ESCAPED(parser->ptr);
             parser->state = WDEL;
-            parser->tree = is_insert(key, val, parser->tree);
+            parser->tree = is_insert(key, val, null, parser->tree);
         }
         else if (parser->state == WDEL)
         {

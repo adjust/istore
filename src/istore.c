@@ -2,6 +2,22 @@
 
 PG_MODULE_MAGIC;
 
+uint8
+null_type_for(uint8 type)
+{
+    switch (type)
+    {
+        case PLAIN_ISTORE:    return NULL_VAL_ISTORE;
+        case DEVICE_ISTORE:   return NULL_DEVICE_ISTORE;
+        case COUNTRY_ISTORE:  return NULL_COUNTRY_ISTORE;
+        case OS_NAME_ISTORE:  return NULL_OS_NAME_ISTORE;
+        case C_ISTORE:        return NULL_C_ISTORE;
+        case C_ISTORE_COHORT: return NULL_C_ISTORE;
+        default:
+            elog(ERROR, "unknown istore type");
+    }
+}
+
 PG_FUNCTION_INFO_V1(istore_sum_up);
 Datum
 istore_sum_up(PG_FUNCTION_ARGS)
@@ -113,12 +129,20 @@ is_add(PG_FUNCTION_ARGS)
         }
         else
         {
-            is_pairs_insert(
-                creator,
-                pairs1[index1].key,
-                pairs1[index1].val + pairs2[index2].val,
-                is1->type
-            );
+            if (pairs1[index1].null || pairs2[index2].null)
+                is_pairs_insert(
+                    creator,
+                    pairs1[index1].key,
+                    0,
+                    null_type_for(is1->type)
+                );
+            else
+                is_pairs_insert(
+                    creator,
+                    pairs1[index1].key,
+                    pairs1[index1].val + pairs2[index2].val,
+                    is1->type
+                );
             ++index1;
             ++index2;
         }
@@ -157,7 +181,10 @@ is_add_integer(PG_FUNCTION_ARGS)
     is_pairs_init(creator, 200, is->type);
     while (index < is->len)
     {
-        is_pairs_insert(creator, pairs[index].key, pairs[index].val + int_arg, is->type);
+        if (pairs[index].null)
+            is_pairs_insert(creator, pairs[index].key, 0, null_type_for(is->type));
+        else
+            is_pairs_insert(creator, pairs[index].key, pairs[index].val + int_arg, is->type);
         ++index;
     }
     FINALIZE_ISTORE(result, creator);
@@ -198,12 +225,20 @@ is_subtract(PG_FUNCTION_ARGS)
         }
         else
         {
-            is_pairs_insert(
-                creator,
-                pairs1[index1].key,
-                pairs1[index1].val - pairs2[index2].val,
-                is1->type
-            );
+            if (pairs1[index1].null || pairs2[index2].null)
+                is_pairs_insert(
+                    creator,
+                    pairs1[index1].key,
+                    0,
+                    null_type_for(is1->type)
+                );
+            else
+                is_pairs_insert(
+                    creator,
+                    pairs1[index1].key,
+                    pairs1[index1].val - pairs2[index2].val,
+                    is1->type
+                );
             ++index1;
             ++index2;
         }
@@ -242,7 +277,10 @@ is_subtract_integer(PG_FUNCTION_ARGS)
     is_pairs_init(creator, 200, is->type);
     while (index < is->len)
     {
-        is_pairs_insert(creator, pairs[index].key, pairs[index].val - int_arg, is->type);
+        if (pairs[index].null)
+            is_pairs_insert(creator, pairs[index].key, 0, null_type_for(is->type));
+        else
+            is_pairs_insert(creator, pairs[index].key, pairs[index].val - int_arg, is->type);
         ++index;
     }
     FINALIZE_ISTORE(result, creator);
@@ -261,8 +299,8 @@ is_multiply(PG_FUNCTION_ARGS)
     ISPairs *creator = NULL;
 
     int     index1 = 0,
-            index2 = 0,
-            nulltype;
+            index2 = 0;
+    uint8   nulltype;
     /* TODO NULL handling */
     is1 = PG_GETARG_IS(0);
     is2 = PG_GETARG_IS(1);
@@ -270,7 +308,7 @@ is_multiply(PG_FUNCTION_ARGS)
     pairs2 = FIRST_PAIR(is2);
     creator = palloc0(sizeof *creator);
     is_pairs_init(creator, 200, is1->type);
-    NULL_TYPE_FOR(is1->type, nulltype);
+    nulltype = null_type_for(is1->type);
     while (index1 < is1->len && index2 < is2->len)
     {
         if (pairs1[index1].key < pairs2[index2].key)
@@ -285,12 +323,20 @@ is_multiply(PG_FUNCTION_ARGS)
         }
         else
         {
-            is_pairs_insert(
-                creator,
-                pairs1[index1].key,
-                pairs1[index1].val * pairs2[index2].val,
-                is1->type
-            );
+            if (pairs1[index1].null || pairs2[index2].null)
+                is_pairs_insert(
+                    creator,
+                    pairs1[index1].key,
+                    0,
+                    null_type_for(is1->type)
+                );
+            else
+                is_pairs_insert(
+                    creator,
+                    pairs1[index1].key,
+                    pairs1[index1].val * pairs2[index2].val,
+                    is1->type
+                );
             ++index1;
             ++index2;
         }
@@ -329,7 +375,10 @@ is_multiply_integer(PG_FUNCTION_ARGS)
     is_pairs_init(creator, 200, is->type);
     while (index < is->len)
     {
-        is_pairs_insert(creator, pairs[index].key, pairs[index].val * int_arg, is->type);
+        if (pairs[index].null)
+            is_pairs_insert(creator, pairs[index].key, 0, null_type_for(is->type));
+        else
+            is_pairs_insert(creator, pairs[index].key, pairs[index].val * int_arg, is->type);
         ++index;
     }
     FINALIZE_ISTORE(result, creator);
@@ -396,7 +445,7 @@ type_istore_from_int_array(ArrayType *input, int type)
             elog(ERROR, "cannot count array that has negative integers");
         position = is_tree_find(key, tree);
         if (position == NULL)
-            tree = is_insert(key, 1, tree);
+            tree = is_insert(key, 1, false, tree);
         else
             position->value += 1;
     }
@@ -477,7 +526,7 @@ type_istore_from_text_array(ArrayType *input, int type)
             elog(ERROR, "cannot count array that has negative integers");
         position = is_tree_find(key, tree);
         if (position == NULL)
-            tree = is_insert(key, 1, tree);
+            tree = is_insert(key, 1, false, tree);
         else
             position->value += 1;
     }
@@ -587,7 +636,7 @@ array_to_istore(Datum *data, int count, bool *nulls)
             payload = FIRST_PAIR(istore) + index;
             position = is_tree_find(payload->key, tree);
             if (position == NULL)
-                tree = is_insert(payload->key, payload->val, tree);
+                tree = is_insert(payload->key, payload->val, false, tree);
             else
                 position->value += payload->val;
         }
@@ -755,7 +804,7 @@ istore_array_add(PG_FUNCTION_ARGS)
         value = DatumGetInt64(i_data2[i]);
         position = is_tree_find(key, tree);
         if (position == NULL)
-            tree = is_insert(key, value, tree);
+            tree = is_insert(key, value, false, tree);
         else
             position->value += value;
     }

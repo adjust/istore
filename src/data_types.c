@@ -9,7 +9,7 @@ void is_pairs_debug(ISPairs *pairs);
 
 int is_compare(int32 key, AvlTree node);
 Position is_tree_find(int32 key, AvlTree t);
-AvlTree is_insert(int32 key, int value, AvlTree t);
+AvlTree is_insert(int32 key, long value, bool null, AvlTree t);
 int is_tree_length(Position p);
 int is_tree_to_pairs(Position p, ISPairs *pairs, int n);
 
@@ -142,7 +142,7 @@ doubleRotateWithRight(Position k1)
 }
 
 AvlTree
-is_insert(int32 key, int value, AvlTree t)
+is_insert(int32 key, long value, bool null, AvlTree t)
 {
     if(t == NULL)
     {
@@ -157,6 +157,7 @@ is_insert(int32 key, int value, AvlTree t)
             t->height = 0;
             t->left = NULL;
             t->right = NULL;
+            t->null  = null;
         }
     }
     else
@@ -164,7 +165,7 @@ is_insert(int32 key, int value, AvlTree t)
         int cmp = is_compare(key, t);
         if (cmp < 0)
         {
-            t->left = is_insert(key, value, t->left);
+            t->left = is_insert(key, value, null, t->left);
             if (height(t->left) - height(t->right) == 2)
             {
                 if (is_compare( key, t->left))
@@ -175,7 +176,7 @@ is_insert(int32 key, int value, AvlTree t)
         }
         else if(cmp > 0)
         {
-            t->right = is_insert(key, value, t->right);
+            t->right = is_insert(key, value, null, t->right);
             if (height(t->right) - height(t->left) == 2)
             {
                 if (is_compare(key, t->right))
@@ -210,10 +211,13 @@ is_tree_length(Position p)
 int
 is_tree_to_pairs(Position p, ISPairs *pairs, int n)
 {
+    uint8 local_type = pairs->type;
     if(p == NULL)
         return n;
     n = is_tree_to_pairs(p->left, pairs, n);
-    is_pairs_insert(pairs, p->key, p->value, pairs->type);
+    if (p->null)
+        local_type = null_type_for(pairs->type);
+    is_pairs_insert(pairs, p->key, p->value, local_type);
     ++n;
     n = is_tree_to_pairs(p->right, pairs, n);
     return n;
