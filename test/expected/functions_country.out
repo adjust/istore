@@ -1,0 +1,386 @@
+SELECT exist('de=>1'::country_istore, 'de');
+ exist 
+-------
+ t
+(1 row)
+
+SELECT exist('de=>1'::country_istore, 'es');
+ exist 
+-------
+ f
+(1 row)
+
+SELECT exist('de=>1, es=>0'::country_istore, 'uk');
+ exist 
+-------
+ f
+(1 row)
+
+SELECT exist('de=>1, es=>0'::country_istore, 'es');
+ exist 
+-------
+ t
+(1 row)
+
+SELECT fetchval('de=>1'::country_istore, 'de');
+ fetchval 
+----------
+        1
+(1 row)
+
+SELECT fetchval('us=>1'::country_istore, 'uk');
+ fetchval 
+----------
+         
+(1 row)
+
+SELECT fetchval('de=>1, de=>1'::country_istore, 'uk');
+ fetchval 
+----------
+         
+(1 row)
+
+SELECT fetchval('de=>1, de=>1'::country_istore, 'de');
+ fetchval 
+----------
+        2
+(1 row)
+
+SELECT add('de=>1, us=>1'::country_istore, 'de=>1, us=>1'::country_istore);
+         add         
+---------------------
+ "de"=>"2","us"=>"2"
+(1 row)
+
+SELECT add('de=>1, us=>1'::country_istore, 'es=>1, us=>1'::country_istore);
+              add              
+-------------------------------
+ "de"=>"1","es"=>"1","us"=>"2"
+(1 row)
+
+SELECT add('de=>1, us=>1'::country_istore, 'es=>-1, us=>1'::country_istore);
+              add               
+--------------------------------
+ "de"=>"1","es"=>"-1","us"=>"2"
+(1 row)
+
+SELECT add('es=>1, us=>1'::country_istore, 'es=>-1, us=>1'::country_istore);
+         add         
+---------------------
+ "es"=>"0","us"=>"2"
+(1 row)
+
+SELECT add('es=>-1, us=>1'::country_istore, 'es=>-1, us=>1'::country_istore);
+         add          
+----------------------
+ "es"=>"-2","us"=>"2"
+(1 row)
+
+SELECT add('es=>-1, us=>1'::country_istore, 1);
+         add         
+---------------------
+ "es"=>"0","us"=>"2"
+(1 row)
+
+SELECT add('es=>-1, us=>1'::country_istore, -1);
+         add          
+----------------------
+ "es"=>"-2","us"=>"0"
+(1 row)
+
+SELECT add('es=>-1, us=>1'::country_istore, 0);
+         add          
+----------------------
+ "es"=>"-1","us"=>"1"
+(1 row)
+
+SELECT subtract('de=>1, us=>1'::country_istore, 'de=>1, us=>1'::country_istore);
+      subtract       
+---------------------
+ "de"=>"0","us"=>"0"
+(1 row)
+
+SELECT subtract('de=>1, us=>1'::country_istore, 'es=>1, us=>1'::country_istore);
+            subtract            
+--------------------------------
+ "de"=>"1","es"=>"-1","us"=>"0"
+(1 row)
+
+SELECT subtract('de=>1, us=>1'::country_istore, 'es=>-1, us=>1'::country_istore);
+           subtract            
+-------------------------------
+ "de"=>"1","es"=>"1","us"=>"0"
+(1 row)
+
+SELECT subtract('es=>1, us=>1'::country_istore, 'es=>-1, us=>1'::country_istore);
+      subtract       
+---------------------
+ "es"=>"2","us"=>"0"
+(1 row)
+
+SELECT subtract('es=>-1, us=>1'::country_istore, 'es=>-1, us=>1'::country_istore);
+      subtract       
+---------------------
+ "es"=>"0","us"=>"0"
+(1 row)
+
+SELECT subtract('es=>-1, us=>1'::country_istore, 1);
+       subtract       
+----------------------
+ "es"=>"-2","us"=>"0"
+(1 row)
+
+SELECT subtract('es=>-1, us=>1'::country_istore, -1);
+      subtract       
+---------------------
+ "es"=>"0","us"=>"2"
+(1 row)
+
+SELECT subtract('es=>-1, us=>1'::country_istore, 0);
+       subtract       
+----------------------
+ "es"=>"-1","us"=>"1"
+(1 row)
+
+SELECT multiply('de=>1, us=>1'::country_istore, 'de=>1, us=>1'::country_istore);
+      multiply       
+---------------------
+ "de"=>"1","us"=>"1"
+(1 row)
+
+SELECT multiply('de=>1, us=>1'::country_istore, 'es=>1, us=>1'::country_istore);
+            multiply             
+---------------------------------
+ "de"=>NULL,"es"=>NULL,"us"=>"1"
+(1 row)
+
+SELECT multiply('de=>1, us=>1'::country_istore, 'es=>-1, us=>1'::country_istore);
+            multiply             
+---------------------------------
+ "de"=>NULL,"es"=>NULL,"us"=>"1"
+(1 row)
+
+SELECT multiply('es=>1, us=>1'::country_istore, 'es=>-1, us=>1'::country_istore);
+       multiply       
+----------------------
+ "es"=>"-1","us"=>"1"
+(1 row)
+
+SELECT multiply('es=>-1, us=>1'::country_istore, 'es=>-1, us=>1'::country_istore);
+      multiply       
+---------------------
+ "es"=>"1","us"=>"1"
+(1 row)
+
+SELECT multiply('es=>-1, us=>1'::country_istore, 1);
+       multiply       
+----------------------
+ "es"=>"-1","us"=>"1"
+(1 row)
+
+SELECT multiply('es=>-1, us=>1'::country_istore, -1);
+       multiply       
+----------------------
+ "es"=>"1","us"=>"-1"
+(1 row)
+
+SELECT multiply('es=>-1, us=>1'::country_istore, 0);
+      multiply       
+---------------------
+ "es"=>"0","us"=>"0"
+(1 row)
+
+SELECT country_istore_from_array(ARRAY['de']);
+ country_istore_from_array 
+---------------------------
+ "de"=>"1"
+(1 row)
+
+SELECT country_istore_from_array(ARRAY['de','de','de','de']);
+ country_istore_from_array 
+---------------------------
+ "de"=>"4"
+(1 row)
+
+SELECT country_istore_from_array(NULL::text[]);
+ country_istore_from_array 
+---------------------------
+ 
+(1 row)
+
+SELECT country_istore_from_array(ARRAY['de','es','io','us']);
+        country_istore_from_array        
+-----------------------------------------
+ "de"=>"1","es"=>"1","io"=>"1","us"=>"1"
+(1 row)
+
+SELECT country_istore_from_array(ARRAY['de','es','io','us','de','es','io','us']);
+        country_istore_from_array        
+-----------------------------------------
+ "de"=>"2","es"=>"2","io"=>"2","us"=>"2"
+(1 row)
+
+SELECT country_istore_from_array(ARRAY['de','es','io','us','de','es','io','us',NULL]);
+        country_istore_from_array        
+-----------------------------------------
+ "de"=>"2","es"=>"2","io"=>"2","us"=>"2"
+(1 row)
+
+SELECT country_istore_from_array(ARRAY[NULL,'de','es','io','us','de','es','io','us']);
+        country_istore_from_array        
+-----------------------------------------
+ "de"=>"2","es"=>"2","io"=>"2","us"=>"2"
+(1 row)
+
+SELECT country_istore_from_array(ARRAY[NULL,'de','es','io','us','de','es','io','us',NULL]);
+        country_istore_from_array        
+-----------------------------------------
+ "de"=>"2","es"=>"2","io"=>"2","us"=>"2"
+(1 row)
+
+SELECT country_istore_from_array(ARRAY['de','es','io','us','de','es','io','us',NULL,'de',NULL,'de','es','io','us','de','es','io','us']);
+        country_istore_from_array        
+-----------------------------------------
+ "de"=>"5","es"=>"4","io"=>"4","us"=>"4"
+(1 row)
+
+SELECT country_istore_from_array(ARRAY['de'::country]);
+ country_istore_from_array 
+---------------------------
+ "de"=>"1"
+(1 row)
+
+SELECT country_istore_from_array(ARRAY['de'::country,'de'::country,'de'::country,'de'::country]);
+ country_istore_from_array 
+---------------------------
+ "de"=>"4"
+(1 row)
+
+SELECT country_istore_from_array(NULL::text[]);
+ country_istore_from_array 
+---------------------------
+ 
+(1 row)
+
+SELECT country_istore_from_array(ARRAY['de'::country,'es'::country,'io'::country,'us'::country]);
+        country_istore_from_array        
+-----------------------------------------
+ "de"=>"1","es"=>"1","io"=>"1","us"=>"1"
+(1 row)
+
+SELECT country_istore_from_array(ARRAY['de'::country,'es'::country,'io'::country,'us'::country,'de'::country,'es'::country,'io'::country,'us'::country]);
+        country_istore_from_array        
+-----------------------------------------
+ "de"=>"2","es"=>"2","io"=>"2","us"=>"2"
+(1 row)
+
+SELECT country_istore_from_array(ARRAY['de'::country,'es'::country,'io'::country,'us'::country,'de'::country,'es'::country,'io'::country,'us'::country,NULL]);
+        country_istore_from_array        
+-----------------------------------------
+ "de"=>"2","es"=>"2","io"=>"2","us"=>"2"
+(1 row)
+
+SELECT country_istore_from_array(ARRAY[NULL,'de'::country,'es'::country,'io'::country,'us'::country,'de'::country,'es'::country,'io'::country,'us'::country]);
+        country_istore_from_array        
+-----------------------------------------
+ "de"=>"2","es"=>"2","io"=>"2","us"=>"2"
+(1 row)
+
+SELECT country_istore_from_array(ARRAY[NULL,'de'::country,'es'::country,'io'::country,'us'::country,'de'::country,'es'::country,'io'::country,'us'::country,NULL]);
+        country_istore_from_array        
+-----------------------------------------
+ "de"=>"2","es"=>"2","io"=>"2","us"=>"2"
+(1 row)
+
+SELECT country_istore_from_array(ARRAY['de'::country,'es'::country,'io'::country,'us'::country,'de'::country,'es'::country,'io'::country,'us'::country,NULL,'de'::country,NULL,'de'::country,'es'::country,'io'::country,'us'::country,'de'::country,'es'::country,'io'::country,'us'::country]);
+        country_istore_from_array        
+-----------------------------------------
+ "de"=>"5","es"=>"4","io"=>"4","us"=>"4"
+(1 row)
+
+SELECT country_istore_agg(ARRAY['de=>1']::country_istore[]);
+ country_istore_agg 
+--------------------
+ "de"=>"1"
+(1 row)
+
+SELECT country_istore_agg(ARRAY['de=>1','de=>1']::country_istore[]);
+ country_istore_agg 
+--------------------
+ "de"=>"2"
+(1 row)
+
+SELECT country_istore_agg(ARRAY['de=>1,us=>1','de=>1,us=>-1']::country_istore[]);
+ country_istore_agg  
+---------------------
+ "de"=>"2","us"=>"0"
+(1 row)
+
+SELECT country_istore_agg(ARRAY['de=>1,us=>1','de=>1,us=>-1',NULL]::country_istore[]);
+ country_istore_agg  
+---------------------
+ "de"=>"2","us"=>"0"
+(1 row)
+
+SELECT country_istore_agg(ARRAY[NULL,'de=>1,us=>1','de=>1,us=>-1']::country_istore[]);
+ country_istore_agg  
+---------------------
+ "de"=>"2","us"=>"0"
+(1 row)
+
+SELECT country_istore_agg(ARRAY[NULL,'de=>1,us=>1','de=>1,us=>-1',NULL]::country_istore[]);
+ country_istore_agg  
+---------------------
+ "de"=>"2","us"=>"0"
+(1 row)
+
+SELECT country_istore_sum_up('de=>1'::country_istore);
+ country_istore_sum_up 
+-----------------------
+                     1
+(1 row)
+
+SELECT country_istore_sum_up(NULL::country_istore);
+ country_istore_sum_up 
+-----------------------
+                      
+(1 row)
+
+SELECT country_istore_sum_up('de=>1, us=>1'::country_istore);
+ country_istore_sum_up 
+-----------------------
+                     2
+(1 row)
+
+SELECT country_istore_sum_up('de=>1 ,us=>-1, de=>1'::country_istore);
+ country_istore_sum_up 
+-----------------------
+                     1
+(1 row)
+
+BEGIN;
+CREATE TABLE test (a country_istore);
+INSERT INTO test VALUES('de=>1');
+INSERT INTO test VALUES('us=>1');
+INSERT INTO test VALUES('io=>1');
+SELECT SUM(a) FROM test;
+              sum              
+-------------------------------
+ "de"=>"1","io"=>"1","us"=>"1"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+CREATE TABLE test (a country_istore);
+INSERT INTO test VALUES('de=>1');
+INSERT INTO test VALUES('us=>1');
+INSERT INTO test VALUES('io=>1');
+INSERT INTO test VALUES(NULL);
+INSERT INTO test VALUES('io=>3');
+SELECT SUM(a) FROM test;
+              sum              
+-------------------------------
+ "de"=>"1","io"=>"4","us"=>"1"
+(1 row)
+
+ROLLBACK;

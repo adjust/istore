@@ -1,0 +1,60 @@
+SELECT 'de'::country = 'de'::country;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 'de'::country = 'De'::country;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 'de'::country = 'dE'::country;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 'de'::country = 'DE'::country;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 'dE'::country = 'dE'::country;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 'dE'::country = 'De'::country;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 'dE'::country = 'DE'::country;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 'De'::country = 'De'::country;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 'De'::country = 'DE'::country;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 'DE'::country = 'DE'::country;
+ ?column? 
+----------
+ t
+(1 row)
+

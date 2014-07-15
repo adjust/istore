@@ -1,16 +1,15 @@
 #include "istore.h"
 
-void is_pairs_init(ISPairs *pairs, size_t initial_size);
-void is_pairs_insert(ISPairs *pairs, long key, long val);
-void is_pairs_insert_null(ISPairs *pairs, long key);
+void is_pairs_init(ISPairs *pairs, size_t initial_size, int type);
+void is_pairs_insert(ISPairs *pairs, int32 key, long val, int type);
 int  is_pairs_cmp(const void *a, const void *b);
 void is_pairs_sort(ISPairs *pairs);
 void is_pairs_deinit(ISPairs *pairs);
 void is_pairs_debug(ISPairs *pairs);
 
-int is_compare(int key, AvlTree node);
-Position is_tree_find(int key, AvlTree t);
-AvlTree is_insert(int key, int value, AvlTree t);
+int is_compare(int32 key, AvlTree node);
+Position is_tree_find(int32 key, AvlTree t);
+AvlTree is_insert(int32 key, long value, bool null, AvlTree t);
 int is_tree_length(Position p);
 int is_tree_to_pairs(Position p, ISPairs *pairs, int n);
 
@@ -49,7 +48,7 @@ is_make_empty(AvlTree t)
 }
 
 int
-is_compare(int key, AvlTree node)
+is_compare(int32 key, AvlTree node)
 {
     if (key == node->key)
         return 0;
@@ -60,7 +59,7 @@ is_compare(int key, AvlTree node)
 }
 
 Position
-is_tree_find(int key, AvlTree t)
+is_tree_find(int32 key, AvlTree t)
 {
     int cmp;
 
@@ -143,7 +142,7 @@ doubleRotateWithRight(Position k1)
 }
 
 AvlTree
-is_insert(int key, int value, AvlTree t)
+is_insert(int32 key, long value, bool null, AvlTree t)
 {
     if(t == NULL)
     {
@@ -158,6 +157,7 @@ is_insert(int key, int value, AvlTree t)
             t->height = 0;
             t->left = NULL;
             t->right = NULL;
+            t->null  = null;
         }
     }
     else
@@ -165,7 +165,7 @@ is_insert(int key, int value, AvlTree t)
         int cmp = is_compare(key, t);
         if (cmp < 0)
         {
-            t->left = is_insert(key, value, t->left);
+            t->left = is_insert(key, value, null, t->left);
             if (height(t->left) - height(t->right) == 2)
             {
                 if (is_compare( key, t->left))
@@ -176,7 +176,7 @@ is_insert(int key, int value, AvlTree t)
         }
         else if(cmp > 0)
         {
-            t->right = is_insert(key, value, t->right);
+            t->right = is_insert(key, value, null, t->right);
             if (height(t->right) - height(t->left) == 2)
             {
                 if (is_compare(key, t->right))
@@ -211,26 +211,30 @@ is_tree_length(Position p)
 int
 is_tree_to_pairs(Position p, ISPairs *pairs, int n)
 {
+    uint8 local_type = pairs->type;
     if(p == NULL)
         return n;
     n = is_tree_to_pairs(p->left, pairs, n);
-    is_pairs_insert(pairs, p->key, p->value);
+    if (p->null)
+        local_type = null_type_for(pairs->type);
+    is_pairs_insert(pairs, p->key, p->value, local_type);
     ++n;
     n = is_tree_to_pairs(p->right, pairs, n);
     return n;
 }
 
 void
-is_pairs_init(ISPairs *pairs, size_t initial_size)
+is_pairs_init(ISPairs *pairs, size_t initial_size, int type)
 {
     pairs->pairs  = palloc(initial_size * sizeof(ISPair));
     pairs->used   = 0;
     pairs->size   = initial_size;
     pairs->buflen = 0;
+    pairs->type   = type;
 }
 
 void
-is_pairs_insert(ISPairs *pairs, long key, long val)
+is_pairs_insert(ISPairs *pairs, int32 key, long val, int type)
 {
     int keylen,
         vallen;
@@ -242,31 +246,68 @@ is_pairs_insert(ISPairs *pairs, long key, long val)
 
     pairs->pairs[pairs->used].key  = key;
     pairs->pairs[pairs->used].val  = val;
-    pairs->pairs[pairs->used].null = false;
-    DIGIT_WIDTH(key, keylen);
-    DIGIT_WIDTH(val, vallen);
-    pairs->buflen += keylen + vallen + 7;
-    pairs->used++;
-}
-
-void
-is_pairs_insert_null(ISPairs *pairs, long key)
-{
-    int keylen;
-
-    if (pairs->size == pairs->used) {
-        pairs->size *= 2;
-        pairs->pairs = repalloc(pairs->pairs, pairs->size * sizeof(ISPair));
+    switch (type)
+    {
+        case (PLAIN_ISTORE):
+            DIGIT_WIDTH(key, keylen);
+            DIGIT_WIDTH(val, vallen);
+            pairs->pairs[pairs->used].null = false;
+            pairs->buflen += keylen + vallen + 7;
+            break;
+        case (NULL_VAL_ISTORE):
+            DIGIT_WIDTH(key, keylen);
+            pairs->pairs[pairs->used].null = true;
+            pairs->buflen += keylen + 9;
+            break;
+        case (DEVICE_ISTORE):
+            keylen = get_device_type_length(key);
+            DIGIT_WIDTH(val, vallen);
+            pairs->pairs[pairs->used].null = false;
+            pairs->buflen += keylen + vallen + 7;
+            break;
+        case (NULL_DEVICE_ISTORE):
+            keylen = get_device_type_length(key);
+            pairs->pairs[pairs->used].null = true;
+            pairs->buflen += keylen + 9;
+            break;
+        case (COUNTRY_ISTORE):
+            keylen = 2;
+            DIGIT_WIDTH(val, vallen);
+            pairs->pairs[pairs->used].null = false;
+            pairs->buflen += keylen + vallen + 7;
+            break;
+        case (NULL_COUNTRY_ISTORE):
+            keylen = 2;
+            pairs->pairs[pairs->used].null = true;
+            pairs->buflen += keylen + 9;
+            break;
+        case (OS_NAME_ISTORE):
+            keylen = get_os_name_length(key);
+            DIGIT_WIDTH(val, vallen);
+            pairs->pairs[pairs->used].null = false;
+            pairs->buflen += keylen + vallen + 7;
+            break;
+        case (NULL_OS_NAME_ISTORE):
+            keylen = get_os_name_length(key);
+            pairs->pairs[pairs->used].null = true;
+            pairs->buflen += keylen + 9;
+            break;
+        case (C_ISTORE):
+            C_ISTORE_KEY_LEN(key, keylen);
+            DIGIT_WIDTH(val, vallen);
+            pairs->pairs[pairs->used].null = false;
+            pairs->buflen += keylen + vallen + 7;
+            break;
+        case (C_ISTORE_COHORT):
+            C_ISTORE_COHORT_KEY_LEN(key, keylen);
+            DIGIT_WIDTH(val, vallen);
+            pairs->pairs[pairs->used].null = false;
+            pairs->buflen += keylen + vallen + 7;
+            break;
+        default: elog(ERROR, "unknown pairs type");
     }
-
-    pairs->pairs[pairs->used].key  = key;
-    pairs->pairs[pairs->used].val  = 0;
-    pairs->pairs[pairs->used].null = true;
-    DIGIT_WIDTH(key, keylen);
-    pairs->buflen += keylen + 10;
     pairs->used++;
 }
-
 
 int
 is_pairs_cmp(const void *a, const void *b)
@@ -299,6 +340,6 @@ is_pairs_debug(ISPairs *pairs)
     int i;
     for (i = 0; i < pairs->used; ++i)
     {
-        elog(INFO, "key: %ld, val: %ld", pairs->pairs[i].key, pairs->pairs[i].val);
+        elog(INFO, "key: %d, val: %ld", pairs->pairs[i].key, pairs->pairs[i].val);
     }
 }

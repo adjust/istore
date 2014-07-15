@@ -1,0 +1,90 @@
+BEGIN;
+CREATE TABLE os_name_istore_io AS SELECT 'android=>1,android=>2'::os_name_istore;
+SELECT * FROM os_name_istore_io;
+ os_name_istore 
+----------------
+ "android"=>"3"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+CREATE TABLE os_name_istore_io AS SELECT '"android"=>"1","android"=>"2"'::os_name_istore;
+SELECT * FROM os_name_istore_io;
+ os_name_istore 
+----------------
+ "android"=>"3"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+CREATE TABLE os_name_istore_io AS SELECT '"android"=>"1","ios"=>"2"'::os_name_istore;
+SELECT * FROM os_name_istore_io;
+      os_name_istore       
+---------------------------
+ "android"=>"1","ios"=>"2"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+CREATE TABLE os_name_istore_io AS SELECT '"ios"=>"+1","android"=>"2"'::os_name_istore;
+SELECT * FROM os_name_istore_io;
+      os_name_istore       
+---------------------------
+ "android"=>"2","ios"=>"1"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+CREATE TABLE os_name_istore_io AS SELECT ' "ios"=>"+1","android"=>"2"'::os_name_istore;
+SELECT * FROM os_name_istore_io;
+      os_name_istore       
+---------------------------
+ "android"=>"2","ios"=>"1"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+CREATE TABLE os_name_istore_io AS SELECT '"ios"=> "+1","android"=>"2"'::os_name_istore;
+SELECT * FROM os_name_istore_io;
+      os_name_istore       
+---------------------------
+ "android"=>"2","ios"=>"1"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+CREATE TABLE os_name_istore_io AS SELECT '"ios"=>"+1" ,"android"=>"2"'::os_name_istore;
+SELECT * FROM os_name_istore_io;
+      os_name_istore       
+---------------------------
+ "android"=>"2","ios"=>"1"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+CREATE TABLE os_name_istore_io AS SELECT '"ios"=>"+1", "android"=>"2"'::os_name_istore;
+SELECT * FROM os_name_istore_io;
+      os_name_istore       
+---------------------------
+ "android"=>"2","ios"=>"1"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+CREATE TABLE os_name_istore_io AS SELECT '"ios"=>"+1","android"=>"2" '::os_name_istore;
+SELECT * FROM os_name_istore_io;
+      os_name_istore       
+---------------------------
+ "android"=>"2","ios"=>"1"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+CREATE TABLE os_name_istore_io AS SELECT 'ios=>+1,android=>2 '::os_name_istore;
+SELECT * FROM os_name_istore_io;
+      os_name_istore       
+---------------------------
+ "android"=>"2","ios"=>"1"
+(1 row)
+
+ROLLBACK;
