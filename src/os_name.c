@@ -4,14 +4,6 @@ static uint8 check_os_name_num(const char *str, os_name type);
 static int os_name_cmp_internal(os_name *a, os_name *b);
 
 PG_FUNCTION_INFO_V1(os_name_in);
-PG_FUNCTION_INFO_V1(os_name_out);
-PG_FUNCTION_INFO_V1(os_name_lt);
-PG_FUNCTION_INFO_V1(os_name_le);
-PG_FUNCTION_INFO_V1(os_name_eq);
-PG_FUNCTION_INFO_V1(os_name_ge);
-PG_FUNCTION_INFO_V1(os_name_gt);
-PG_FUNCTION_INFO_V1(os_name_cmp);
-
 Datum
 os_name_in(PG_FUNCTION_ARGS)
 {
@@ -26,6 +18,7 @@ os_name_in(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(os_name_out);
 Datum
 os_name_out(PG_FUNCTION_ARGS)
 {
@@ -33,6 +26,29 @@ os_name_out(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(get_os_name_string(*a));
 }
 
+PG_FUNCTION_INFO_V1(os_name_recv);
+Datum
+os_name_recv(PG_FUNCTION_ARGS)
+{
+    StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
+    os_name *result = palloc0(sizeof *result);
+    *result = pq_getmsgbyte(buf);
+    PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(os_name_send);
+Datum
+os_name_send(PG_FUNCTION_ARGS)
+{
+    os_name *a = (os_name *) PG_GETARG_POINTER(0);
+    StringInfoData buf;
+
+    pq_begintypsend(&buf);
+    pq_sendbyte(&buf, *a);
+    PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+}
+
+PG_FUNCTION_INFO_V1(os_name_lt);
 Datum
 os_name_lt(PG_FUNCTION_ARGS)
 {
@@ -41,6 +57,7 @@ os_name_lt(PG_FUNCTION_ARGS)
     PG_RETURN_BOOL(os_name_cmp_internal(a,b) < 0);
 }
 
+PG_FUNCTION_INFO_V1(os_name_le);
 Datum
 os_name_le(PG_FUNCTION_ARGS)
 {
@@ -49,6 +66,7 @@ os_name_le(PG_FUNCTION_ARGS)
     PG_RETURN_BOOL(os_name_cmp_internal(a,b) <= 0);
 }
 
+PG_FUNCTION_INFO_V1(os_name_eq);
 Datum
 os_name_eq(PG_FUNCTION_ARGS)
 {
@@ -57,6 +75,7 @@ os_name_eq(PG_FUNCTION_ARGS)
     PG_RETURN_BOOL(os_name_cmp_internal(a,b) == 0);
 }
 
+PG_FUNCTION_INFO_V1(os_name_ge);
 Datum
 os_name_ge(PG_FUNCTION_ARGS)
 {
@@ -65,6 +84,7 @@ os_name_ge(PG_FUNCTION_ARGS)
     PG_RETURN_BOOL(os_name_cmp_internal(a,b) >= 0);
 }
 
+PG_FUNCTION_INFO_V1(os_name_gt);
 Datum
 os_name_gt(PG_FUNCTION_ARGS)
 {
@@ -73,6 +93,7 @@ os_name_gt(PG_FUNCTION_ARGS)
     PG_RETURN_BOOL(os_name_cmp_internal(a,b) > 0);
 }
 
+PG_FUNCTION_INFO_V1(os_name_cmp);
 Datum
 os_name_cmp(PG_FUNCTION_ARGS)
 {

@@ -10,10 +10,22 @@ CREATE FUNCTION device_type_out(device_type)
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION device_type_recv(internal)
+    RETURNS device_type
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION device_type_send(device_type)
+    RETURNS bytea
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE TYPE device_type (
     internallength = 1,
     input = device_type_in,
     output = device_type_out,
+    receive = device_type_recv,
+    send = device_type_send,
     alignment = char
 );
 

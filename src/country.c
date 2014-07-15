@@ -1,15 +1,8 @@
 #include "country.h"
 
 static int country_cmp_internal(country *a, country *b);
-PG_FUNCTION_INFO_V1(country_in);
-PG_FUNCTION_INFO_V1(country_out);
-PG_FUNCTION_INFO_V1(country_lt);
-PG_FUNCTION_INFO_V1(country_le);
-PG_FUNCTION_INFO_V1(country_eq);
-PG_FUNCTION_INFO_V1(country_ge);
-PG_FUNCTION_INFO_V1(country_gt);
-PG_FUNCTION_INFO_V1(country_cmp);
 
+PG_FUNCTION_INFO_V1(country_in);
 Datum
 country_in(PG_FUNCTION_ARGS)
 {
@@ -26,6 +19,7 @@ country_in(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(country_out);
 Datum
 country_out(PG_FUNCTION_ARGS)
 {
@@ -33,6 +27,29 @@ country_out(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(get_country_string(*a));
 }
 
+PG_FUNCTION_INFO_V1(country_recv);
+Datum
+country_recv(PG_FUNCTION_ARGS)
+{
+    StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
+    country *result = palloc0(sizeof *result);
+    *result = pq_getmsgbyte(buf);
+    PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(country_send);
+Datum
+country_send(PG_FUNCTION_ARGS)
+{
+    country *a = (country *) PG_GETARG_POINTER(0);
+    StringInfoData buf;
+
+    pq_begintypsend(&buf);
+    pq_sendbyte(&buf, *a);
+    PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+}
+
+PG_FUNCTION_INFO_V1(country_lt);
 Datum
 country_lt(PG_FUNCTION_ARGS)
 {
@@ -41,6 +58,7 @@ country_lt(PG_FUNCTION_ARGS)
     PG_RETURN_BOOL(country_cmp_internal(a,b) < 0);
 }
 
+PG_FUNCTION_INFO_V1(country_le);
 Datum
 country_le(PG_FUNCTION_ARGS)
 {
@@ -49,6 +67,7 @@ country_le(PG_FUNCTION_ARGS)
     PG_RETURN_BOOL(country_cmp_internal(a,b) <= 0);
 }
 
+PG_FUNCTION_INFO_V1(country_eq);
 Datum
 country_eq(PG_FUNCTION_ARGS)
 {
@@ -57,6 +76,7 @@ country_eq(PG_FUNCTION_ARGS)
     PG_RETURN_BOOL(country_cmp_internal(a,b) == 0);
 }
 
+PG_FUNCTION_INFO_V1(country_ge);
 Datum
 country_ge(PG_FUNCTION_ARGS)
 {
@@ -65,6 +85,7 @@ country_ge(PG_FUNCTION_ARGS)
     PG_RETURN_BOOL(country_cmp_internal(a,b) >= 0);
 }
 
+PG_FUNCTION_INFO_V1(country_gt);
 Datum
 country_gt(PG_FUNCTION_ARGS)
 {
@@ -73,6 +94,7 @@ country_gt(PG_FUNCTION_ARGS)
     PG_RETURN_BOOL(country_cmp_internal(a,b) > 0);
 }
 
+PG_FUNCTION_INFO_V1(country_cmp);
 Datum
 country_cmp(PG_FUNCTION_ARGS)
 {

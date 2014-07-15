@@ -10,10 +10,22 @@ CREATE FUNCTION country_out(country)
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION country_recv(internal)
+    RETURNS country
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION country_send(country)
+    RETURNS bytea
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE TYPE country (
     internallength = 1,
     input = country_in,
     output = country_out,
+    send = country_send,
+    receive = country_recv,
     alignment = char
 );
 

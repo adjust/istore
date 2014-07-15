@@ -147,10 +147,22 @@ CREATE FUNCTION os_name_out(os_name)
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION os_name_recv(internal)
+    RETURNS os_name
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION os_name_send(os_name)
+    RETURNS bytea
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE TYPE os_name (
     internallength = 1,
     input = os_name_in,
     output = os_name_out,
+    receive = os_name_recv,
+    send = os_name_send,
     alignment = char
 );
 
@@ -386,10 +398,22 @@ CREATE FUNCTION country_out(country)
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION country_recv(internal)
+    RETURNS country
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION country_send(country)
+    RETURNS bytea
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE TYPE country (
     internallength = 1,
     input = country_in,
     output = country_out,
+    send = country_send,
+    receive = country_recv,
     alignment = char
 );
 
@@ -625,10 +649,22 @@ CREATE FUNCTION device_type_out(device_type)
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION device_type_recv(internal)
+    RETURNS device_type
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION device_type_send(device_type)
+    RETURNS bytea
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE TYPE device_type (
     internallength = 1,
     input = device_type_in,
     output = device_type_out,
+    receive = device_type_recv,
+    send = device_type_send,
     alignment = char
 );
 

@@ -10,10 +10,22 @@ CREATE FUNCTION os_name_out(os_name)
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION os_name_recv(internal)
+    RETURNS os_name
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION os_name_send(os_name)
+    RETURNS bytea
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE TYPE os_name (
     internallength = 1,
     input = os_name_in,
     output = os_name_out,
+    receive = os_name_recv,
+    send = os_name_send,
     alignment = char
 );
 

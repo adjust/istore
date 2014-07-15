@@ -18,14 +18,6 @@ static uint8 check_device_type_num(const char *str, device_type type);
 static int device_type_cmp_internal(device_type *a, device_type *b);
 
 PG_FUNCTION_INFO_V1(device_type_in);
-PG_FUNCTION_INFO_V1(device_type_out);
-PG_FUNCTION_INFO_V1(device_type_lt);
-PG_FUNCTION_INFO_V1(device_type_le);
-PG_FUNCTION_INFO_V1(device_type_eq);
-PG_FUNCTION_INFO_V1(device_type_ge);
-PG_FUNCTION_INFO_V1(device_type_gt);
-PG_FUNCTION_INFO_V1(device_type_cmp);
-
 Datum
 device_type_in(PG_FUNCTION_ARGS)
 {
@@ -40,6 +32,7 @@ device_type_in(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(device_type_out);
 Datum
 device_type_out(PG_FUNCTION_ARGS)
 {
@@ -47,6 +40,30 @@ device_type_out(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(get_device_type_string(*a));
 }
 
+PG_FUNCTION_INFO_V1(device_type_recv);
+Datum
+device_type_recv(PG_FUNCTION_ARGS)
+{
+    StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
+    device_type *result = palloc0(sizeof *result);
+    *result = pq_getmsgbyte(buf);
+    PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(device_type_send);
+Datum
+device_type_send(PG_FUNCTION_ARGS)
+{
+    device_type *a = (device_type *) PG_GETARG_POINTER(0);
+    StringInfoData buf;
+
+    pq_begintypsend(&buf);
+    pq_sendbyte(&buf, *a);
+    PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+}
+
+
+PG_FUNCTION_INFO_V1(device_type_lt);
 Datum
 device_type_lt(PG_FUNCTION_ARGS)
 {
@@ -55,6 +72,7 @@ device_type_lt(PG_FUNCTION_ARGS)
     PG_RETURN_BOOL(device_type_cmp_internal(a,b) < 0);
 }
 
+PG_FUNCTION_INFO_V1(device_type_le);
 Datum
 device_type_le(PG_FUNCTION_ARGS)
 {
@@ -63,6 +81,7 @@ device_type_le(PG_FUNCTION_ARGS)
     PG_RETURN_BOOL(device_type_cmp_internal(a,b) <= 0);
 }
 
+PG_FUNCTION_INFO_V1(device_type_eq);
 Datum
 device_type_eq(PG_FUNCTION_ARGS)
 {
@@ -71,6 +90,7 @@ device_type_eq(PG_FUNCTION_ARGS)
     PG_RETURN_BOOL(device_type_cmp_internal(a,b) == 0);
 }
 
+PG_FUNCTION_INFO_V1(device_type_ge);
 Datum
 device_type_ge(PG_FUNCTION_ARGS)
 {
@@ -79,6 +99,7 @@ device_type_ge(PG_FUNCTION_ARGS)
     PG_RETURN_BOOL(device_type_cmp_internal(a,b) >= 0);
 }
 
+PG_FUNCTION_INFO_V1(device_type_gt);
 Datum
 device_type_gt(PG_FUNCTION_ARGS)
 {
@@ -87,6 +108,7 @@ device_type_gt(PG_FUNCTION_ARGS)
     PG_RETURN_BOOL(device_type_cmp_internal(a,b) > 0);
 }
 
+PG_FUNCTION_INFO_V1(device_type_cmp);
 Datum
 device_type_cmp(PG_FUNCTION_ARGS)
 {
