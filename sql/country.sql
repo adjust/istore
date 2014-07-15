@@ -104,9 +104,21 @@ CREATE FUNCTION country_istore_out(country_istore)
     AS '$libdir/istore.so', 'istore_out'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION country_istore_send(country_istore)
+    RETURNS bytea
+    AS '$libdir/istore.so', 'istore_send'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION country_istore_recv(internal)
+    RETURNS country_istore
+    AS '$libdir/istore.so', 'istore_recv'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE TYPE country_istore (
     INPUT = country_istore_in,
-    OUTPUT = country_istore_out
+    OUTPUT = country_istore_out,
+    receive = country_istore_recv,
+    send = country_istore_send
 );
 
 CREATE FUNCTION country_istore_to_istore(country_istore)

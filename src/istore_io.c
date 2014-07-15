@@ -362,13 +362,13 @@ istore_recv(PG_FUNCTION_ARGS)
     int32 len = pq_getmsgint(buf, 4);
     uint8 type = pq_getmsgbyte(buf);
     is_pairs_init(creator, len, type);
-    for (i = 0; i < len; ++i)
+    for (; i < len; ++i)
     {
         int32 key  = pq_getmsgint(buf, 4);
         long  val  = pq_getmsgint64(buf);
         bool  null = pq_getmsgbyte(buf);
         if (null)
-            is_pairs_insert(creator, key, val, NULL_VAL_ISTORE);
+            is_pairs_insert(creator, key, val, null_type_for(type));
         else
             is_pairs_insert(creator, key, val, type);
     }
@@ -381,22 +381,16 @@ Datum
 istore_send(PG_FUNCTION_ARGS)
 {
     IStore *in = PG_GETARG_IS(0);
-    ISPair *pairs;
-    int i, len;
-    uint8 type;
+    ISPair *pairs= FIRST_PAIR(in);
+    int i = 0;
     StringInfoData buf;
     pq_begintypsend(&buf);
-    pairs = FIRST_PAIR(in);
-    //pq_sendint(&buf, is->buflen, 4);
-    elog(INFO, "%d",in->len);
-    len = in->len;
-    type = in->type;
-    pq_sendint(&buf, len, 4);
-    pq_sendbyte(&buf, type);
-    for (i = 0; i < in->len; ++i)
+    pq_sendint(&buf, in->len, 4);
+    pq_sendbyte(&buf, in->type);
+    for (; i < in->len; ++i)
     {
         int32 key = pairs[i].key;
-        int32 val = pairs[i].val;
+        long val = pairs[i].val;
         pq_sendint(&buf, key, 4);
         pq_sendint64(&buf, val);
         pq_sendbyte(&buf, pairs[i].null);

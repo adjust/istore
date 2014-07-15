@@ -104,9 +104,22 @@ CREATE FUNCTION os_name_istore_out(os_name_istore)
     AS '$libdir/istore.so', 'istore_out'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION os_name_istore_recv(internal)
+    RETURNS os_name_istore
+    AS '$libdir/istore.so', 'istore_recv'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION os_name_istore_send(os_name_istore)
+    RETURNS bytea
+    AS '$libdir/istore.so', 'istore_send'
+    LANGUAGE C IMMUTABLE STRICT;
+
+
 CREATE TYPE os_name_istore (
     INPUT = os_name_istore_in,
-    OUTPUT = os_name_istore_out
+    OUTPUT = os_name_istore_out,
+    receive = os_name_istore_recv,
+    send = os_name_istore_send
 );
 
 CREATE FUNCTION os_name_istore_to_istore(os_name_istore)

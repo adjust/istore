@@ -103,9 +103,21 @@ CREATE FUNCTION device_istore_out(device_istore)
     AS '$libdir/istore.so', 'istore_out'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION device_istore_recv(internal)
+    RETURNS device_istore
+    AS '$libdir/istore.so', 'istore_recv'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION device_istore_send(device_istore)
+    RETURNS bytea
+    AS '$libdir/istore.so', 'istore_send'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE TYPE device_istore (
     INPUT = device_istore_in,
-    OUTPUT = device_istore_out
+    OUTPUT = device_istore_out,
+    receive = device_istore_recv,
+    send = device_istore_send
 );
 
 CREATE FUNCTION device_istore_to_istore(device_istore)
