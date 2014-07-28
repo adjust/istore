@@ -1,49 +1,63 @@
 BEGIN;
-CREATE TABLE device_istore_io AS SELECT 'bot=>1,mac=>2'::device_istore;
-SELECT * FROM device_istore_io;
+-- device_iostore_io should persist device_iostore;
+-- ./spec/device_iostore_io_spec.rb:20;
+CREATE EXTENSION istore;
+CREATE TABLE device_iostore AS SELECT 'bot=>1,mac=>2'::device_istore;
+SELECT * FROM device_iostore;
 ROLLBACK;
-
 BEGIN;
-CREATE TABLE device_istore_io AS SELECT '"bot"=>"1","bot"=>"2"'::device_istore;
-SELECT * FROM device_istore_io;
+-- device_iostore_io should persist device_iostore;
+-- ./spec/device_iostore_io_spec.rb:20;
+CREATE EXTENSION istore;
+CREATE TABLE device_iostore AS SELECT '"bot"=>"1","bot"=>"2"'::device_istore;
+SELECT * FROM device_iostore;
 ROLLBACK;
-
 BEGIN;
-CREATE TABLE device_istore_io AS SELECT '"bot"=>"1","mac"=>"2"'::device_istore;
-SELECT * FROM device_istore_io;
+-- device_iostore_io should persist device_iostore;
+-- ./spec/device_iostore_io_spec.rb:20;
+CREATE EXTENSION istore;
+CREATE TABLE device_iostore AS SELECT '"bot"=>"1","mac"=>"2"'::device_istore;
+SELECT * FROM device_iostore;
 ROLLBACK;
-
 BEGIN;
-CREATE TABLE device_istore_io AS SELECT '"mac"=>"+1","bot"=>"2"'::device_istore;
-SELECT * FROM device_istore_io;
+-- device_iostore_io should persist device_iostore;
+-- ./spec/device_iostore_io_spec.rb:20;
+CREATE EXTENSION istore;
+CREATE TABLE device_iostore AS SELECT '"mac"=>"+1","bot"=>"2"'::device_istore;
+SELECT * FROM device_iostore;
 ROLLBACK;
-
 BEGIN;
-CREATE TABLE device_istore_io AS SELECT ' "mac"=>"+1","bot"=>"2"'::device_istore;
-SELECT * FROM device_istore_io;
+-- device_iostore_io should persist device_iostore;
+-- ./spec/device_iostore_io_spec.rb:20;
+CREATE EXTENSION istore;
+CREATE TABLE device_iostore AS SELECT ' "mac"=>"+1","bot"=>"2"'::device_istore;
+SELECT * FROM device_iostore;
 ROLLBACK;
-
 BEGIN;
-CREATE TABLE device_istore_io AS SELECT '"mac"=> "+1","bot"=>"2"'::device_istore;
-SELECT * FROM device_istore_io;
+-- device_iostore_io should persist device_iostore;
+-- ./spec/device_iostore_io_spec.rb:20;
+CREATE EXTENSION istore;
+CREATE TABLE device_iostore AS SELECT '"mac"=> "+1","bot"=>"2"'::device_istore;
+SELECT * FROM device_iostore;
 ROLLBACK;
-
 BEGIN;
-CREATE TABLE device_istore_io AS SELECT '"mac"=>"+1" ,"bot"=>"2"'::device_istore;
-SELECT * FROM device_istore_io;
+-- device_iostore_io should persist device_iostore;
+-- ./spec/device_iostore_io_spec.rb:20;
+CREATE EXTENSION istore;
+CREATE TABLE device_iostore AS SELECT '"mac"=>"+1" ,"bot"=>"2"'::device_istore;
+SELECT * FROM device_iostore;
 ROLLBACK;
-
 BEGIN;
-CREATE TABLE device_istore_io AS SELECT '"mac"=>"+1", "bot"=>"2"'::device_istore;
-SELECT * FROM device_istore_io;
+-- device_iostore_io should persist device_iostore;
+-- ./spec/device_iostore_io_spec.rb:20;
+CREATE EXTENSION istore;
+CREATE TABLE device_iostore AS SELECT '"mac"=>"+1", "bot"=>"2"'::device_istore;
+SELECT * FROM device_iostore;
 ROLLBACK;
-
 BEGIN;
-CREATE TABLE device_istore_io AS SELECT '"mac"=>"+1","bot"=>"2" '::device_istore;
-SELECT * FROM device_istore_io;
-ROLLBACK;
-
-BEGIN;
-CREATE TABLE device_istore_io AS SELECT '"mac"=>"+1","bot"=>"2" '::device_istore;
-SELECT * FROM device_istore_io;
+-- device_iostore_io should persist device_iostore;
+-- ./spec/device_iostore_io_spec.rb:20;
+CREATE EXTENSION istore;
+CREATE TABLE device_iostore AS SELECT '"mac"=>"+1","bot"=>"2" '::device_istore;
+SELECT * FROM device_iostore;
 ROLLBACK;

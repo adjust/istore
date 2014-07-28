@@ -1,3 +1,7 @@
+BEGIN;
+-- country_pass should pass valid countries;
+-- ./spec/country_pass_spec.rb:34;
+CREATE EXTENSION istore;
 SELECT 'ad'::country;
  country 
 ---------
@@ -1504,15 +1508,31 @@ SELECT 'zz'::country;
  zz
 (1 row)
 
+ROLLBACK;
+BEGIN;
+-- country_pass should throw an error for invalid countries;
+-- ./spec/country_pass_spec.rb:40;
+CREATE EXTENSION istore;
 SELECT 'a'::country;
 ERROR:  invalid length for country input
 LINE 1: SELECT 'a'::country;
                ^
+ROLLBACK;
+BEGIN;
+-- country_pass should throw an error for invalid countries;
+-- ./spec/country_pass_spec.rb:44;
+CREATE EXTENSION istore;
 SELECT 'aa'::country;
 ERROR:  unknown input country type
 LINE 1: SELECT 'aa'::country;
                ^
+ROLLBACK;
+BEGIN;
+-- country_pass should throw an error for invalid countries;
+-- ./spec/country_pass_spec.rb:48;
+CREATE EXTENSION istore;
 SELECT 'aaa'::country;
 ERROR:  invalid length for country input
 LINE 1: SELECT 'aaa'::country;
                ^
+ROLLBACK;
