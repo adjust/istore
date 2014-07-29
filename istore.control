@@ -1,5 +1,5 @@
-        # istore extension
-        comment = 'my awesome extension'
-        default_version = '0.0.1'
-        relocatable = true
-        requires = ''
+# istore extension
+comment = 'an integer based hstore'
+default_version = '0.0.1'
+relocatable = true
+requires = ''
