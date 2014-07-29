@@ -1,18 +1,25 @@
 BEGIN;
+-- persistence should persist countries;
+-- ./spec/persistence_spec.rb:8;
+CREATE EXTENSION istore;
 CREATE TABLE country_test AS SELECT 'de'::country, 1 as num;
 SELECT * FROM country_test;
 UPDATE country_test SET num = 2;
 SELECT * FROM country_test;
 ROLLBACK;
-
 BEGIN;
+-- persistence should persist os_names;
+-- ./spec/persistence_spec.rb:15;
+CREATE EXTENSION istore;
 CREATE TABLE os_name_test AS SELECT 'ios'::os_name, 1 as num;
 SELECT * FROM os_name_test;
 UPDATE os_name_test SET num = 2;
 SELECT * FROM os_name_test;
 ROLLBACK;
-
 BEGIN;
+-- persistence should persist device_type;
+-- ./spec/persistence_spec.rb:22;
+CREATE EXTENSION istore;
 CREATE TABLE device_type_test AS SELECT 'phone'::device_type, 1 as num;
 SELECT * FROM device_type_test;
 UPDATE device_type_test SET num = 2;

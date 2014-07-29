@@ -1,3 +1,4 @@
+--require istore
 CREATE TYPE country;
 
 CREATE FUNCTION country_in(cstring)

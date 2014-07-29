@@ -1,3 +1,4 @@
+--require istore
 CREATE TYPE device_type;
 
 CREATE FUNCTION device_type_in(cstring)

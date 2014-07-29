@@ -1,3 +1,7 @@
+BEGIN;
+-- country should be case insensitive;
+-- ./spec/country_insensitive_spec.rb:8;
+CREATE EXTENSION istore;
 SELECT 'de'::country = 'de'::country;
  ?column? 
 ----------
@@ -22,19 +26,13 @@ SELECT 'de'::country = 'DE'::country;
  t
 (1 row)
 
-SELECT 'dE'::country = 'dE'::country;
+SELECT 'de'::country = 'dE'::country;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT 'dE'::country = 'De'::country;
- ?column? 
-----------
- t
-(1 row)
-
-SELECT 'dE'::country = 'DE'::country;
+SELECT 'De'::country = 'de'::country;
  ?column? 
 ----------
  t
@@ -46,7 +44,67 @@ SELECT 'De'::country = 'De'::country;
  t
 (1 row)
 
+SELECT 'De'::country = 'dE'::country;
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT 'De'::country = 'DE'::country;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 'De'::country = 'dE'::country;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 'dE'::country = 'de'::country;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 'dE'::country = 'De'::country;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 'dE'::country = 'dE'::country;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 'dE'::country = 'DE'::country;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 'dE'::country = 'dE'::country;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 'DE'::country = 'de'::country;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 'DE'::country = 'De'::country;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 'DE'::country = 'dE'::country;
  ?column? 
 ----------
  t
@@ -58,3 +116,40 @@ SELECT 'DE'::country = 'DE'::country;
  t
 (1 row)
 
+SELECT 'DE'::country = 'dE'::country;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 'dE'::country = 'de'::country;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 'dE'::country = 'De'::country;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 'dE'::country = 'dE'::country;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 'dE'::country = 'DE'::country;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT 'dE'::country = 'dE'::country;
+ ?column? 
+----------
+ t
+(1 row)
+
+ROLLBACK;

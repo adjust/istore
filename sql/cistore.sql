@@ -1,3 +1,6 @@
+-- require country
+-- require device_type
+-- require os_name
 CREATE TYPE cistore;
 
 CREATE FUNCTION cistore_in(cstring)

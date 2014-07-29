@@ -1,0 +1,16 @@
+BEGIN;
+-- os_name should pass valid os_name;
+-- ./spec/os_name_spec.rb:8;
+CREATE EXTENSION istore;
+SELECT 'android'::os_name;
+SELECT 'ios'::os_name;
+SELECT 'windows'::os_name;
+SELECT 'windows'::os_name;
+SELECT 'unknown'::os_name;
+ROLLBACK;
+BEGIN;
+-- os_name should rais an exception on invalid os_name;
+-- ./spec/os_name_spec.rb:14;
+CREATE EXTENSION istore;
+SELECT 'kermit'::os_name;
+ROLLBACK;

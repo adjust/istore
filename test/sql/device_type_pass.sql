@@ -1,3 +1,7 @@
+BEGIN;
+-- device_type_pass should pass valid device_types;
+-- ./spec/device_type_pass_spec.rb:15;
+CREATE EXTENSION istore;
 SELECT 'bot'::device_type;
 SELECT 'console'::device_type;
 SELECT 'ipod'::device_type;
@@ -9,4 +13,4 @@ SELECT 'server'::device_type;
 SELECT 'simulator'::device_type;
 SELECT 'tablet'::device_type;
 SELECT 'unknown'::device_type;
-SELECT 'kermit'::device_type;
+ROLLBACK;
