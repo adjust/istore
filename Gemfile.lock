@@ -1,3 +1,17 @@
+GIT
+  remote: git@github.com:adjust/dumbo.git
+  revision: 8e36cb477456f59f0c931185b08d593644d88bdf
+  specs:
+    dumbo (0.0.4)
+      activerecord
+      activesupport
+      bundler (~> 1.5)
+      erubis
+      pg (> 0.17)
+      rake
+      rspec (~> 3.0.0)
+      thor
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -18,15 +32,6 @@ GEM
     builder (3.2.2)
     coderay (1.1.0)
     diff-lcs (1.2.5)
-    dumbo (0.0.4)
-      activerecord
-      activesupport
-      bundler (~> 1.5)
-      erubis
-      pg (> 0.17)
-      rake
-      rspec (~> 3.0.0)
-      thor
     erubis (2.7.0)
     i18n (0.6.11)
     json (1.8.1)
@@ -60,5 +65,5 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  dumbo
+  dumbo!
   pry
