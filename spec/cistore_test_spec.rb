@@ -7,10 +7,10 @@ describe 'cistore' do
 
   it 'should pass valid cistores' do
     query("SELECT 'de::phone::ios=>25,us::phone::ios=>10'::cistore").should match \
-      '"us::phone::ios"=>"10","de::phone::ios"=>"25"'
+      '"us::phone::ios"=>"10", "de::phone::ios"=>"25"'
 
     query("SELECT 'de::phone::ios::10=>25,us::phone::ios::1=>10'::cistore").should match \
-       '"us::phone::ios::1"=>"10","de::phone::ios::10"=>"25"'
+       '"us::phone::ios::1"=>"10", "de::phone::ios::10"=>"25"'
 
     query("SELECT cistore('de'::country, 'phone'::device_type, 'ios'::os_name, 10)").should match \
        '"de::phone::ios"=>"10"'
@@ -19,6 +19,6 @@ describe 'cistore' do
       '"de::phone::ios::5"=>"10"'
 
     query("SELECT 'de::phone::ios::10=>25,us::phone::ios::1=>10'::cistore + 'de::tablet::ios::10=>25,us::phone::ios::1=>10'::cistore").should match \
-      '"us::phone::ios::1"=>"20","de::phone::ios::10"=>"25","de::tablet::ios::10"=>"25"'
+      '"us::phone::ios::1"=>"20", "de::phone::ios::10"=>"25", "de::tablet::ios::10"=>"25"'
   end
 end

@@ -21,6 +21,9 @@
 #define NULL_C_ISTORE       10
 #define C_ISTORE_COHORT     11
 
+#define BUFLEN_OFFSET        8
+#define NULL_BUFLEN_OFFSET   10
+
 /*
  * macro to create a c string representation of a
  * varlena postgres text. allocates extra memory with palloc.

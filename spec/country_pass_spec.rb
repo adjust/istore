@@ -38,14 +38,14 @@ describe 'country_pass' do
   end
 
   it 'should throw an error for invalid countries' do
-    query("SELECT 'a'::country").should throw_error 'invalid length for country input'
+    expect{query("SELECT 'a'::country")}.to throw_error 'invalid length for country input'
   end
 
   it 'should throw an error for invalid countries' do
-    query("SELECT 'aa'::country").should throw_error 'unknown input country type'
+    expect{query("SELECT 'aa'::country")}.to throw_error 'unknown input country type'
   end
 
   it 'should throw an error for invalid countries' do
-    query("SELECT 'aaa'::country").should throw_error 'invalid length for country input'
+    expect{query("SELECT 'aaa'::country")}.to throw_error 'invalid length for country input'
   end
 end

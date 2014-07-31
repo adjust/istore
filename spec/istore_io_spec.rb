@@ -12,56 +12,56 @@ describe 'istore_io' do
   end
 
   it 'should persist istores' do
-    query(%{CREATE TABLE istore_io AS SELECT '"1"=>"1","1"=>"2"'::istore})
+    query(%{CREATE TABLE istore_io AS SELECT '"1"=>"1", "1"=>"2"'::istore})
     query("SELECT * FROM istore_io").should match \
     '"1"=>"3"'
   end
 
   it 'should persist istores' do
-    query(%{CREATE TABLE istore_io AS SELECT '"1"=>"1","-1"=>"2"'::istore})
+    query(%{CREATE TABLE istore_io AS SELECT '"1"=>"1", "-1"=>"2"'::istore})
     query("SELECT * FROM istore_io").should match \
-    '"-1"=>"2","1"=>"1"'
+    '"-1"=>"2", "1"=>"1"'
   end
 
   it 'should persist istores' do
     query(%{CREATE TABLE istore_io AS SELECT '"-1"=>"+1","1"=>"2"'::istore})
     query("SELECT * FROM istore_io").should match \
-    '"-1"=>"1","1"=>"2"'
+    '"-1"=>"1", "1"=>"2"'
   end
 
   it 'should persist istores' do
     query(%{CREATE TABLE istore_io AS SELECT ' "-1"=>"+1","1"=>"2"'::istore})
     query("SELECT * FROM istore_io").should match \
-    '"-1"=>"1","1"=>"2"'
+    '"-1"=>"1", "1"=>"2"'
   end
 
   it 'should persist istores' do
     query(%{CREATE TABLE istore_io AS SELECT '"-1"=> "+1","1"=>"2"'::istore})
     query("SELECT * FROM istore_io").should match \
-    '"-1"=>"1","1"=>"2"'
+    '"-1"=>"1", "1"=>"2"'
   end
 
   it 'should persist istores' do
     query(%{CREATE TABLE istore_io AS SELECT '"-1"=>"+1", "1"=>"2"'::istore})
     query("SELECT * FROM istore_io").should match \
-    '"-1"=>"1","1"=>"2"'
+    '"-1"=>"1", "1"=>"2"'
   end
 
   it 'should persist istores' do
     query(%{CREATE TABLE istore_io AS SELECT '"-1"=>"+1","1"=>"2" '::istore})
     query("SELECT * FROM istore_io").should match \
-    '"-1"=>"1","1"=>"2"'
+    '"-1"=>"1", "1"=>"2"'
   end
 
   it 'should persist istores' do
     query(%{CREATE TABLE istore_io AS SELECT '-1=>+1,1=>2 '::istore})
     query("SELECT * FROM istore_io").should match \
-    '"-1"=>"1","1"=>"2"'
+    '"-1"=>"1", "1"=>"2"'
   end
 
   it 'should persist istores' do
     query(%{CREATE TABLE istore_io AS SELECT '"-1"=>"+1" ,"1"=>"2"'::istore})
     query("SELECT * FROM istore_io").should match \
-    '"-1"=>"1","1"=>"2"'
+    '"-1"=>"1", "1"=>"2"'
   end
 end

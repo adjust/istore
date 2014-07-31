@@ -5,10 +5,6 @@ describe 'binary_copy' do
     install_extension
   end
 
-  after do
-    File.delete '/tmp/tst'
-  end
-
   def vals_to_match(vals)
     vals.map{|v| [v]}
   end

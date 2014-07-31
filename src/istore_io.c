@@ -141,28 +141,28 @@ is_serialize_istore(IStore *in)
                 case PLAIN_ISTORE:
                     ptr += sprintf(
                         out+ptr,
-                        "\"%d\"=>NULL,",
+                        "\"%d\"=>NULL, ",
                         pairs[i].key
                     );
                     break;
                 case DEVICE_ISTORE:
                     ptr += sprintf(
                         out+ptr,
-                        "\"%s\"=>NULL,",
+                        "\"%s\"=>NULL, ",
                         get_device_type_string(pairs[i].key)
                     );
                     break;
                 case COUNTRY_ISTORE:
                     ptr += sprintf(
                         out+ptr,
-                        "\"%s\"=>NULL,",
+                        "\"%s\"=>NULL, ",
                         get_country_string(pairs[i].key)
                     );
                     break;
                 case OS_NAME_ISTORE:
                     ptr += sprintf(
                         out+ptr,
-                        "\"%s\"=>NULL,",
+                        "\"%s\"=>NULL, ",
                         get_os_name_string(pairs[i].key)
                     );
                     break;
@@ -177,7 +177,7 @@ is_serialize_istore(IStore *in)
                 case PLAIN_ISTORE:
                     ptr += sprintf(
                         out+ptr,
-                        "\"%d\"=>\"%ld\",",
+                        "\"%d\"=>\"%ld\", ",
                         pairs[i].key,
                         pairs[i].val
                     );
@@ -185,7 +185,7 @@ is_serialize_istore(IStore *in)
                 case DEVICE_ISTORE:
                     ptr += sprintf(
                         out+ptr,
-                        "\"%s\"=>\"%ld\",",
+                        "\"%s\"=>\"%ld\", ",
                         get_device_type_string(pairs[i].key),
                         pairs[i].val
                     );
@@ -193,7 +193,7 @@ is_serialize_istore(IStore *in)
                 case COUNTRY_ISTORE:
                     ptr += sprintf(
                         out+ptr,
-                        "\"%s\"=>\"%ld\",",
+                        "\"%s\"=>\"%ld\", ",
                         get_country_string(pairs[i].key),
                         pairs[i].val
                     );
@@ -201,7 +201,7 @@ is_serialize_istore(IStore *in)
                 case OS_NAME_ISTORE:
                     ptr += sprintf(
                         out+ptr,
-                        "\"%s\"=>\"%ld\",",
+                        "\"%s\"=>\"%ld\", ",
                         get_os_name_string(pairs[i].key),
                         pairs[i].val
                     );
@@ -209,7 +209,7 @@ is_serialize_istore(IStore *in)
                 case C_ISTORE:
                     ptr += sprintf(
                         out+ptr,
-                        "\"%s::%s::%s\"=>\"%ld\",",
+                        "\"%s::%s::%s\"=>\"%ld\", ",
                         get_country_string(C_ISTORE_GET_COUNTRY_KEY(pairs[i].key)),
                         get_device_type_string(C_ISTORE_GET_DEVICE_KEY(pairs[i].key)),
                         get_os_name_string(C_ISTORE_GET_OS_NAME_KEY(pairs[i].key)),
@@ -219,7 +219,7 @@ is_serialize_istore(IStore *in)
                 case C_ISTORE_COHORT:
                     ptr += sprintf(
                         out+ptr,
-                        "\"%s::%s::%s::%d\"=>\"%ld\",",
+                        "\"%s::%s::%s::%d\"=>\"%ld\", ",
                         get_country_string(C_ISTORE_GET_COUNTRY_KEY(pairs[i].key)),
                         get_device_type_string(C_ISTORE_GET_DEVICE_KEY(pairs[i].key)),
                         get_os_name_string(C_ISTORE_GET_OS_NAME_KEY(pairs[i].key)),
@@ -232,7 +232,8 @@ is_serialize_istore(IStore *in)
             }
         }
     }
-    out[in->buflen - 1] = '\0';
+    // replace trailing , with terminating null
+    out[in->buflen - 2] = '\0';
     PG_RETURN_CSTRING(out);
 }
 
@@ -259,7 +260,7 @@ type_istore_to_istore(PG_FUNCTION_ARGS)
             vallen;
         DIGIT_WIDTH(pairs[i].key, keylen);
         DIGIT_WIDTH(pairs[i].val, vallen);
-        result->buflen += keylen + vallen + 7;
+        result->buflen += keylen + vallen + BUFLEN_OFFSET;
     }
     PG_RETURN_POINTER(result);
 }
@@ -282,7 +283,7 @@ istore_to_device_istore(PG_FUNCTION_ARGS)
     {
         int vallen;
         DIGIT_WIDTH(pairs[i].val, vallen);
-        result->buflen += get_device_type_length(pairs[i].key) + vallen + 7;
+        result->buflen += get_device_type_length(pairs[i].key) + vallen + BUFLEN_OFFSET;
     }
     PG_RETURN_POINTER(result);
 }
@@ -305,7 +306,7 @@ istore_to_country_istore(PG_FUNCTION_ARGS)
     {
         int vallen;
         DIGIT_WIDTH(pairs[i].val, vallen);
-        result->buflen += 2 + vallen + 7;
+        result->buflen += 2 + vallen + BUFLEN_OFFSET;
     }
     PG_RETURN_POINTER(result);
 }
@@ -328,7 +329,7 @@ istore_to_os_name_istore(PG_FUNCTION_ARGS)
     {
         int vallen;
         DIGIT_WIDTH(pairs[i].val, vallen);
-        result->buflen += get_os_name_length(pairs[i].key) + vallen + 7;
+        result->buflen += get_os_name_length(pairs[i].key) + vallen + BUFLEN_OFFSET;
     }
     PG_RETURN_POINTER(result);
 }

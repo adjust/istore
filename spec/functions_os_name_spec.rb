@@ -21,80 +21,80 @@ describe 'functions_os_name' do
 
   it 'should add to os_name_istores' do
     query("SELECT add('ios=>1, windows=>1'::os_name_istore, 'ios=>1, windows=>1'::os_name_istore)").should match \
-     '"ios"=>"2","windows"=>"2"'
+     '"ios"=>"2", "windows"=>"2"'
 
     query("SELECT add('ios=>1, windows=>1'::os_name_istore, 'android=>1, windows=>1'::os_name_istore)").should match \
-     '"android"=>"1","ios"=>"1","windows"=>"2"'
+     '"android"=>"1", "ios"=>"1", "windows"=>"2"'
 
     query("SELECT add('ios=>1, windows=>1'::os_name_istore, 'android=>-1, windows=>1'::os_name_istore)").should match \
-     '"android"=>"-1","ios"=>"1","windows"=>"2"'
+     '"android"=>"-1", "ios"=>"1", "windows"=>"2"'
 
     query("SELECT add('android=>1, windows=>1'::os_name_istore, 'android=>-1, windows=>1'::os_name_istore)").should match \
-     '"android"=>"0","windows"=>"2"'
+     '"android"=>"0", "windows"=>"2"'
 
     query("SELECT add('android=>-1, windows=>1'::os_name_istore, 'android=>-1, windows=>1'::os_name_istore)").should match \
-     '"android"=>"-2","windows"=>"2"'
+     '"android"=>"-2", "windows"=>"2"'
 
     query("SELECT add('android=>-1, windows=>1'::os_name_istore, 1)").should match \
-     '"android"=>"0","windows"=>"2"'
+     '"android"=>"0", "windows"=>"2"'
 
     query("SELECT add('android=>-1, windows=>1'::os_name_istore, -1)").should match \
-     '"android"=>"-2","windows"=>"0"'
+     '"android"=>"-2", "windows"=>"0"'
 
     query("SELECT add('android=>-1, windows=>1'::os_name_istore, 0)").should match \
-     '"android"=>"-1","windows"=>"1"'
+     '"android"=>"-1", "windows"=>"1"'
   end
 
   it 'should substract to os_name_istores' do
     query("SELECT subtract('ios=>1, windows=>1'::os_name_istore, 'ios=>1, windows=>1'::os_name_istore)").should match \
-     '"ios"=>"0","windows"=>"0"'
+     '"ios"=>"0", "windows"=>"0"'
 
     query("SELECT subtract('ios=>1, windows=>1'::os_name_istore, 'android=>1, windows=>1'::os_name_istore)").should match \
-     '"android"=>"-1","ios"=>"1","windows"=>"0"'
+     '"android"=>"-1", "ios"=>"1", "windows"=>"0"'
 
     query("SELECT subtract('ios=>1, windows=>1'::os_name_istore, 'android=>-1, windows=>1'::os_name_istore)").should match \
-     '"android"=>"1","ios"=>"1","windows"=>"0"'
+     '"android"=>"1", "ios"=>"1", "windows"=>"0"'
 
     query("SELECT subtract('android=>1, windows=>1'::os_name_istore, 'android=>-1, windows=>1'::os_name_istore)").should match \
-     '"android"=>"2","windows"=>"0"'
+     '"android"=>"2", "windows"=>"0"'
 
     query("SELECT subtract('android=>-1, windows=>1'::os_name_istore, 'android=>-1, windows=>1'::os_name_istore)").should match \
-     '"android"=>"0","windows"=>"0"'
+     '"android"=>"0", "windows"=>"0"'
 
     query("SELECT subtract('android=>-1, windows=>1'::os_name_istore, 1)").should match \
-     '"android"=>"-2","windows"=>"0"'
+     '"android"=>"-2", "windows"=>"0"'
 
     query("SELECT subtract('android=>-1, windows=>1'::os_name_istore, -1)").should match \
-     '"android"=>"0","windows"=>"2"'
+     '"android"=>"0", "windows"=>"2"'
 
     query("SELECT subtract('android=>-1, windows=>1'::os_name_istore, 0)").should match \
-     '"android"=>"-1","windows"=>"1"'
+     '"android"=>"-1", "windows"=>"1"'
   end
 
   it 'should multiply two os_name_istores' do
     query("SELECT multiply('ios=>1, windows=>1'::os_name_istore, 'ios=>1, windows=>1'::os_name_istore)").should match \
-     '"ios"=>"1","windows"=>"1"'
+     '"ios"=>"1", "windows"=>"1"'
 
     query("SELECT multiply('ios=>1, windows=>1'::os_name_istore, 'android=>1, windows=>1'::os_name_istore)").should match \
-     '"android"=>NULL,"ios"=>NULL,"windows"=>"1"'
+     '"android"=>NULL, "ios"=>NULL, "windows"=>"1"'
 
     query("SELECT multiply('ios=>1, windows=>1'::os_name_istore, 'android=>-1, windows=>1'::os_name_istore)").should match \
-     '"android"=>NULL,"ios"=>NULL,"windows"=>"1"'
+     '"android"=>NULL, "ios"=>NULL, "windows"=>"1"'
 
     query("SELECT multiply('android=>1, windows=>1'::os_name_istore, 'android=>-1, windows=>1'::os_name_istore)").should match \
-     '"android"=>"-1","windows"=>"1"'
+     '"android"=>"-1", "windows"=>"1"'
 
     query("SELECT multiply('android=>-1, windows=>1'::os_name_istore, 'android=>-1, windows=>1'::os_name_istore)").should match \
-     '"android"=>"1","windows"=>"1"'
+     '"android"=>"1", "windows"=>"1"'
 
     query("SELECT multiply('android=>-1, windows=>1'::os_name_istore, 1)").should match \
-     '"android"=>"-1","windows"=>"1"'
+     '"android"=>"-1", "windows"=>"1"'
 
     query("SELECT multiply('android=>-1, windows=>1'::os_name_istore, -1)").should match \
-     '"android"=>"1","windows"=>"-1"'
+     '"android"=>"1", "windows"=>"-1"'
 
     query("SELECT multiply('android=>-1, windows=>1'::os_name_istore, 0)").should match \
-     '"android"=>"0","windows"=>"0"'
+     '"android"=>"0", "windows"=>"0"'
    end
 
    it 'should generate an os_name_istore from array' do
@@ -107,22 +107,22 @@ describe 'functions_os_name' do
     query("SELECT os_name_istore_from_array(NULL::text[])").should match nil
 
     query("SELECT os_name_istore_from_array(ARRAY['android','ios','windows','windows-phone'])").should match \
-     '"android"=>"1","ios"=>"1","windows"=>"1","windows-phone"=>"1"'
+     '"android"=>"1", "ios"=>"1", "windows"=>"1", "windows-phone"=>"1"'
 
     query("SELECT os_name_istore_from_array(ARRAY['android','ios','windows','windows-phone','android','ios','windows','windows-phone'])").should match \
-     '"android"=>"2","ios"=>"2","windows"=>"2","windows-phone"=>"2"'
+     '"android"=>"2", "ios"=>"2", "windows"=>"2", "windows-phone"=>"2"'
 
     query("SELECT os_name_istore_from_array(ARRAY['android','ios','windows','windows-phone','android','ios','windows',NULL])").should match \
-     '"android"=>"2","ios"=>"2","windows"=>"2","windows-phone"=>"1"'
+     '"android"=>"2", "ios"=>"2", "windows"=>"2", "windows-phone"=>"1"'
 
     query("SELECT os_name_istore_from_array(ARRAY[NULL,'ios','windows','windows-phone','android','ios','windows','windows-phone'])").should match \
-     '"android"=>"1","ios"=>"2","windows"=>"2","windows-phone"=>"2"'
+     '"android"=>"1", "ios"=>"2", "windows"=>"2", "windows-phone"=>"2"'
 
     query("SELECT os_name_istore_from_array(ARRAY[NULL,'ios','windows','windows-phone','android','ios','windows',NULL])").should match \
-     '"android"=>"1","ios"=>"2","windows"=>"2","windows-phone"=>"1"'
+     '"android"=>"1", "ios"=>"2", "windows"=>"2", "windows-phone"=>"1"'
 
     query("SELECT os_name_istore_from_array(ARRAY['android','ios','windows',NULL,'android',NULL,'windows','windows-phone','android','ios','windows'])").should match \
-     '"android"=>"3","ios"=>"2","windows"=>"3","windows-phone"=>"1"'
+     '"android"=>"3", "ios"=>"2", "windows"=>"3", "windows-phone"=>"1"'
 
     query("SELECT os_name_istore_from_array(ARRAY['android'::os_name])").should match \
      '"android"=>"1"'
@@ -133,22 +133,22 @@ describe 'functions_os_name' do
     query("SELECT os_name_istore_from_array(NULL::text[])").should match nil
 
     query("SELECT os_name_istore_from_array(ARRAY['android'::os_name,'ios'::os_name,'windows'::os_name,'windows-phone'::os_name])").should match \
-     '"android"=>"1","ios"=>"1","windows"=>"1","windows-phone"=>"1"'
+     '"android"=>"1", "ios"=>"1", "windows"=>"1", "windows-phone"=>"1"'
 
     query("SELECT os_name_istore_from_array(ARRAY['android'::os_name,'ios'::os_name,'windows'::os_name,'windows-phone'::os_name,'android'::os_name,'ios'::os_name,'windows'::os_name,'windows-phone'::os_name])").should match \
-     '"android"=>"2","ios"=>"2","windows"=>"2","windows-phone"=>"2"'
+     '"android"=>"2", "ios"=>"2", "windows"=>"2", "windows-phone"=>"2"'
 
     query("SELECT os_name_istore_from_array(ARRAY['android'::os_name,'ios'::os_name,'windows'::os_name,'windows-phone'::os_name,'android'::os_name,'ios'::os_name,'windows'::os_name,NULL])").should match \
-     '"android"=>"2","ios"=>"2","windows"=>"2","windows-phone"=>"1"'
+     '"android"=>"2", "ios"=>"2", "windows"=>"2", "windows-phone"=>"1"'
 
     query("SELECT os_name_istore_from_array(ARRAY[NULL,'ios'::os_name,'windows'::os_name,'windows-phone'::os_name,'android'::os_name,'ios'::os_name,'windows'::os_name,'windows-phone'::os_name])").should match \
-     '"android"=>"1","ios"=>"2","windows"=>"2","windows-phone"=>"2"'
+     '"android"=>"1", "ios"=>"2", "windows"=>"2", "windows-phone"=>"2"'
 
     query("SELECT os_name_istore_from_array(ARRAY[NULL,'ios'::os_name,'windows'::os_name,'windows-phone'::os_name,'android'::os_name,'ios'::os_name,'windows'::os_name, NULL])").should match \
-    '"android"=>"1","ios"=>"2","windows"=>"2","windows-phone"=>"1"'
+    '"android"=>"1", "ios"=>"2", "windows"=>"2", "windows-phone"=>"1"'
 
     query("SELECT os_name_istore_from_array(ARRAY['android'::os_name,'ios'::os_name,'windows'::os_name,NULL,'android'::os_name,NULL,'windows'::os_name,'windows-phone'::os_name,'android'::os_name,'ios'::os_name,'windows'::os_name])").should match \
-     '"android"=>"3","ios"=>"2","windows"=>"3","windows-phone"=>"1"'
+     '"android"=>"3", "ios"=>"2", "windows"=>"3", "windows-phone"=>"1"'
    end
 
    it 'should agg an array of os_name_istores' do
@@ -159,16 +159,16 @@ describe 'functions_os_name' do
      '"ios"=>"2"'
 
     query("SELECT os_name_istore_agg(ARRAY['ios=>1,windows=>1','ios=>1,windows=>-1']::os_name_istore[])").should match \
-     '"ios"=>"2","windows"=>"0"'
+     '"ios"=>"2", "windows"=>"0"'
 
     query("SELECT os_name_istore_agg(ARRAY['ios=>1,windows=>1','ios=>1,windows=>-1',NULL]::os_name_istore[])").should match \
-     '"ios"=>"2","windows"=>"0"'
+     '"ios"=>"2", "windows"=>"0"'
 
     query("SELECT os_name_istore_agg(ARRAY[NULL,'ios=>1,windows=>1','ios=>1,windows=>-1']::os_name_istore[])").should match \
-     '"ios"=>"2","windows"=>"0"'
+     '"ios"=>"2", "windows"=>"0"'
 
     query("SELECT os_name_istore_agg(ARRAY[NULL,'ios=>1,windows=>1','ios=>1,windows=>-1',NULL]::os_name_istore[])").should match \
-     '"ios"=>"2","windows"=>"0"'
+     '"ios"=>"2", "windows"=>"0"'
    end
 
    it 'should sum_up os_name_istores' do
@@ -185,13 +185,13 @@ describe 'functions_os_name' do
     query("CREATE TABLE test (a os_name_istore)")
     query("INSERT INTO test VALUES('ios=>1'),('windows=>1'),('windows-phone=>1')")
     query("SELECT SUM(a) FROM test").should match \
-      '"ios"=>"1","windows"=>"1","windows-phone"=>"1"'
+      '"ios"=>"1", "windows"=>"1", "windows-phone"=>"1"'
    end
 
    it 'should SUM os_names FROM table' do
     query("CREATE TABLE test (a os_name_istore)")
     query("INSERT INTO test VALUES('ios=>1'),('windows=>1'),('windows-phone=>1'),(NULL),('windows-phone=>3')")
     query("SELECT SUM(a) FROM test").should match \
-      '"ios"=>"1","windows"=>"1","windows-phone"=>"4"'
+      '"ios"=>"1", "windows"=>"1", "windows-phone"=>"4"'
    end
 end

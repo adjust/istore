@@ -14,7 +14,7 @@ BEGIN;
 -- istore_io should persist istores;
 -- ./spec/istore_io_spec.rb:14;
 CREATE EXTENSION istore;
-CREATE TABLE istore_io AS SELECT '"1"=>"1","1"=>"2"'::istore;
+CREATE TABLE istore_io AS SELECT '"1"=>"1", "1"=>"2"'::istore;
 SELECT * FROM istore_io;
   istore  
 ----------
@@ -26,11 +26,11 @@ BEGIN;
 -- istore_io should persist istores;
 -- ./spec/istore_io_spec.rb:20;
 CREATE EXTENSION istore;
-CREATE TABLE istore_io AS SELECT '"1"=>"1","-1"=>"2"'::istore;
+CREATE TABLE istore_io AS SELECT '"1"=>"1", "-1"=>"2"'::istore;
 SELECT * FROM istore_io;
-       istore       
---------------------
- "-1"=>"2","1"=>"1"
+       istore        
+---------------------
+ "-1"=>"2", "1"=>"1"
 (1 row)
 
 ROLLBACK;
@@ -40,9 +40,9 @@ BEGIN;
 CREATE EXTENSION istore;
 CREATE TABLE istore_io AS SELECT '"-1"=>"+1","1"=>"2"'::istore;
 SELECT * FROM istore_io;
-       istore       
---------------------
- "-1"=>"1","1"=>"2"
+       istore        
+---------------------
+ "-1"=>"1", "1"=>"2"
 (1 row)
 
 ROLLBACK;
@@ -52,9 +52,9 @@ BEGIN;
 CREATE EXTENSION istore;
 CREATE TABLE istore_io AS SELECT ' "-1"=>"+1","1"=>"2"'::istore;
 SELECT * FROM istore_io;
-       istore       
---------------------
- "-1"=>"1","1"=>"2"
+       istore        
+---------------------
+ "-1"=>"1", "1"=>"2"
 (1 row)
 
 ROLLBACK;
@@ -64,9 +64,9 @@ BEGIN;
 CREATE EXTENSION istore;
 CREATE TABLE istore_io AS SELECT '"-1"=> "+1","1"=>"2"'::istore;
 SELECT * FROM istore_io;
-       istore       
---------------------
- "-1"=>"1","1"=>"2"
+       istore        
+---------------------
+ "-1"=>"1", "1"=>"2"
 (1 row)
 
 ROLLBACK;
@@ -76,9 +76,9 @@ BEGIN;
 CREATE EXTENSION istore;
 CREATE TABLE istore_io AS SELECT '"-1"=>"+1", "1"=>"2"'::istore;
 SELECT * FROM istore_io;
-       istore       
---------------------
- "-1"=>"1","1"=>"2"
+       istore        
+---------------------
+ "-1"=>"1", "1"=>"2"
 (1 row)
 
 ROLLBACK;
@@ -88,9 +88,9 @@ BEGIN;
 CREATE EXTENSION istore;
 CREATE TABLE istore_io AS SELECT '"-1"=>"+1","1"=>"2" '::istore;
 SELECT * FROM istore_io;
-       istore       
---------------------
- "-1"=>"1","1"=>"2"
+       istore        
+---------------------
+ "-1"=>"1", "1"=>"2"
 (1 row)
 
 ROLLBACK;
@@ -100,9 +100,9 @@ BEGIN;
 CREATE EXTENSION istore;
 CREATE TABLE istore_io AS SELECT '-1=>+1,1=>2 '::istore;
 SELECT * FROM istore_io;
-       istore       
---------------------
- "-1"=>"1","1"=>"2"
+       istore        
+---------------------
+ "-1"=>"1", "1"=>"2"
 (1 row)
 
 ROLLBACK;
@@ -112,9 +112,9 @@ BEGIN;
 CREATE EXTENSION istore;
 CREATE TABLE istore_io AS SELECT '"-1"=>"+1" ,"1"=>"2"'::istore;
 SELECT * FROM istore_io;
-       istore       
---------------------
- "-1"=>"1","1"=>"2"
+       istore        
+---------------------
+ "-1"=>"1", "1"=>"2"
 (1 row)
 
 ROLLBACK;

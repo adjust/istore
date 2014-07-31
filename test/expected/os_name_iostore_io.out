@@ -13,7 +13,7 @@ BEGIN;
 -- ./spec/os_name_iostore_io_spec.rb:14;
 CREATE EXTENSION istore;
 ERROR:  type "istore" already exists
-CREATE TABLE os_name_istore_io AS SELECT '"android"=>"1","android"=>"2"'::os_name_istore;
+CREATE TABLE os_name_istore_io AS SELECT '"android"=>"1", "android"=>"2"'::os_name_istore;
 ERROR:  current transaction is aborted, commands ignored until end of transaction block
 SELECT * FROM os_name_istore_io;
 ERROR:  current transaction is aborted, commands ignored until end of transaction block
@@ -23,7 +23,7 @@ BEGIN;
 -- ./spec/os_name_iostore_io_spec.rb:20;
 CREATE EXTENSION istore;
 ERROR:  type "istore" already exists
-CREATE TABLE os_name_istore_io AS SELECT '"android"=>"1","ios"=>"2"'::os_name_istore;
+CREATE TABLE os_name_istore_io AS SELECT '"android"=>"1", "ios"=>"2"'::os_name_istore;
 ERROR:  current transaction is aborted, commands ignored until end of transaction block
 SELECT * FROM os_name_istore_io;
 ERROR:  current transaction is aborted, commands ignored until end of transaction block
