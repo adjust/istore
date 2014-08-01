@@ -27,7 +27,8 @@ CREATE TYPE os_name (
     output = os_name_out,
     receive = os_name_recv,
     send = os_name_send,
-    alignment = char
+    alignment = char,
+    PASSEDBYVALUE
 );
 
 CREATE FUNCTION os_name_lt(os_name,os_name) RETURNS bool
