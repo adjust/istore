@@ -23,6 +23,10 @@ Datum os_name_gt(PG_FUNCTION_ARGS);
 Datum os_name_cmp(PG_FUNCTION_ARGS);
 
 uint8 get_os_name_num(char *str);
+uint8 get_os_name_num_b(char *str);
+uint8 get_os_name_num_s(char *str);
+uint8 get_os_name_num_w(char *str);
+
 
 char * get_os_name_string (uint8 num);
 int get_os_name_length (uint8 num);

@@ -6,7 +6,19 @@ describe 'os_name' do
   end
 
   it 'should pass valid os_name' do
-    %w(android ios windows windows unknown).each do |name|
+    [
+      'android',
+      'blackberry',
+      'ios',
+      'linux',
+      'macos',
+      'server',
+      'symbian',
+      'webos',
+      'windows',
+      'windows-phone',
+      'unknown'
+    ].each do |name|
       query("SELECT '#{name}'::os_name").should match name
     end
   end
