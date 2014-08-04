@@ -2,43 +2,35 @@ BEGIN;
 -- os_name should pass valid os_name;
 -- ./spec/os_name_test_spec.rb:8;
 CREATE EXTENSION istore;
+ERROR:  type "istore" already exists
 SELECT 'android'::os_name;
- os_name 
----------
- android
-(1 row)
-
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
+SELECT 'blackberry'::os_name;
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
 SELECT 'ios'::os_name;
- os_name 
----------
- ios
-(1 row)
-
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
+SELECT 'linux'::os_name;
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
+SELECT 'macos'::os_name;
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
+SELECT 'server'::os_name;
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
+SELECT 'symbian'::os_name;
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
+SELECT 'webos'::os_name;
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
 SELECT 'windows'::os_name;
- os_name 
----------
- windows
-(1 row)
-
-SELECT 'windows'::os_name;
- os_name 
----------
- windows
-(1 row)
-
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
+SELECT 'windows-phone'::os_name;
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
 SELECT 'unknown'::os_name;
- os_name 
----------
- unknown
-(1 row)
-
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
 ROLLBACK;
 BEGIN;
 -- os_name should rais an exception on invalid os_name;
--- ./spec/os_name_test_spec.rb:14;
+-- ./spec/os_name_test_spec.rb:26;
 CREATE EXTENSION istore;
+ERROR:  type "istore" already exists
 SELECT 'kermit'::os_name;
-ERROR:  unknown input os_name
-LINE 1: SELECT 'kermit'::os_name;
-               ^
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
 ROLLBACK;

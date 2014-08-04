@@ -8,7 +8,6 @@ SELECT 'ipod'::device_type;
 SELECT 'mac'::device_type;
 SELECT 'pc'::device_type;
 SELECT 'phone'::device_type;
-SELECT 'resolver'::device_type;
 SELECT 'server'::device_type;
 SELECT 'simulator'::device_type;
 SELECT 'tablet'::device_type;

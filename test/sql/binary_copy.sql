@@ -58,7 +58,7 @@ BEGIN;
 -- ./spec/binary_copy_spec.rb:28;
 CREATE EXTENSION istore;
 CREATE TABLE before (a device_istore);
-INSERT INTO before values ('"bot"=>"1"'),('"phone"=>"2"'),('"bot"=>"3"'),('"resolver"=>"1"'),('"server"=>"2"'),('"server"=>NULL');
+INSERT INTO before values ('"bot"=>"1"'),('"phone"=>"2"'),('"bot"=>"3"'),('"tablet"=>"1"'),('"server"=>"2"'),('"server"=>NULL');
 CREATE TABLE after (a device_istore);
 COPY before TO '/tmp/tst' WITH (FORMAT binary);
 COPY after FROM '/tmp/tst' WITH (FORMAT binary);

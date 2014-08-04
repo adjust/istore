@@ -1,6 +1,6 @@
 BEGIN;
 -- os_name should pass valid os_name;
--- ./spec/os_name_test_spec.rb:8;
+-- ./spec/os_name_spec.rb:8;
 CREATE EXTENSION istore;
 SELECT 'android'::os_name;
 SELECT 'blackberry'::os_name;
@@ -16,7 +16,7 @@ SELECT 'unknown'::os_name;
 ROLLBACK;
 BEGIN;
 -- os_name should rais an exception on invalid os_name;
--- ./spec/os_name_test_spec.rb:26;
+-- ./spec/os_name_spec.rb:26;
 CREATE EXTENSION istore;
 SELECT 'kermit'::os_name;
 ROLLBACK;

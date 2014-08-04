@@ -2,91 +2,47 @@ BEGIN;
 -- os_name_op should implement gt;
 -- ./spec/os_name_op_spec.rb:8;
 CREATE EXTENSION istore;
+ERROR:  type "istore" already exists
 SELECT 'ios'::os_name > 'android'::os_name;
- ?column? 
-----------
- t
-(1 row)
-
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
 SELECT 'ios'::os_name >= 'android'::os_name;
- ?column? 
-----------
- t
-(1 row)
-
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
 SELECT NOT('ios'::os_name < 'android'::os_name);
- ?column? 
-----------
- t
-(1 row)
-
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
 SELECT NOT('ios'::os_name <= 'android'::os_name);
- ?column? 
-----------
- t
-(1 row)
-
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
 ROLLBACK;
 BEGIN;
 -- os_name_op should implement lt;
 -- ./spec/os_name_op_spec.rb:15;
 CREATE EXTENSION istore;
+ERROR:  type "istore" already exists
 SELECT 'ios'::os_name > 'android'::os_name;
- ?column? 
-----------
- t
-(1 row)
-
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
 SELECT 'ios'::os_name >= 'android'::os_name;
- ?column? 
-----------
- t
-(1 row)
-
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
 SELECT NOT('ios'::os_name < 'android'::os_name);
- ?column? 
-----------
- t
-(1 row)
-
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
 SELECT NOT('ios'::os_name <= 'android'::os_name);
- ?column? 
-----------
- t
-(1 row)
-
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
 ROLLBACK;
 BEGIN;
 -- os_name_op should implement eq;
 -- ./spec/os_name_op_spec.rb:22;
 CREATE EXTENSION istore;
+ERROR:  type "istore" already exists
 SELECT NOT('ios'::os_name = 'android'::os_name);
- ?column? 
-----------
- t
-(1 row)
-
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
 SELECT 'android'::os_name = 'android'::os_name;
- ?column? 
-----------
- t
-(1 row)
-
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
 ROLLBACK;
 BEGIN;
 -- os_name_op should implement neq;
 -- ./spec/os_name_op_spec.rb:27;
 CREATE EXTENSION istore;
+ERROR:  type "istore" already exists
 SELECT 'ios'::os_name != 'android'::os_name;
- ?column? 
-----------
- t
-(1 row)
-
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
 SELECT NOT('android'::os_name != 'android'::os_name);
- ?column? 
-----------
- t
-(1 row)
-
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
 ROLLBACK;
