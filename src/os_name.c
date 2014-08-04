@@ -74,6 +74,15 @@ os_name_eq(PG_FUNCTION_ARGS)
     PG_RETURN_BOOL(os_name_cmp_internal(a,b) == 0);
 }
 
+PG_FUNCTION_INFO_V1(os_name_neq);
+Datum
+os_name_neq(PG_FUNCTION_ARGS)
+{
+    os_name a = PG_GETARG_OS_NAME(0);
+    os_name b = PG_GETARG_OS_NAME(1);
+    PG_RETURN_BOOL(os_name_cmp_internal(a,b) != 0);
+}
+
 PG_FUNCTION_INFO_V1(os_name_ge);
 Datum
 os_name_ge(PG_FUNCTION_ARGS)
