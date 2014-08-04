@@ -141,17 +141,16 @@ get_device_type_string(uint8 num)
 {
     switch (num)
     {
-        case 1:  return create_string(CONST_STRING("bot"));
-        case 2:  return create_string(CONST_STRING("console"));
-        case 3:  return create_string(CONST_STRING("ipod"));
-        case 4:  return create_string(CONST_STRING("mac"));
-        case 5:  return create_string(CONST_STRING("pc"));
-        case 6:  return create_string(CONST_STRING("phone"));
-        case 7:  return create_string(CONST_STRING("resolver"));
-        case 8:  return create_string(CONST_STRING("server"));
-        case 9:  return create_string(CONST_STRING("simulator"));
-        case 10: return create_string(CONST_STRING("tablet"));
-        case 11: return create_string(CONST_STRING("unknown"));
+        case  20:  return create_string(CONST_STRING("bot"));
+        case  40:  return create_string(CONST_STRING("console"));
+        case  80:  return create_string(CONST_STRING("ipod"));
+        case 100:  return create_string(CONST_STRING("mac"));
+        case 120:  return create_string(CONST_STRING("pc"));
+        case 140:  return create_string(CONST_STRING("phone"));
+        case 160:  return create_string(CONST_STRING("server"));
+        case 180:  return create_string(CONST_STRING("simulator"));
+        case 200: return create_string(CONST_STRING("tablet"));
+        case 255: return create_string(CONST_STRING("unknown"));
         default: elog(ERROR, "unknown device_type num");
     }
 }
@@ -161,17 +160,16 @@ get_device_type_length(uint8 num)
 {
     switch (num)
     {
-        case 1:  return (CONST_STRING_LENGTH("bot"));
-        case 2:  return (CONST_STRING_LENGTH("console"));
-        case 3:  return (CONST_STRING_LENGTH("ipod"));
-        case 4:  return (CONST_STRING_LENGTH("mac"));
-        case 5:  return (CONST_STRING_LENGTH("pc"));
-        case 6:  return (CONST_STRING_LENGTH("phone"));
-        case 7:  return (CONST_STRING_LENGTH("resolver"));
-        case 8:  return (CONST_STRING_LENGTH("server"));
-        case 9:  return (CONST_STRING_LENGTH("simulator"));
-        case 10: return (CONST_STRING_LENGTH("tablet"));
-        case 11: return (CONST_STRING_LENGTH("unknown"));
+        case  20:  return (CONST_STRING_LENGTH("bot"));
+        case  40:  return (CONST_STRING_LENGTH("console"));
+        case  80:  return (CONST_STRING_LENGTH("ipod"));
+        case 100:  return (CONST_STRING_LENGTH("mac"));
+        case 120:  return (CONST_STRING_LENGTH("pc"));
+        case 140:  return (CONST_STRING_LENGTH("phone"));
+        case 160:  return (CONST_STRING_LENGTH("server"));
+        case 180:  return (CONST_STRING_LENGTH("simulator"));
+        case 200: return (CONST_STRING_LENGTH("tablet"));
+        case 255: return (CONST_STRING_LENGTH("unknown"));
         default: elog(ERROR, "unknown device_type num");
     }
 }
@@ -195,15 +193,14 @@ get_device_type_num(char *str)
 {
     switch (str[0])
     {
-        case 'b': return check_device_type_num(str, 1);
-        case 'c': return check_device_type_num(str, 2);
-        case 'i': return check_device_type_num(str, 3);
-        case 'm': return check_device_type_num(str, 4);
+        case 'b': return check_device_type_num(str, 20);
+        case 'c': return check_device_type_num(str, 40);
+        case 'i': return check_device_type_num(str, 80);
+        case 'm': return check_device_type_num(str, 100);
         case 'p': return get_device_type_num_p(str);
-        case 'r': return check_device_type_num(str, 7);
         case 's': return get_device_type_num_s(str);
-        case 't': return check_device_type_num(str, 10);
-        case 'u': return check_device_type_num(str, 11);
+        case 't': return check_device_type_num(str, 200);
+        case 'u': return check_device_type_num(str, 255);
         default : return 0;
     }
 }
@@ -212,8 +209,8 @@ uint8
 get_device_type_num_p(char *str)
 {
     switch (str[1]) {
-        case 'c': return check_device_type_num(str, 5);
-        case 'h': return check_device_type_num(str, 6);
+        case 'c': return check_device_type_num(str, 120);
+        case 'h': return check_device_type_num(str, 140);
         default : return 0;
     }
 }
@@ -222,8 +219,8 @@ uint8
 get_device_type_num_s(char *str)
 {
     switch (str[1]) {
-        case 'e': return check_device_type_num(str, 8);
-        case 'i': return check_device_type_num(str, 9);
+        case 'e': return check_device_type_num(str, 160);
+        case 'i': return check_device_type_num(str, 180);
         default : return 0;
     }
 }

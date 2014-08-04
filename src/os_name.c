@@ -15,7 +15,7 @@ os_name_in(PG_FUNCTION_ARGS)
     result = get_os_name_num(str);
     if (result == 0)
         elog(ERROR, "unknown input os_name");
-    PG_RETURN_POINTER(result);
+    PG_RETURN_OS_NAME(result);
 }
 
 PG_FUNCTION_INFO_V1(os_name_out);
@@ -125,12 +125,19 @@ get_os_name_string(uint8 num)
 {
     switch (num)
     {
-        case 1:  return create_string(CONST_STRING("android"));
-        case 2:  return create_string(CONST_STRING("ios"));
-        case 3:  return create_string(CONST_STRING("windows"));
-        case 4:  return create_string(CONST_STRING("windows-phone"));
-        case 5:  return create_string(CONST_STRING("unknown"));
-        default: return NULL;
+        case  20: return create_string(CONST_STRING("android"));
+        case  40: return create_string(CONST_STRING("bada"));
+        case  60: return create_string(CONST_STRING("blackberry"));
+        case  80: return create_string(CONST_STRING("ios"));
+        case 100: return create_string(CONST_STRING("linux"));
+        case 120: return create_string(CONST_STRING("macos"));
+        case 140: return create_string(CONST_STRING("server"));
+        case 160: return create_string(CONST_STRING("symbian"));
+        case 180: return create_string(CONST_STRING("webos"));
+        case 200: return create_string(CONST_STRING("windows"));
+        case 220: return create_string(CONST_STRING("windows-phone"));
+        case 255: return create_string(CONST_STRING("unknown"));
+        default: elog(ERROR, "internal error unexpected num in get_os_name_string");
     }
 }
 
@@ -139,11 +146,18 @@ get_os_name_length(uint8 num)
 {
     switch (num)
     {
-        case 1:  return (CONST_STRING_LENGTH("android"));
-        case 2:  return (CONST_STRING_LENGTH("ios"));
-        case 3:  return (CONST_STRING_LENGTH("windows"));
-        case 4:  return (CONST_STRING_LENGTH("windows-phone"));
-        case 5:  return (CONST_STRING_LENGTH("unknown"));
+        case  20: return (CONST_STRING_LENGTH("android"));
+        case  40: return (CONST_STRING_LENGTH("bada"));
+        case  60: return (CONST_STRING_LENGTH("blackberry"));
+        case  80: return (CONST_STRING_LENGTH("ios"));
+        case 100: return (CONST_STRING_LENGTH("linux"));
+        case 120: return (CONST_STRING_LENGTH("macos"));
+        case 140: return (CONST_STRING_LENGTH("server"));
+        case 160: return (CONST_STRING_LENGTH("symbian"));
+        case 180: return (CONST_STRING_LENGTH("webos"));
+        case 200: return (CONST_STRING_LENGTH("windows"));
+        case 220: return (CONST_STRING_LENGTH("windows-phone"));
+        case 255: return (CONST_STRING_LENGTH("unknown"));
         default: elog(ERROR, "unknown os_name type");
     }
 }
@@ -166,14 +180,48 @@ get_os_name_num(char *str)
 {
     switch (str[0])
     {
-        case 'a': return check_os_name_num(str, 1);
-        case 'i': return check_os_name_num(str, 2);
-        case 'w':
-                  if (str[7] == '-')
-                      return check_os_name_num(str, 4);
-                  else
-                      return check_os_name_num(str, 3);
-        case 'u': return check_os_name_num(str, 5);
+        case 'a': return check_os_name_num(str, 20);
+        case 'b': return get_os_name_num_b(str);
+        case 'i': return check_os_name_num(str, 80);
+        case 'l': return check_os_name_num(str, 100);
+        case 'm': return check_os_name_num(str, 120);
+        case 's': return get_os_name_num_s(str);
+        case 'w': return get_os_name_num_w(str);
+        case 'u': return check_os_name_num(str, 255);
+        default : return 0;
+    }
+}
+
+uint8
+get_os_name_num_b(char *str)
+{
+    switch (str[1]) {
+        case 'a': return check_os_name_num(str, 40);
+        case 'l': return check_os_name_num(str, 60);
+        default : return 0;
+    }
+}
+
+uint8
+get_os_name_num_s(char *str)
+{
+    switch (str[1]) {
+        case 'e': return check_os_name_num(str, 140);
+        case 'y': return check_os_name_num(str, 160);
+        default : return 0;
+    }
+}
+
+uint8
+get_os_name_num_w(char *str)
+{
+    switch (str[1]) {
+        case 'e': return check_os_name_num(str, 180);
+        case 'i':
+            if(str[7] == '-'  )
+                return check_os_name_num(str, 220);
+            else
+                return check_os_name_num(str, 200);
         default : return 0;
     }
 }

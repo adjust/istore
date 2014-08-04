@@ -7,7 +7,7 @@ describe 'device_type_pass' do
 
   let(:valid_device_types) do
     [
-      'bot', 'console', 'ipod', 'mac', 'pc', 'phone', 'resolver', 'server',
+      'bot', 'console', 'ipod', 'mac', 'pc', 'phone', 'server',
       'simulator', 'tablet', 'unknown'
     ]
   end
