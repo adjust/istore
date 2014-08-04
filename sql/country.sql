@@ -43,6 +43,10 @@ CREATE FUNCTION country_eq(country,country) RETURNS bool
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION country_neq(country,country) RETURNS bool
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION country_ge(country,country) RETURNS bool
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
@@ -59,26 +63,32 @@ CREATE OPERATOR < (
 
 CREATE OPERATOR <= (
     leftarg = country, rightarg = country, procedure = country_le,
-    commutator = > , negator = >= ,
+    commutator = >= , negator = > ,
     restrict = scalarltsel, join = scalarltjoinsel
 );
 
 CREATE OPERATOR = (
     leftarg = country, rightarg = country, procedure = country_eq,
-    commutator = > , negator = >= ,
-    restrict = scalarltsel, join = scalarltjoinsel
+    commutator = = , negator = <> ,
+    restrict = eqsel, join = eqjoinsel
+);
+
+CREATE OPERATOR <> (
+    leftarg = country, rightarg = country, procedure = country_neq,
+    commutator = <> , negator = = ,
+    restrict = neqsel, join = neqjoinsel
 );
 
 CREATE OPERATOR >= (
     leftarg = country, rightarg = country, procedure = country_ge,
-    commutator = > , negator = >= ,
-    restrict = scalarltsel, join = scalarltjoinsel
+    commutator = <= , negator = < ,
+    restrict = scalargtsel, join = scalargtjoinsel
 );
 
 CREATE OPERATOR > (
     leftarg = country, rightarg = country, procedure = country_gt,
-    commutator = > , negator = >= ,
-    restrict = scalarltsel, join = scalarltjoinsel
+    commutator = < , negator = <= ,
+    restrict = scalargtsel, join = scalargtjoinsel
 );
 
 CREATE FUNCTION country_cmp(country,country) RETURNS int4

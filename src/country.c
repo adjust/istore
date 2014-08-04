@@ -7,12 +7,13 @@ Datum
 country_in(PG_FUNCTION_ARGS)
 {
     char *str = PG_GETARG_CSTRING(0);
+    country result;
 
     if (str == NULL)
         elog(ERROR, "NULL input is not allowed for country type");
 
     LOWER_STRING(str);
-    country result = get_country_num(str);
+    result = get_country_num(str);
     if (result == 0)
         elog(ERROR, "unknown input country type");
     PG_RETURN_COUNTRY(result);
@@ -72,6 +73,15 @@ country_eq(PG_FUNCTION_ARGS)
     country a = PG_GETARG_COUNTRY(0);
     country b = PG_GETARG_COUNTRY(1);
     PG_RETURN_BOOL(country_cmp_internal(a,b) == 0);
+}
+
+PG_FUNCTION_INFO_V1(country_neq);
+Datum
+country_neq(PG_FUNCTION_ARGS)
+{
+    country a = PG_GETARG_COUNTRY(0);
+    country b = PG_GETARG_COUNTRY(1);
+    PG_RETURN_BOOL(country_cmp_internal(a,b) != 0);
 }
 
 PG_FUNCTION_INFO_V1(country_ge);

@@ -43,6 +43,10 @@ CREATE FUNCTION os_name_eq(os_name,os_name) RETURNS bool
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION os_name_neq(os_name,os_name) RETURNS bool
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION os_name_ge(os_name,os_name) RETURNS bool
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
@@ -59,26 +63,32 @@ CREATE OPERATOR < (
 
 CREATE OPERATOR <= (
     leftarg = os_name, rightarg = os_name, procedure = os_name_le,
-    commutator = > , negator = >= ,
+    commutator = >= , negator = > ,
     restrict = scalarltsel, join = scalarltjoinsel
 );
 
 CREATE OPERATOR = (
     leftarg = os_name, rightarg = os_name, procedure = os_name_eq,
-    commutator = > , negator = >= ,
-    restrict = scalarltsel, join = scalarltjoinsel
+    commutator = = , negator = <> ,
+    restrict = eqsel, join = eqjoinsel
+);
+
+CREATE OPERATOR <> (
+    leftarg = os_name, rightarg = os_name, procedure = os_name_neq,
+    commutator = <> , negator = = ,
+    restrict = neqsel, join = neqjoinsel
 );
 
 CREATE OPERATOR >= (
     leftarg = os_name, rightarg = os_name, procedure = os_name_ge,
-    commutator = > , negator = >= ,
-    restrict = scalarltsel, join = scalarltjoinsel
+    commutator = <= , negator = < ,
+    restrict = scalargtsel, join = scalargtjoinsel
 );
 
 CREATE OPERATOR > (
     leftarg = os_name, rightarg = os_name, procedure = os_name_gt,
-    commutator = > , negator = >= ,
-    restrict = scalarltsel, join = scalarltjoinsel
+    commutator = < , negator = <= ,
+    restrict = scalargtsel, join = scalargtjoinsel
 );
 
 CREATE FUNCTION os_name_cmp(os_name,os_name) RETURNS int4

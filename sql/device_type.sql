@@ -43,6 +43,10 @@ CREATE FUNCTION device_type_eq(device_type,device_type) RETURNS bool
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION device_type_neq(device_type,device_type) RETURNS bool
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION device_type_ge(device_type,device_type) RETURNS bool
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
@@ -59,26 +63,31 @@ CREATE OPERATOR < (
 
 CREATE OPERATOR <= (
     leftarg = device_type, rightarg = device_type, procedure = device_type_le,
-    commutator = > , negator = >= ,
-    restrict = scalarltsel, join = scalarltjoinsel
-);
+    commutator = >= , negator = > ,
+    restrict = scalarltsel, join = scalarltjoinsel);
 
 CREATE OPERATOR = (
     leftarg = device_type, rightarg = device_type, procedure = device_type_eq,
-    commutator = > , negator = >= ,
-    restrict = scalarltsel, join = scalarltjoinsel
+    commutator = = , negator = <> ,
+    restrict = eqsel, join = eqjoinsel
+);
+
+CREATE OPERATOR <> (
+    leftarg = device_type, rightarg = device_type, procedure = device_type_neq,
+    commutator = <> , negator = = ,
+    restrict = neqsel, join = neqjoinsel
 );
 
 CREATE OPERATOR >= (
     leftarg = device_type, rightarg = device_type, procedure = device_type_ge,
-    commutator = > , negator = >= ,
-    restrict = scalarltsel, join = scalarltjoinsel
+    commutator = <= , negator = < ,
+    restrict = scalargtsel, join = scalargtjoinsel
 );
 
 CREATE OPERATOR > (
     leftarg = device_type, rightarg = device_type, procedure = device_type_gt,
-    commutator = > , negator = >= ,
-    restrict = scalarltsel, join = scalarltjoinsel
+    commutator = < , negator = <= ,
+    restrict = scalargtsel, join = scalargtjoinsel
 );
 
 CREATE FUNCTION device_type_cmp(device_type,device_type) RETURNS int4

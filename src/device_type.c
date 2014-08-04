@@ -22,11 +22,12 @@ Datum
 device_type_in(PG_FUNCTION_ARGS)
 {
     char *str = PG_GETARG_CSTRING(0);
+    device_type result;
 
     if (str == NULL)
         elog(ERROR, "NULL input for device_type not defined");
     LOWER_STRING(str);
-    device_type result = get_device_type_num(str);
+    result = get_device_type_num(str);
     if (result == 0)
         elog(ERROR, "unknown input device_type");
     PG_RETURN_DEVICE_TYPE(result);
@@ -87,6 +88,15 @@ device_type_eq(PG_FUNCTION_ARGS)
     device_type a = PG_GETARG_DEVICE_TYPE(0);
     device_type b = PG_GETARG_DEVICE_TYPE(1);
     PG_RETURN_BOOL(device_type_cmp_internal(a,b) == 0);
+}
+
+PG_FUNCTION_INFO_V1(device_type_neq);
+Datum
+device_type_neq(PG_FUNCTION_ARGS)
+{
+    device_type a = PG_GETARG_DEVICE_TYPE(0);
+    device_type b = PG_GETARG_DEVICE_TYPE(1);
+    PG_RETURN_BOOL(device_type_cmp_internal(a,b) != 0);
 }
 
 PG_FUNCTION_INFO_V1(device_type_ge);
