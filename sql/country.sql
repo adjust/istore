@@ -27,7 +27,8 @@ CREATE TYPE country (
     output = country_out,
     send = country_send,
     receive = country_recv,
-    alignment = char
+    alignment = char,
+    PASSEDBYVALUE
 );
 
 CREATE FUNCTION country_lt(country,country) RETURNS bool

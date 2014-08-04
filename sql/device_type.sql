@@ -27,7 +27,8 @@ CREATE TYPE device_type (
     output = device_type_out,
     receive = device_type_recv,
     send = device_type_send,
-    alignment = char
+    alignment = char,
+    PASSEDBYVALUE
 );
 
 CREATE FUNCTION device_type_lt(device_type,device_type) RETURNS bool

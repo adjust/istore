@@ -177,7 +177,8 @@ CREATE TYPE country (
     output = country_out,
     send = country_send,
     receive = country_recv,
-    alignment = char
+    alignment = char,
+    PASSEDBYVALUE
 );
 
 CREATE FUNCTION country_lt(country,country) RETURNS bool
@@ -442,7 +443,8 @@ CREATE TYPE os_name (
     output = os_name_out,
     receive = os_name_recv,
     send = os_name_send,
-    alignment = char
+    alignment = char,
+    PASSEDBYVALUE
 );
 
 CREATE FUNCTION os_name_lt(os_name,os_name) RETURNS bool
@@ -708,7 +710,8 @@ CREATE TYPE device_type (
     output = device_type_out,
     receive = device_type_recv,
     send = device_type_send,
-    alignment = char
+    alignment = char,
+    PASSEDBYVALUE
 );
 
 CREATE FUNCTION device_type_lt(device_type,device_type) RETURNS bool

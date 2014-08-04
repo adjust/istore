@@ -457,12 +457,12 @@ cistore_from_types(PG_FUNCTION_ARGS)
           vallen,
           ptr = 0;
     char *out;
-    country     *c  = (country *)    PG_GETARG_POINTER(0);
-    device_type *d  = (device_type *)PG_GETARG_POINTER(1);
-    os_name     *o  = (os_name *)    PG_GETARG_POINTER(2);
+    country     c  = PG_GETARG_COUNTRY(0);
+    device_type d  = PG_GETARG_DEVICE_TYPE(1);
+    os_name     o  = PG_GETARG_OS_NAME(2);
     long        val = PG_GETARG_INT64(3);
 
-    C_ISTORE_CREATE_KEY(key, *c, *d, *o, 0);
+    C_ISTORE_CREATE_KEY(key, c, d, o, 0);
     C_ISTORE_KEY_LEN(key, keylen);
     DIGIT_WIDTH(val, vallen);
 
@@ -492,13 +492,13 @@ cistore_cohort_from_types(PG_FUNCTION_ARGS)
           vallen,
           ptr = 0;
     char *out;
-    country     *c  = (country *)    PG_GETARG_POINTER(0);
-    device_type *d  = (device_type *)PG_GETARG_POINTER(1);
-    os_name     *o  = (os_name *)    PG_GETARG_POINTER(2);
-    uint16       s  = PG_GETARG_UINT16(3);
+    country     c   = PG_GETARG_COUNTRY(0);
+    device_type d   = PG_GETARG_DEVICE_TYPE(1);
+    os_name     o   = PG_GETARG_OS_NAME(2);
+    uint16      s   = PG_GETARG_UINT16(3);
     long        val = PG_GETARG_INT64(4);
 
-    C_ISTORE_CREATE_KEY(key, *c, *d, *o, s);
+    C_ISTORE_CREATE_KEY(key, c, d, o, s);
     C_ISTORE_COHORT_KEY_LEN(key, keylen);
     DIGIT_WIDTH(val, vallen);
 

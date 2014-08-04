@@ -401,7 +401,6 @@ type_istore_from_int_array(ArrayType *input, int type)
     Position position;
     int      key,
              i;
-    uint8   *work_var;
 
     i_eltype = ARR_ELEMTYPE(input);
 
@@ -437,8 +436,7 @@ type_istore_from_int_array(ArrayType *input, int type)
             case DEVICE_ISTORE:
             case COUNTRY_ISTORE:
             case OS_NAME_ISTORE:
-                work_var = (uint8 *)i_data[i];
-                key = *work_var;
+                key = DatumGetUInt8(i_data[i]);
                 break;
         }
         if (key < 0)
