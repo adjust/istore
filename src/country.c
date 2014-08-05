@@ -403,7 +403,7 @@ get_country_string(uint8 num)
         case 248: return create_string(CONST_STRING("za"));
         case 249: return create_string(CONST_STRING("zm"));
         case 250: return create_string(CONST_STRING("zw"));
-        case 251: return create_string(CONST_STRING("zz"));
+        case 255: return create_string(CONST_STRING("zz"));
         default : elog(ERROR, "unknown output countrytype");
     }
 }
@@ -886,7 +886,7 @@ get_country_num_z(char *str)
         case 'a': return 248;
         case 'm': return 249;
         case 'w': return 250;
-        case 'z': return 251;
+        case 'z': return 255;
         default : return 0;
     }
 }
