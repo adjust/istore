@@ -1,6 +1,6 @@
 GIT
   remote: git@github.com:adjust/dumbo.git
-  revision: 0c5612179ec55afbe471b2079cc7a91077800b54
+  revision: 68514c22071d40a0fd5b315f01bac59b7a9c3368
   specs:
     dumbo (0.0.4)
       activerecord
