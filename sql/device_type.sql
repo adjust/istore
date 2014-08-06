@@ -218,10 +218,9 @@ CREATE FUNCTION device_istore_sum_up(device_istore)
 --    LANGUAGE C IMMUTABLE STRICT;
 
 CREATE AGGREGATE SUM (
-    sfunc = array_agg_transfn,
+    sfunc = add,
     basetype = device_istore,
-    stype = internal,
-    finalfunc = device_istore_agg_finalfn
+    stype = device_istore
 );
 
 CREATE OPERATOR -> (

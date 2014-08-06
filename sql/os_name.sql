@@ -221,10 +221,9 @@ CREATE FUNCTION os_name_istore_sum_up(os_name_istore)
 --    LANGUAGE C IMMUTABLE STRICT;
 
 CREATE AGGREGATE SUM (
-    sfunc = array_agg_transfn,
+    sfunc = add,
     basetype = os_name_istore,
-    stype = internal,
-    finalfunc = os_name_istore_agg_finalfn
+    stype = os_name_istore
 );
 
 CREATE OPERATOR -> (

@@ -162,6 +162,66 @@ is_add(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(is_sum);
+Datum
+is_sum(PG_FUNCTION_ARGS)
+{
+    IStore  *is1,
+            *is2,
+            *result;
+    ISPair  *pairs1,
+            *pairs2;
+    ISPairs *creator = NULL;
+
+    int     index1 = 0,
+            index2 = 0;
+    /* TODO NULL handling */
+    /* throw error if istore types differ? */
+    is1 = PG_GETARG_IS(0);
+    is2 = PG_GETARG_IS(1);
+    pairs1 = FIRST_PAIR(is1);
+    pairs2 = FIRST_PAIR(is2);
+    creator = palloc0(sizeof *creator);
+    is_pairs_init(creator, 200, is1->type);
+    while (index1 < is1->len && index2 < is2->len)
+    {
+        if (pairs1[index1].key < pairs2[index2].key)
+        {
+            is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val, is1->type);
+            ++index1;
+        }
+        else if (pairs1[index1].key > pairs2[index2].key)
+        {
+            is_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val, is1->type);
+            ++index2;
+        }
+        else
+        {
+            is_pairs_insert(
+                creator,
+                pairs1[index1].key,
+                pairs1[index1].val + pairs2[index2].val,
+                is1->type
+            );
+            ++index1;
+            ++index2;
+        }
+    }
+
+    while (index1 < is1->len)
+    {
+        is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val, is1->type);
+        ++index1;
+    }
+    while (index2 < is2->len)
+    {
+        is_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val, is2->type);
+        ++index2;
+    }
+    FINALIZE_ISTORE(result, creator);
+    PG_RETURN_POINTER(result);
+}
+
 PG_FUNCTION_INFO_V1(is_add_integer);
 Datum
 is_add_integer(PG_FUNCTION_ARGS)
