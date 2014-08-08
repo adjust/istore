@@ -1,0 +1,426 @@
+BEGIN;
+-- functions_device should find presence of a key;
+-- ./spec/functions_device_spec.rb:8;
+CREATE EXTENSION istore;
+SELECT exist('phone=>1'::device_istore, 'phone');
+ exist 
+-------
+ t
+(1 row)
+
+SELECT exist('phone=>1'::device_istore, 'tablet');
+ exist 
+-------
+ f
+(1 row)
+
+SELECT exist('phone=>1, bot=>0'::device_istore, 'bot');
+ exist 
+-------
+ t
+(1 row)
+
+SELECT exist('phone=>1, bot=>0'::device_istore, 'kermit');
+ exist 
+-------
+ f
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- functions_device should fetch values;
+-- ./spec/functions_device_spec.rb:15;
+CREATE EXTENSION istore;
+SELECT fetchval('phone=>1'::device_istore, 'phone');
+ fetchval 
+----------
+        1
+(1 row)
+
+SELECT fetchval('tablet=>1'::device_istore, 'phone');
+ fetchval 
+----------
+         
+(1 row)
+
+SELECT fetchval('phone=>1, phone=>1'::device_istore, 'tablet');
+ fetchval 
+----------
+         
+(1 row)
+
+SELECT fetchval('phone=>1, phone=>1'::device_istore, 'phone');
+ fetchval 
+----------
+        2
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- functions_device should add to device_istores;
+-- ./spec/functions_device_spec.rb:22;
+CREATE EXTENSION istore;
+SELECT add('phone=>1, tablet=>1'::device_istore, 'phone=>1, tablet=>1'::device_istore);
+             add             
+-----------------------------
+ "phone"=>"2", "tablet"=>"2"
+(1 row)
+
+SELECT add('phone=>1, tablet=>1'::device_istore, 'bot=>1, tablet=>1'::device_istore);
+                   add                   
+-----------------------------------------
+ "bot"=>"1", "phone"=>"1", "tablet"=>"2"
+(1 row)
+
+SELECT add('phone=>1, tablet=>1'::device_istore, 'bot=>-1, tablet=>1'::device_istore);
+                   add                    
+------------------------------------------
+ "bot"=>"-1", "phone"=>"1", "tablet"=>"2"
+(1 row)
+
+SELECT add('bot=>1, tablet=>1'::device_istore, 'bot=>-1, tablet=>1'::device_istore);
+            add            
+---------------------------
+ "bot"=>"0", "tablet"=>"2"
+(1 row)
+
+SELECT add('bot=>-1, tablet=>1'::device_istore, 'bot=>-1, tablet=>1'::device_istore);
+            add             
+----------------------------
+ "bot"=>"-2", "tablet"=>"2"
+(1 row)
+
+SELECT add('bot=>-1, tablet=>1'::device_istore, 1);
+            add            
+---------------------------
+ "bot"=>"0", "tablet"=>"2"
+(1 row)
+
+SELECT add('bot=>-1, tablet=>1'::device_istore, -1);
+            add             
+----------------------------
+ "bot"=>"-2", "tablet"=>"0"
+(1 row)
+
+SELECT add('bot=>-1, tablet=>1'::device_istore, 0);
+            add             
+----------------------------
+ "bot"=>"-1", "tablet"=>"1"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- functions_device should substract device_istores;
+-- ./spec/functions_device_spec.rb:41;
+CREATE EXTENSION istore;
+SELECT subtract('phone=>1, tablet=>1'::device_istore, 'phone=>1, tablet=>1'::device_istore);
+          subtract           
+-----------------------------
+ "phone"=>"0", "tablet"=>"0"
+(1 row)
+
+SELECT subtract('phone=>1, tablet=>1'::device_istore, 'bot=>1, tablet=>1'::device_istore);
+                 subtract                 
+------------------------------------------
+ "bot"=>"-1", "phone"=>"1", "tablet"=>"0"
+(1 row)
+
+SELECT subtract('phone=>1, tablet=>1'::device_istore, 'bot=>-1, tablet=>1'::device_istore);
+                subtract                 
+-----------------------------------------
+ "bot"=>"1", "phone"=>"1", "tablet"=>"0"
+(1 row)
+
+SELECT subtract('bot=>1, tablet=>1'::device_istore, 'bot=>-1, tablet=>1'::device_istore);
+         subtract          
+---------------------------
+ "bot"=>"2", "tablet"=>"0"
+(1 row)
+
+SELECT subtract('bot=>-1, tablet=>1'::device_istore, 'bot=>-1, tablet=>1'::device_istore);
+         subtract          
+---------------------------
+ "bot"=>"0", "tablet"=>"0"
+(1 row)
+
+SELECT subtract('bot=>-1, tablet=>1'::device_istore, 1);
+          subtract          
+----------------------------
+ "bot"=>"-2", "tablet"=>"0"
+(1 row)
+
+SELECT subtract('bot=>-1, tablet=>1'::device_istore, -1);
+         subtract          
+---------------------------
+ "bot"=>"0", "tablet"=>"2"
+(1 row)
+
+SELECT subtract('bot=>-1, tablet=>1'::device_istore, 0);
+          subtract          
+----------------------------
+ "bot"=>"-1", "tablet"=>"1"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- functions_device should multiply device_istores;
+-- ./spec/functions_device_spec.rb:60;
+CREATE EXTENSION istore;
+SELECT multiply('phone=>1, tablet=>1'::device_istore, 'phone=>1, tablet=>1'::device_istore);
+          multiply           
+-----------------------------
+ "phone"=>"1", "tablet"=>"1"
+(1 row)
+
+SELECT multiply('phone=>1, tablet=>1'::device_istore, 'bot=>1, tablet=>1'::device_istore);
+                 multiply                  
+-------------------------------------------
+ "bot"=>NULL, "phone"=>NULL, "tablet"=>"1"
+(1 row)
+
+SELECT multiply('phone=>1, tablet=>1'::device_istore, 'bot=>-1, tablet=>1'::device_istore);
+                 multiply                  
+-------------------------------------------
+ "bot"=>NULL, "phone"=>NULL, "tablet"=>"1"
+(1 row)
+
+SELECT multiply('bot=>1, tablet=>1'::device_istore, 'bot=>-1, tablet=>1'::device_istore);
+          multiply          
+----------------------------
+ "bot"=>"-1", "tablet"=>"1"
+(1 row)
+
+SELECT multiply('bot=>-1, tablet=>1'::device_istore, 'bot=>-1, tablet=>1'::device_istore);
+         multiply          
+---------------------------
+ "bot"=>"1", "tablet"=>"1"
+(1 row)
+
+SELECT multiply('bot=>-1, tablet=>1'::device_istore, 1);
+          multiply          
+----------------------------
+ "bot"=>"-1", "tablet"=>"1"
+(1 row)
+
+SELECT multiply('bot=>-1, tablet=>1'::device_istore, -1);
+          multiply          
+----------------------------
+ "bot"=>"1", "tablet"=>"-1"
+(1 row)
+
+SELECT multiply('bot=>-1, tablet=>1'::device_istore, 0);
+         multiply          
+---------------------------
+ "bot"=>"0", "tablet"=>"0"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- functions_device should create an device_istore from array;
+-- ./spec/functions_device_spec.rb:79;
+CREATE EXTENSION istore;
+SELECT device_istore_from_array(ARRAY['bot']);
+ device_istore_from_array 
+--------------------------
+ "bot"=>"1"
+(1 row)
+
+SELECT device_istore_from_array(ARRAY['bot','bot','bot','bot']);
+ device_istore_from_array 
+--------------------------
+ "bot"=>"4"
+(1 row)
+
+SELECT device_istore_from_array(NULL::text[]);
+ device_istore_from_array 
+--------------------------
+ 
+(1 row)
+
+SELECT device_istore_from_array(ARRAY['bot','phone','tablet','mac']);
+              device_istore_from_array               
+-----------------------------------------------------
+ "bot"=>"1", "mac"=>"1", "phone"=>"1", "tablet"=>"1"
+(1 row)
+
+SELECT device_istore_from_array(ARRAY['bot','phone','tablet','mac','bot','phone','tablet','mac']);
+              device_istore_from_array               
+-----------------------------------------------------
+ "bot"=>"2", "mac"=>"2", "phone"=>"2", "tablet"=>"2"
+(1 row)
+
+SELECT device_istore_from_array(ARRAY['bot','phone','tablet','mac','bot','phone','tablet','mac',NULL]);
+              device_istore_from_array               
+-----------------------------------------------------
+ "bot"=>"2", "mac"=>"2", "phone"=>"2", "tablet"=>"2"
+(1 row)
+
+SELECT device_istore_from_array(ARRAY[NULL,'bot','phone','tablet','mac','bot','phone','tablet','mac']);
+              device_istore_from_array               
+-----------------------------------------------------
+ "bot"=>"2", "mac"=>"2", "phone"=>"2", "tablet"=>"2"
+(1 row)
+
+SELECT device_istore_from_array(ARRAY[NULL,'bot','phone','tablet','mac','bot','phone','tablet','mac',NULL]);
+              device_istore_from_array               
+-----------------------------------------------------
+ "bot"=>"2", "mac"=>"2", "phone"=>"2", "tablet"=>"2"
+(1 row)
+
+SELECT device_istore_from_array(ARRAY['bot','phone','tablet','mac','bot','phone','tablet','mac',NULL,'bot',NULL,'bot','phone','tablet','mac','bot','phone','tablet','mac']);
+              device_istore_from_array               
+-----------------------------------------------------
+ "bot"=>"5", "mac"=>"4", "phone"=>"4", "tablet"=>"4"
+(1 row)
+
+SELECT device_istore_from_array(ARRAY['bot'::device_type]);
+ device_istore_from_array 
+--------------------------
+ "bot"=>"1"
+(1 row)
+
+SELECT device_istore_from_array(ARRAY['bot'::device_type,'bot'::device_type,'bot'::device_type,'bot'::device_type]);
+ device_istore_from_array 
+--------------------------
+ "bot"=>"4"
+(1 row)
+
+SELECT device_istore_from_array(NULL::text[]);
+ device_istore_from_array 
+--------------------------
+ 
+(1 row)
+
+SELECT device_istore_from_array(ARRAY['bot'::device_type,'phone'::device_type,'tablet'::device_type,'mac'::device_type]);
+              device_istore_from_array               
+-----------------------------------------------------
+ "bot"=>"1", "mac"=>"1", "phone"=>"1", "tablet"=>"1"
+(1 row)
+
+SELECT device_istore_from_array(ARRAY['bot'::device_type,'phone'::device_type,'tablet'::device_type,'mac'::device_type,'bot'::device_type,'phone'::device_type,'tablet'::device_type,'mac'::device_type]);
+              device_istore_from_array               
+-----------------------------------------------------
+ "bot"=>"2", "mac"=>"2", "phone"=>"2", "tablet"=>"2"
+(1 row)
+
+SELECT device_istore_from_array(ARRAY['bot'::device_type,'phone'::device_type,'tablet'::device_type,'mac'::device_type,'bot'::device_type,'phone'::device_type,'tablet'::device_type,'mac'::device_type,NULL]);
+              device_istore_from_array               
+-----------------------------------------------------
+ "bot"=>"2", "mac"=>"2", "phone"=>"2", "tablet"=>"2"
+(1 row)
+
+SELECT device_istore_from_array(ARRAY[NULL,'bot'::device_type,'phone'::device_type,'tablet'::device_type,'mac'::device_type,'bot'::device_type,'phone'::device_type,'tablet'::device_type,'mac'::device_type]);
+              device_istore_from_array               
+-----------------------------------------------------
+ "bot"=>"2", "mac"=>"2", "phone"=>"2", "tablet"=>"2"
+(1 row)
+
+SELECT device_istore_from_array(ARRAY[NULL,'bot'::device_type,'phone'::device_type,'tablet'::device_type,'mac'::device_type,'bot'::device_type,'phone'::device_type,'tablet'::device_type,'mac'::device_type,NULL]);
+              device_istore_from_array               
+-----------------------------------------------------
+ "bot"=>"2", "mac"=>"2", "phone"=>"2", "tablet"=>"2"
+(1 row)
+
+SELECT device_istore_from_array(ARRAY['bot'::device_type,'phone'::device_type,'tablet'::device_type,'mac'::device_type,'bot'::device_type,'phone'::device_type,'tablet'::device_type,'mac'::device_type,NULL,'bot'::device_type,NULL,'bot'::device_type,'phone'::device_type,'tablet'::device_type,'mac'::device_type,'bot'::device_type,'phone'::device_type,'tablet'::device_type,'mac'::device_type]);
+              device_istore_from_array               
+-----------------------------------------------------
+ "bot"=>"5", "mac"=>"4", "phone"=>"4", "tablet"=>"4"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- functions_device should agg an array of device_istores;
+-- ./spec/functions_device_spec.rb:116;
+CREATE EXTENSION istore;
+SELECT device_istore_agg(ARRAY['phone=>1']::device_istore[]);
+ device_istore_agg 
+-------------------
+ "phone"=>"1"
+(1 row)
+
+SELECT device_istore_agg(ARRAY['phone=>1','phone=>1']::device_istore[]);
+ device_istore_agg 
+-------------------
+ "phone"=>"2"
+(1 row)
+
+SELECT device_istore_agg(ARRAY['phone=>1,tablet=>1','phone=>1,tablet=>-1']::device_istore[]);
+      device_istore_agg      
+-----------------------------
+ "phone"=>"2", "tablet"=>"0"
+(1 row)
+
+SELECT device_istore_agg(ARRAY['phone=>1,tablet=>1','phone=>1,tablet=>-1',NULL]::device_istore[]);
+      device_istore_agg      
+-----------------------------
+ "phone"=>"2", "tablet"=>"0"
+(1 row)
+
+SELECT device_istore_agg(ARRAY[NULL,'phone=>1,tablet=>1','phone=>1,tablet=>-1']::device_istore[]);
+      device_istore_agg      
+-----------------------------
+ "phone"=>"2", "tablet"=>"0"
+(1 row)
+
+SELECT device_istore_agg(ARRAY[NULL,'phone=>1,tablet=>1','phone=>1,tablet=>-1',NULL]::device_istore[]);
+      device_istore_agg      
+-----------------------------
+ "phone"=>"2", "tablet"=>"0"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- functions_device should sum up device_istores;
+-- ./spec/functions_device_spec.rb:131;
+CREATE EXTENSION istore;
+SELECT device_istore_sum_up('phone=>1'::device_istore);
+ device_istore_sum_up 
+----------------------
+                    1
+(1 row)
+
+SELECT device_istore_sum_up(NULL::device_istore);
+ device_istore_sum_up 
+----------------------
+                     
+(1 row)
+
+SELECT device_istore_sum_up('phone=>1, tablet=>1'::device_istore);
+ device_istore_sum_up 
+----------------------
+                    2
+(1 row)
+
+SELECT device_istore_sum_up('phone=>1 ,tablet=>-1, phone=>1'::device_istore);
+ device_istore_sum_up 
+----------------------
+                    1
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- functions_device should SUM device_istores FROM table;
+-- ./spec/functions_device_spec.rb:138;
+CREATE EXTENSION istore;
+CREATE TABLE test (a device_istore);
+INSERT INTO test VALUES ('phone=>1'), ('tablet=>1'), ('mac=>1');
+SELECT SUM(a) FROM test;
+                   sum                   
+-----------------------------------------
+ "mac"=>"1", "phone"=>"1", "tablet"=>"1"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- functions_device should SUM device_istores FROM table;
+-- ./spec/functions_device_spec.rb:145;
+CREATE EXTENSION istore;
+CREATE TABLE test (a device_istore);
+INSERT INTO test VALUES ('phone=>1'), ('tablet=>1'), ('mac=>1'), (NULL), ('mac=>3');
+SELECT SUM(a) FROM test;
+                   sum                   
+-----------------------------------------
+ "mac"=>"4", "phone"=>"1", "tablet"=>"1"
+(1 row)
+
+ROLLBACK;

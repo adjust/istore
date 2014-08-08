@@ -38,12 +38,6 @@ SELECT 'phone'::device_type;
  phone
 (1 row)
 
-SELECT 'resolver'::device_type;
- device_type 
--------------
- resolver
-(1 row)
-
 SELECT 'server'::device_type;
  device_type 
 -------------
