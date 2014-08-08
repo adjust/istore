@@ -846,6 +846,9 @@ istore_array_add(PG_FUNCTION_ARGS)
         else
             position->value += value;
     }
+    n1 = is_tree_length(tree);
+    if (n1 == 0)
+        PG_RETURN_NULL();
     pairs = palloc(sizeof *pairs);
     is_pairs_init(pairs, 200, PLAIN_ISTORE);
     is_tree_to_pairs(tree, pairs, 0);
