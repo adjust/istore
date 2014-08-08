@@ -94,6 +94,7 @@ describe 'functions_plain' do
     '"1"=>"1", "2"=>"2", "3"=>"2", "4"=>"1"'
     query("SELECT istore_from_array(ARRAY[1,2,3,NULL,1,NULL,3,4,1,2,3])").should match \
     '"1"=>"3", "2"=>"2", "3"=>"3", "4"=>"1"'
+    query("SELECT istore_from_array(ARRAY[NULL,NULL,NULL,NULL]::integer[])").should match nil
   end
 
   it 'should agg an array of istores' do

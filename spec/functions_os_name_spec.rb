@@ -149,6 +149,8 @@ describe 'functions_os_name' do
 
     query("SELECT os_name_istore_from_array(ARRAY['android'::os_name,'ios'::os_name,'windows'::os_name,NULL,'android'::os_name,NULL,'windows'::os_name,'windows-phone'::os_name,'android'::os_name,'ios'::os_name,'windows'::os_name])").should match \
      '"android"=>"3", "ios"=>"2", "windows"=>"3", "windows-phone"=>"1"'
+
+    query("SELECT os_name_istore_from_array(ARRAY[NULL::os_name,NULL::os_name,NULL::os_name,NULL::os_name,NULL::os_name,NULL::os_name,NULL::os_name,NULL::os_name,NULL,NULL::os_name,NULL])").should match nil
    end
 
    it 'should agg an array of os_name_istores' do
