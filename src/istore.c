@@ -665,6 +665,10 @@ array_to_istore(Datum *data, int count, bool *nulls)
                 position->value += payload->val;
         }
     }
+    i = is_tree_length(tree);
+    if (i == 0)
+        return 0;
+
     pairs = palloc(sizeof *pairs);
     is_pairs_init(pairs, 200, type);
     is_tree_to_pairs(tree, pairs, 0);
@@ -677,6 +681,7 @@ PG_FUNCTION_INFO_V1(istore_agg);
 Datum
 istore_agg(PG_FUNCTION_ARGS)
 {
+    Datum      result;
     ArrayType *input;
     Datum     *i_data;
     bool      *nulls;
@@ -714,13 +719,18 @@ istore_agg(PG_FUNCTION_ARGS)
     if (n == 0 || (n == 1 && nulls[0]))
         PG_RETURN_NULL();
 
-    return array_to_istore(i_data, n, nulls);
+    result = array_to_istore(i_data, n, nulls);
+    if (result == 0)
+        PG_RETURN_NULL();
+    else
+        return result;
 }
 
 PG_FUNCTION_INFO_V1(istore_agg_finalfn);
 Datum
 istore_agg_finalfn(PG_FUNCTION_ARGS)
 {
+    Datum            result;
     ArrayBuildState *input;
     Datum           *data;
     bool            *nulls;
@@ -735,7 +745,11 @@ istore_agg_finalfn(PG_FUNCTION_ARGS)
     nulls = input->dnulls;
     data  = input->dvalues;
 
-    return array_to_istore(data, count, nulls);
+    result = array_to_istore(data, count, nulls);
+    if (result == 0)
+        PG_RETURN_NULL();
+    else
+        return result;
 }
 
 PG_FUNCTION_INFO_V1(istore_array_add);
