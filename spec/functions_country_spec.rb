@@ -111,6 +111,7 @@ describe 'functions_country' do
       '"de"=>"2", "es"=>"2", "io"=>"2", "us"=>"2"'
     query("SELECT country_istore_from_array(ARRAY['de'::country,'es'::country,'io'::country,'us'::country,'de'::country,'es'::country,'io'::country,'us'::country,NULL,'de'::country,NULL,'de'::country,'es'::country,'io'::country,'us'::country,'de'::country,'es'::country,'io'::country,'us'::country])").should match \
       '"de"=>"5", "es"=>"4", "io"=>"4", "us"=>"4"'
+    query("SELECT country_istore_from_array(ARRAY[NULL::country,NULL::country,NULL::country,NULL::country,NULL::country,NULL::country,NULL::country,NULL::country,NULL,NULL::country,NULL])").should match nil
   end
 
   it 'should sum up an array of country_istores' do

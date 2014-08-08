@@ -449,6 +449,8 @@ type_istore_from_int_array(ArrayType *input, int type)
     }
 
     n = is_tree_length(tree);
+    if (n == 0)
+        return 0;
     pairs = palloc0(sizeof *pairs);
     is_pairs_init(pairs, 200, type);
     is_tree_to_pairs(tree, pairs, 0);
@@ -530,6 +532,8 @@ type_istore_from_text_array(ArrayType *input, int type)
     }
 
     n = is_tree_length(tree);
+    if (n == 0)
+        return 0;
     pairs = palloc0(sizeof *pairs);
     is_pairs_init(pairs, 200, type);
     is_tree_to_pairs(tree, pairs, 0);
@@ -543,11 +547,15 @@ Datum
 istore_from_array(PG_FUNCTION_ARGS)
 {
     ArrayType *input;
-
+    Datum result;
     if (PG_ARGISNULL(0))
         PG_RETURN_NULL();
     input = PG_GETARG_ARRAYTYPE_P(0);
-    return type_istore_from_int_array(input, PLAIN_ISTORE);
+    result = type_istore_from_int_array(input, PLAIN_ISTORE);
+    if (result == 0)
+        PG_RETURN_NULL();
+    else
+        return result;
 }
 
 PG_FUNCTION_INFO_V1(device_istore_from_array);
@@ -556,6 +564,7 @@ device_istore_from_array(PG_FUNCTION_ARGS)
 {
     ArrayType *input;
     Oid        i_eltype;
+    Datum      result;
 
     if (PG_ARGISNULL(0))
         PG_RETURN_NULL();
@@ -563,9 +572,14 @@ device_istore_from_array(PG_FUNCTION_ARGS)
     input = PG_GETARG_ARRAYTYPE_P(0);
     i_eltype = ARR_ELEMTYPE(input);
     if (i_eltype == TEXTOID)
-        return type_istore_from_text_array(input, DEVICE_ISTORE);
+        result = type_istore_from_text_array(input, DEVICE_ISTORE);
     else
-        return type_istore_from_int_array(input, DEVICE_ISTORE);
+        result = type_istore_from_int_array(input, DEVICE_ISTORE);
+
+    if (result == 0)
+        PG_RETURN_NULL();
+    else
+        return result;
 }
 
 PG_FUNCTION_INFO_V1(country_istore_from_array);
@@ -574,6 +588,7 @@ country_istore_from_array(PG_FUNCTION_ARGS)
 {
     ArrayType *input;
     Oid        i_eltype;
+    Datum      result;
 
     if (PG_ARGISNULL(0))
         PG_RETURN_NULL();
@@ -581,9 +596,14 @@ country_istore_from_array(PG_FUNCTION_ARGS)
     input = PG_GETARG_ARRAYTYPE_P(0);
     i_eltype = ARR_ELEMTYPE(input);
     if (i_eltype == TEXTOID)
-        return type_istore_from_text_array(input, COUNTRY_ISTORE);
+        result = type_istore_from_text_array(input, COUNTRY_ISTORE);
     else
-        return type_istore_from_int_array(input, COUNTRY_ISTORE);
+        result = type_istore_from_int_array(input, COUNTRY_ISTORE);
+
+    if (result == 0)
+        PG_RETURN_NULL();
+    else
+        return result;
 }
 
 PG_FUNCTION_INFO_V1(os_name_istore_from_array);
@@ -592,6 +612,7 @@ os_name_istore_from_array(PG_FUNCTION_ARGS)
 {
     ArrayType *input;
     Oid        i_eltype;
+    Datum      result;
 
     if (PG_ARGISNULL(0))
         PG_RETURN_NULL();
@@ -599,9 +620,14 @@ os_name_istore_from_array(PG_FUNCTION_ARGS)
     input = PG_GETARG_ARRAYTYPE_P(0);
     i_eltype = ARR_ELEMTYPE(input);
     if (i_eltype == TEXTOID)
-        return type_istore_from_text_array(input, OS_NAME_ISTORE);
+        result = type_istore_from_text_array(input, OS_NAME_ISTORE);
     else
-        return type_istore_from_int_array(input, OS_NAME_ISTORE);
+        result = type_istore_from_int_array(input, OS_NAME_ISTORE);
+
+    if (result == 0)
+        PG_RETURN_NULL();
+    else
+        return result;
 }
 
 Datum
