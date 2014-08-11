@@ -220,10 +220,9 @@ CREATE FUNCTION country_istore_sum_up(country_istore)
 --    LANGUAGE C IMMUTABLE STRICT;
 
 CREATE AGGREGATE SUM (
-    sfunc = array_agg_transfn,
+    sfunc = add,
     basetype = country_istore,
-    stype = internal,
-    finalfunc = country_istore_agg_finalfn
+    stype = country_istore
 );
 
 CREATE OPERATOR -> (

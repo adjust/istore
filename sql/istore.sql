@@ -42,6 +42,12 @@ CREATE FUNCTION add(istore, istore)
     AS '$libdir/istore.so', 'is_add'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION sum(istore, istore)
+    RETURNS istore
+    AS '$libdir/istore.so', 'is_sum'
+    LANGUAGE C IMMUTABLE STRICT;
+
+
 CREATE FUNCTION add(istore, integer)
     RETURNS istore
     AS '$libdir/istore.so', 'is_add_integer'
@@ -93,10 +99,9 @@ CREATE FUNCTION istore_array_add(integer[], integer[])
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE AGGREGATE SUM (
-    sfunc = array_agg_transfn,
+    sfunc = sum,
     basetype = istore,
-    stype = internal,
-    finalfunc = istore_agg_finalfn
+    stype = istore
 );
 
 CREATE OPERATOR -> (

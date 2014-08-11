@@ -43,6 +43,12 @@ CREATE FUNCTION add(istore, istore)
     AS '$libdir/istore.so', 'is_add'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION sum(istore, istore)
+    RETURNS istore
+    AS '$libdir/istore.so', 'is_sum'
+    LANGUAGE C IMMUTABLE STRICT;
+
+
 CREATE FUNCTION add(istore, integer)
     RETURNS istore
     AS '$libdir/istore.so', 'is_add_integer'
@@ -94,10 +100,9 @@ CREATE FUNCTION istore_array_add(integer[], integer[])
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE AGGREGATE SUM (
-    sfunc = array_agg_transfn,
+    sfunc = sum,
     basetype = istore,
-    stype = internal,
-    finalfunc = istore_agg_finalfn
+    stype = istore
 );
 
 CREATE OPERATOR -> (
@@ -370,10 +375,9 @@ CREATE FUNCTION country_istore_sum_up(country_istore)
 --    LANGUAGE C IMMUTABLE STRICT;
 
 CREATE AGGREGATE SUM (
-    sfunc = array_agg_transfn,
+    sfunc = add,
     basetype = country_istore,
-    stype = internal,
-    finalfunc = country_istore_agg_finalfn
+    stype = country_istore
 );
 
 CREATE OPERATOR -> (
@@ -647,10 +651,9 @@ CREATE FUNCTION os_name_istore_sum_up(os_name_istore)
 --    LANGUAGE C IMMUTABLE STRICT;
 
 CREATE AGGREGATE SUM (
-    sfunc = array_agg_transfn,
+    sfunc = add,
     basetype = os_name_istore,
-    stype = internal,
-    finalfunc = os_name_istore_agg_finalfn
+    stype = os_name_istore
 );
 
 CREATE OPERATOR -> (
@@ -921,10 +924,9 @@ CREATE FUNCTION device_istore_sum_up(device_istore)
 --    LANGUAGE C IMMUTABLE STRICT;
 
 CREATE AGGREGATE SUM (
-    sfunc = array_agg_transfn,
+    sfunc = add,
     basetype = device_istore,
-    stype = internal,
-    finalfunc = device_istore_agg_finalfn
+    stype = device_istore
 );
 
 CREATE OPERATOR -> (
