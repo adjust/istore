@@ -27,6 +27,9 @@ Datum device_type_eq(PG_FUNCTION_ARGS);
 Datum device_type_ge(PG_FUNCTION_ARGS);
 Datum device_type_gt(PG_FUNCTION_ARGS);
 Datum device_type_cmp(PG_FUNCTION_ARGS);
+Datum device_type_neq(PG_FUNCTION_ARGS);
+Datum device_type_send(PG_FUNCTION_ARGS);
+Datum device_type_recv(PG_FUNCTION_ARGS);
 
 uint8 get_device_type_num(char *str);
 uint8 get_device_type_num_p(char *str);

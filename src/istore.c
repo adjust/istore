@@ -433,11 +433,11 @@ type_istore_from_int_array(ArrayType *input, int type)
             case PLAIN_ISTORE:
                 key = DatumGetInt32(i_data[i]);
                 break;
-            case DEVICE_ISTORE:
-            case COUNTRY_ISTORE:
-            case OS_NAME_ISTORE:
+            // DEVICE_ISTORE
+            // COUNTRY_ISTORE
+            // OS_NAME_ISTORE
+            default:
                 key = DatumGetUInt8(i_data[i]);
-                break;
         }
         if (key < 0)
             elog(ERROR, "cannot count array that has negative integers");
@@ -473,8 +473,8 @@ type_istore_from_text_array(ArrayType *input, int type)
     AvlTree  tree;
     ISPairs   *pairs;
     Position position;
-    int      key,
-             i;
+    int      key = 0,
+             i = 0;
     size_t   len;
 
     i_eltype = ARR_ELEMTYPE(input);
@@ -499,7 +499,7 @@ type_istore_from_text_array(ArrayType *input, int type)
 
     tree = is_make_empty(NULL);
 
-    for (i = 0; i < n; ++i)
+    for (; i < n; ++i)
     {
         char    *str = NULL;
         if (nulls[i])
