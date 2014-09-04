@@ -9,6 +9,39 @@
 #include "os_name.h"
 #include "catalog/pg_type.h"
 
+Datum array_to_istore(Datum *data, int count, bool *nulls);
+Datum type_istore_to_istore(PG_FUNCTION_ARGS);
+Datum istore_to_device_istore(PG_FUNCTION_ARGS);
+Datum istore_to_country_istore(PG_FUNCTION_ARGS);
+Datum istore_to_os_name_istore(PG_FUNCTION_ARGS);
+Datum istore_out(PG_FUNCTION_ARGS);
+Datum istore_in(PG_FUNCTION_ARGS);
+Datum istore_recv(PG_FUNCTION_ARGS);
+Datum istore_send(PG_FUNCTION_ARGS);
+Datum cistore_out(PG_FUNCTION_ARGS);
+Datum cistore_in(PG_FUNCTION_ARGS);
+Datum device_istore_in(PG_FUNCTION_ARGS);
+Datum country_istore_in(PG_FUNCTION_ARGS);
+Datum os_name_istore_in(PG_FUNCTION_ARGS);
+Datum cistore_from_types(PG_FUNCTION_ARGS);
+Datum cistore_cohort_from_types(PG_FUNCTION_ARGS);
+Datum istore_array_add(PG_FUNCTION_ARGS);
+Datum istore_agg_finalfn(PG_FUNCTION_ARGS);
+Datum os_name_istore_from_array(PG_FUNCTION_ARGS);
+Datum country_istore_from_array(PG_FUNCTION_ARGS);
+Datum device_istore_from_array(PG_FUNCTION_ARGS);
+Datum istore_from_array(PG_FUNCTION_ARGS);
+Datum is_multiply_integer(PG_FUNCTION_ARGS);
+Datum is_multiply(PG_FUNCTION_ARGS);
+Datum is_subtract_integer(PG_FUNCTION_ARGS);
+Datum is_subtract(PG_FUNCTION_ARGS);
+Datum istore_agg(PG_FUNCTION_ARGS);
+Datum is_add_integer(PG_FUNCTION_ARGS);
+Datum is_add(PG_FUNCTION_ARGS);
+Datum is_fetchval(PG_FUNCTION_ARGS);
+Datum is_exist(PG_FUNCTION_ARGS);
+Datum istore_sum_up(PG_FUNCTION_ARGS);
+
 #define PLAIN_ISTORE         1
 #define NULL_VAL_ISTORE      2
 #define DEVICE_ISTORE        3
@@ -295,6 +328,5 @@ uint8 null_type_for(uint8 type);
 
 
 ISPair* is_find(IStore *is, int32 key);
-Datum array_to_istore(Datum *data, int count, bool *nulls);
 
 #endif // ISTORE_H

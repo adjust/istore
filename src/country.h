@@ -13,6 +13,9 @@ Datum country_eq(PG_FUNCTION_ARGS);
 Datum country_ge(PG_FUNCTION_ARGS);
 Datum country_gt(PG_FUNCTION_ARGS);
 Datum country_cmp(PG_FUNCTION_ARGS);
+Datum country_neq(PG_FUNCTION_ARGS);
+Datum country_send(PG_FUNCTION_ARGS);
+Datum country_recv(PG_FUNCTION_ARGS);
 
 uint8 get_country_num(char *str);
 char * get_country_string(uint8 num);
