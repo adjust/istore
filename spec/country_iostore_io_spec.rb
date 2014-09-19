@@ -15,7 +15,8 @@ describe 'country_iostore_io' do
     '"zz"=>"+1" ,"de"=>"2"' => '"de"=>"2", "zz"=>"1"',
     '"zz"=>"+1", "de"=>"2"' => '"de"=>"2", "zz"=>"1"',
     '"zz"=>"+1","de"=>"2" ' => '"de"=>"2", "zz"=>"1"',
-    'zz=>+1,de=>2 ' => '"de"=>"2", "zz"=>"1"',
+    'zz=>+1,de=>2 '         => '"de"=>"2", "zz"=>"1"',
+    ''                      => ''
   }.each do |input, output|
 
     it 'should persist country_iostores' do

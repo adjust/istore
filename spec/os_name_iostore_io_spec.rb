@@ -65,4 +65,9 @@ describe 'os_name_iostore_io' do
     '"android"=>"2", "ios"=>"1"'
 
   end
+  it 'should persist emptz os_name_iostores' do
+    query(%{CREATE TABLE os_name_istore_io AS SELECT ''::os_name_istore})
+    query("SELECT * FROM os_name_istore_io").should match ''
+
+  end
 end
