@@ -14,7 +14,8 @@ describe 'device_iostore_io' do
     '"mac"=>"+1" ,"bot"=>"2"' => '"bot"=>"2", "mac"=>"1"',
     '"mac"=>"+1", "bot"=>"2"' => '"bot"=>"2", "mac"=>"1"',
     '"mac"=>"+1","bot"=>"2" ' => '"bot"=>"2", "mac"=>"1"',
-    '"mac"=>"+1","bot"=>"2" ' => '"bot"=>"2", "mac"=>"1"'
+    '"mac"=>"+1","bot"=>"2" ' => '"bot"=>"2", "mac"=>"1"',
+    ''                        => ''
   }.each do |input, output|
 
     it 'should persist device_iostore' do

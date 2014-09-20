@@ -111,7 +111,8 @@ describe 'functions_device' do
       '"bot"=>"2", "mac"=>"2", "phone"=>"2", "tablet"=>"2"'
     query("SELECT device_istore_from_array(ARRAY['bot'::device_type,'phone'::device_type,'tablet'::device_type,'mac'::device_type,'bot'::device_type,'phone'::device_type,'tablet'::device_type,'mac'::device_type,NULL,'bot'::device_type,NULL,'bot'::device_type,'phone'::device_type,'tablet'::device_type,'mac'::device_type,'bot'::device_type,'phone'::device_type,'tablet'::device_type,'mac'::device_type])").should match \
       '"bot"=>"5", "mac"=>"4", "phone"=>"4", "tablet"=>"4"'
-    query("SELECT device_istore_from_array(ARRAY[NULL::device_type,NULL::device_type,NULL::device_type,NULL::device_type,NULL::device_type,NULL::device_type,NULL::device_type,NULL::device_type,NULL,NULL::device_type,NULL])").should match nil
+    query("SELECT device_istore_from_array(ARRAY[NULL::device_type,NULL::device_type,NULL::device_type,NULL::device_type,NULL::device_type,NULL::device_type,NULL::device_type,NULL::device_type,NULL,NULL::device_type,NULL])").should match ''
+    query("SELECT device_istore_from_array(ARRAY[]::device_type[])").should match ''
   end
 
   it 'should agg an array of device_istores' do

@@ -23,7 +23,6 @@ is_parse_istore(ISParser *parser)
 {
     IStore   *out;
     ISPairs  *pairs;
-
     int  key;
     long val;
     bool first = true;
@@ -31,6 +30,9 @@ is_parse_istore(ISParser *parser)
     parser->state = WKEY;
     parser->ptr   = parser->begin;
     parser->tree  = NULL;
+    if (parser->begin[0] == '\0')
+        goto end;
+
     while(1)
     {
         if (parser->state == WKEY)
@@ -112,6 +114,7 @@ is_parse_istore(ISParser *parser)
             elog(ERROR, "unknown parser state");
         }
     }
+end:
     pairs = palloc0(sizeof(ISPairs));
     is_pairs_init(pairs, 200, parser->type);
     is_tree_to_pairs(parser->tree, pairs, 0);
@@ -130,6 +133,11 @@ is_serialize_istore(IStore *in)
     char *out;
     ISPair *pairs;
 
+    if (in->len == 0)
+    {
+        out = palloc0(1);
+        PG_RETURN_CSTRING(out);
+    }
     out = palloc0(in->buflen);
     pairs = FIRST_PAIR(in);
     for (i = 0; i<in->len; ++i)
