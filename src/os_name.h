@@ -21,6 +21,9 @@ Datum os_name_eq(PG_FUNCTION_ARGS);
 Datum os_name_ge(PG_FUNCTION_ARGS);
 Datum os_name_gt(PG_FUNCTION_ARGS);
 Datum os_name_cmp(PG_FUNCTION_ARGS);
+Datum os_name_neq(PG_FUNCTION_ARGS);
+Datum os_name_send(PG_FUNCTION_ARGS);
+Datum os_name_recv(PG_FUNCTION_ARGS);
 
 uint8 get_os_name_num(char *str);
 uint8 get_os_name_num_b(char *str);
