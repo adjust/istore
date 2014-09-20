@@ -28,11 +28,12 @@ max(int lhs, int rhs)
     return lhs > rhs ? lhs : rhs;
 }
 
-static inline int
+/*static inline int
 min(int lhs, int rhs)
 {
     return lhs < rhs ? lhs : rhs;
 }
+*/
 
 AvlTree
 is_make_empty(AvlTree t)
