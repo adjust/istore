@@ -76,6 +76,25 @@ describe 'functions_country' do
      '"es"=>"0", "us"=>"0"'
   end
 
+  it 'should divide country_istores' do
+    query("SELECT divide('de=>1, us=>1'::country_istore, 'de=>1, us=>1'::country_istore)").should match \
+     '"de"=>"1", "us"=>"1"'
+    query("SELECT divide('de=>1, us=>1'::country_istore, 'es=>1, us=>1'::country_istore)").should match \
+     '"de"=>NULL, "es"=>NULL, "us"=>"1"'
+    query("SELECT divide('de=>1, us=>1'::country_istore, 'es=>-1, us=>1'::country_istore)").should match \
+     '"de"=>NULL, "es"=>NULL, "us"=>"1"'
+    query("SELECT divide('es=>1, us=>1'::country_istore, 'es=>-1, us=>1'::country_istore)").should match \
+     '"es"=>"-1", "us"=>"1"'
+    query("SELECT divide('es=>-1, us=>1'::country_istore, 'es=>-1, us=>1'::country_istore)").should match \
+     '"es"=>"1", "us"=>"1"'
+    query("SELECT divide('es=>-1, us=>1'::country_istore, 1)").should match \
+     '"es"=>"-1", "us"=>"1"'
+    query("SELECT divide('es=>-1, us=>1'::country_istore, -1)").should match \
+     '"es"=>"1", "us"=>"-1"'
+    query("SELECT divide('es=>-1, us=>1'::country_istore, 0)").should match \
+     '"es"=>NULL, "us"=>NULL'
+  end
+
   it 'should build a country_isotre_from array aka array_count' do
     query("SELECT country_istore_from_array(ARRAY['de'])").should match \
       '"de"=>"1"'

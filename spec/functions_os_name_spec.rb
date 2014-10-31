@@ -95,6 +95,32 @@ describe 'functions_os_name' do
 
     query("SELECT multiply('android=>-1, windows=>1'::os_name_istore, 0)").should match \
      '"android"=>"0", "windows"=>"0"'
+  end
+
+  it 'should divide two os_name_istores' do
+    query("SELECT divide('ios=>1, windows=>1'::os_name_istore, 'ios=>1, windows=>1'::os_name_istore)").should match \
+     '"ios"=>"1", "windows"=>"1"'
+
+    query("SELECT divide('ios=>1, windows=>1'::os_name_istore, 'android=>1, windows=>1'::os_name_istore)").should match \
+     '"android"=>NULL, "ios"=>NULL, "windows"=>"1"'
+
+    query("SELECT divide('ios=>1, windows=>1'::os_name_istore, 'android=>-1, windows=>1'::os_name_istore)").should match \
+     '"android"=>NULL, "ios"=>NULL, "windows"=>"1"'
+
+    query("SELECT divide('android=>1, windows=>1'::os_name_istore, 'android=>-1, windows=>1'::os_name_istore)").should match \
+     '"android"=>"-1", "windows"=>"1"'
+
+    query("SELECT divide('android=>-1, windows=>1'::os_name_istore, 'android=>-1, windows=>1'::os_name_istore)").should match \
+     '"android"=>"1", "windows"=>"1"'
+
+    query("SELECT divide('android=>-1, windows=>1'::os_name_istore, 1)").should match \
+     '"android"=>"-1", "windows"=>"1"'
+
+    query("SELECT divide('android=>-1, windows=>1'::os_name_istore, -1)").should match \
+     '"android"=>"1", "windows"=>"-1"'
+
+    query("SELECT divide('android=>-1, windows=>1'::os_name_istore, 0)").should match \
+     '"android"=>NULL, "windows"=>NULL'
    end
 
    it 'should generate an os_name_istore from array' do

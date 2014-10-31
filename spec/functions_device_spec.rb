@@ -76,6 +76,25 @@ describe 'functions_device' do
       '"bot"=>"0", "tablet"=>"0"'
   end
 
+  it 'should divide device_istores' do
+    query("SELECT divide('phone=>1, tablet=>1'::device_istore, 'phone=>1, tablet=>1'::device_istore)").should match \
+      '"phone"=>"1", "tablet"=>"1"'
+    query("SELECT divide('phone=>1, tablet=>1'::device_istore, 'bot=>1, tablet=>1'::device_istore)").should match \
+      '"bot"=>NULL, "phone"=>NULL, "tablet"=>"1"'
+    query("SELECT divide('phone=>1, tablet=>1'::device_istore, 'bot=>-1, tablet=>1'::device_istore)").should match \
+      '"bot"=>NULL, "phone"=>NULL, "tablet"=>"1"'
+    query("SELECT divide('bot=>1, tablet=>1'::device_istore, 'bot=>-1, tablet=>1'::device_istore)").should match \
+      '"bot"=>"-1", "tablet"=>"1"'
+    query("SELECT divide('bot=>-1, tablet=>1'::device_istore, 'bot=>-1, tablet=>1'::device_istore)").should match \
+      '"bot"=>"1", "tablet"=>"1"'
+    query("SELECT divide('bot=>-1, tablet=>1'::device_istore, 1)").should match \
+      '"bot"=>"-1", "tablet"=>"1"'
+    query("SELECT divide('bot=>-1, tablet=>1'::device_istore, -1)").should match \
+      '"bot"=>"1", "tablet"=>"-1"'
+    query("SELECT divide('bot=>-1, tablet=>1'::device_istore, 0)").should match \
+      '"bot"=>NULL, "tablet"=>NULL'
+  end
+
   it 'should create an device_istore from array' do
     query("SELECT device_istore_from_array(ARRAY['bot'])").should match \
       '"bot"=>"1"'
