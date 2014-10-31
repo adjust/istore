@@ -385,6 +385,104 @@ is_multiply_integer(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(is_divide);
+Datum
+is_divide(PG_FUNCTION_ARGS)
+{
+    IStore  *is1,
+            *is2,
+            *result;
+    ISPair  *pairs1,
+            *pairs2;
+    ISPairs *creator = NULL;
+
+    int     index1 = 0,
+            index2 = 0;
+    uint8   nulltype;
+    /* TODO NULL handling */
+    is1 = PG_GETARG_IS(0);
+    is2 = PG_GETARG_IS(1);
+    pairs1 = FIRST_PAIR(is1);
+    pairs2 = FIRST_PAIR(is2);
+    creator = palloc0(sizeof *creator);
+    is_pairs_init(creator, 200, is1->type);
+    nulltype = null_type_for(is1->type);
+    while (index1 < is1->len && index2 < is2->len)
+    {
+        if (pairs1[index1].key < pairs2[index2].key)
+        {
+            is_pairs_insert(creator, pairs1[index1].key, 0, nulltype);
+            ++index1;
+        }
+        else if (pairs1[index1].key > pairs2[index2].key)
+        {
+            is_pairs_insert(creator, pairs2[index2].key, 0, nulltype);
+            ++index2;
+        }
+        else
+        {
+            if (pairs1[index1].null || pairs2[index2].null || pairs2[index2].val == 0)
+                is_pairs_insert(
+                    creator,
+                    pairs1[index1].key,
+                    0,
+                    null_type_for(is1->type)
+                );
+            else
+                is_pairs_insert(
+                    creator,
+                    pairs1[index1].key,
+                    pairs1[index1].val / pairs2[index2].val,
+                    is1->type
+                );
+            ++index1;
+            ++index2;
+        }
+    }
+
+    while (index1 < is1->len)
+    {
+        is_pairs_insert(creator, pairs1[index1].key, 0, nulltype);
+        ++index1;
+    }
+    while (index2 < is2->len)
+    {
+        is_pairs_insert(creator, pairs2[index2].key, 0, nulltype);
+        ++index2;
+    }
+    FINALIZE_ISTORE(result, creator);
+    PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(is_divide_integer);
+Datum
+is_divide_integer(PG_FUNCTION_ARGS)
+{
+    IStore  *is,
+            *result;
+    ISPair  *pairs;
+    ISPairs *creator = NULL;
+
+    int     index = 0,
+            int_arg;
+    /* TODO NULL handling */
+    is     = PG_GETARG_IS(0);
+    int_arg = PG_GETARG_INT32(1);
+    pairs = FIRST_PAIR(is);
+    creator = palloc0(sizeof *creator);
+    is_pairs_init(creator, 200, is->type);
+    while (index < is->len)
+    {
+        if (pairs[index].null || int_arg == 0)
+            is_pairs_insert(creator, pairs[index].key, 0, null_type_for(is->type));
+        else
+            is_pairs_insert(creator, pairs[index].key, pairs[index].val / int_arg, is->type);
+        ++index;
+    }
+    FINALIZE_ISTORE(result, creator);
+    PG_RETURN_POINTER(result);
+}
+
 static Datum
 type_istore_from_int_array(ArrayType *input, int type)
 {

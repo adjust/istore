@@ -67,6 +67,16 @@ CREATE FUNCTION multiply(istore, integer)
     AS '$libdir/istore.so', 'is_multiply_integer'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION divide(istore, istore)
+    RETURNS istore
+    AS '$libdir/istore.so', 'is_divide'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION divide(istore, integer)
+    RETURNS istore
+    AS '$libdir/istore.so', 'is_divide_integer'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION istore_from_array(integer[])
     RETURNS istore
     AS '$libdir/istore.so'
@@ -145,4 +155,16 @@ CREATE OPERATOR * (
     leftarg   = istore,
     rightarg  = integer,
     procedure = multiply
+);
+
+CREATE OPERATOR / (
+    leftarg   = istore,
+    rightarg  = istore,
+    procedure = divide
+);
+
+CREATE OPERATOR / (
+    leftarg   = istore,
+    rightarg  = integer,
+    procedure = divide
 );
