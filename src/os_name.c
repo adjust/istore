@@ -225,3 +225,10 @@ get_os_name_num_w(char *str)
         default : return 0;
     }
 }
+
+PG_FUNCTION_INFO_V1(hashos_name);
+Datum
+hashos_name(PG_FUNCTION_ARGS)
+{
+    return hash_uint32((int32) PG_GETARG_CHAR(0));
+}

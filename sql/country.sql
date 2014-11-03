@@ -55,6 +55,10 @@ CREATE FUNCTION country_gt(country,country) RETURNS bool
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION hashcountry(country) RETURNS integer
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE OPERATOR < (
     leftarg = country, rightarg = country, procedure = country_lt,
     commutator = > , negator = >= ,
@@ -70,7 +74,7 @@ CREATE OPERATOR <= (
 CREATE OPERATOR = (
     leftarg = country, rightarg = country, procedure = country_eq,
     commutator = = , negator = <> ,
-    restrict = eqsel, join = eqjoinsel
+    restrict = eqsel, join = eqjoinsel, HASHES, MERGES
 );
 
 CREATE OPERATOR <> (
@@ -103,6 +107,11 @@ CREATE OPERATOR CLASS country_ops
         OPERATOR        4       >= ,
         OPERATOR        5       > ,
         FUNCTION        1       country_cmp(country,country);
+
+CREATE OPERATOR CLASS country_ops
+    DEFAULT FOR TYPE country USING hash AS
+        OPERATOR        1       = ,
+        FUNCTION        1       hashcountry(country);
 
 CREATE TYPE country_istore;
 

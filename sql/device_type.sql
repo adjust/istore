@@ -31,6 +31,10 @@ CREATE TYPE device_type (
     PASSEDBYVALUE
 );
 
+CREATE FUNCTION hashdevice_type(device_type) RETURNS integer
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION device_type_lt(device_type,device_type) RETURNS bool
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
@@ -69,7 +73,7 @@ CREATE OPERATOR <= (
 CREATE OPERATOR = (
     leftarg = device_type, rightarg = device_type, procedure = device_type_eq,
     commutator = = , negator = <> ,
-    restrict = eqsel, join = eqjoinsel
+    restrict = eqsel, join = eqjoinsel, HASHES, MERGES
 );
 
 CREATE OPERATOR <> (
@@ -102,6 +106,13 @@ CREATE OPERATOR CLASS device_type_ops
         OPERATOR        4       >= ,
         OPERATOR        5       > ,
         FUNCTION        1       device_type_cmp(device_type,device_type);
+
+CREATE OPERATOR CLASS device_type_ops
+    DEFAULT FOR TYPE device_type USING hash AS
+        OPERATOR        1       = ,
+        FUNCTION        1       hashdevice_type(device_type);
+
+
 CREATE TYPE device_istore;
 
 CREATE FUNCTION device_istore_in(cstring)

@@ -891,3 +891,9 @@ get_country_num_z(char *str)
     }
 }
 
+PG_FUNCTION_INFO_V1(hashcounry);
+Datum
+hashcountry(PG_FUNCTION_ARGS)
+{
+    return hash_uint32((int32) PG_GETARG_CHAR(0));
+}
