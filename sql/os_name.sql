@@ -31,6 +31,10 @@ CREATE TYPE os_name (
     PASSEDBYVALUE
 );
 
+CREATE FUNCTION hashos_name(os_name) RETURNS integer
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION os_name_lt(os_name,os_name) RETURNS bool
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
@@ -70,7 +74,7 @@ CREATE OPERATOR <= (
 CREATE OPERATOR = (
     leftarg = os_name, rightarg = os_name, procedure = os_name_eq,
     commutator = = , negator = <> ,
-    restrict = eqsel, join = eqjoinsel
+    restrict = eqsel, join = eqjoinsel, HASHES, MERGES
 );
 
 CREATE OPERATOR <> (
@@ -103,6 +107,11 @@ CREATE OPERATOR CLASS os_name_ops
         OPERATOR        4       >= ,
         OPERATOR        5       > ,
         FUNCTION        1       os_name_cmp(os_name,os_name);
+
+CREATE OPERATOR CLASS os_name_ops
+    DEFAULT FOR TYPE os_name USING hash AS
+        OPERATOR        1       = ,
+        FUNCTION        1       hashos_name(os_name);
 
 CREATE TYPE os_name_istore;
 

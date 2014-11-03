@@ -224,3 +224,10 @@ get_device_type_num_s(char *str)
         default : return 0;
     }
 }
+
+PG_FUNCTION_INFO_V1(hashdevice_type);
+Datum
+hashdevice_type(PG_FUNCTION_ARGS)
+{
+    return hash_uint32((int32) PG_GETARG_CHAR(0));
+}
