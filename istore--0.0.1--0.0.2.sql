@@ -7,9 +7,9 @@ DROP OPERATOR CLASS country_ops USING hash;
 DROP OPERATOR CLASS os_name_ops USING btree;
 DROP OPERATOR CLASS os_name_ops USING hash;
 
-DROP OPERATOR OPERATOR = (device_type, device_type);
-DROP OPERATOR OPERATOR = (country, country);
-DROP OPERATOR OPERATOR = (os_name, os_name);
+DROP OPERATOR = (device_type, device_type);
+DROP OPERATOR = (country, country);
+DROP OPERATOR = (os_name, os_name);
 
 ----
 CREATE OR REPLACE FUNCTION hashcountry(country)
