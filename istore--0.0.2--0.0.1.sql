@@ -1,11 +1,11 @@
-OPERATOR CLASS device_type_ops USING btree;
-OPERATOR CLASS device_type_ops USING hash;
+DROP OPERATOR CLASS device_type_ops USING btree;
+DROP OPERATOR CLASS device_type_ops USING hash;
 
-OPERATOR CLASS country_ops USING btree;
-OPERATOR CLASS country_ops USING hash;
+DROP OPERATOR CLASS country_ops USING btree;
+DROP OPERATOR CLASS country_ops USING hash;
 
-OPERATOR CLASS os_name_ops USING btree;
-OPERATOR CLASS os_name_ops USING hash;
+DROP OPERATOR CLASS os_name_ops USING btree;
+DROP OPERATOR CLASS os_name_ops USING hash;
 
 DROP OPERATOR OPERATOR = (device_type, device_type);
 DROP OPERATOR OPERATOR = (country, country);
