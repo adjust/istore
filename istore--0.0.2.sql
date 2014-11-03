@@ -218,8 +218,7 @@ CREATE OPERATOR < (
 CREATE OPERATOR <= (
     leftarg = country, rightarg = country, procedure = country_le,
     commutator = >= , negator = > ,
-    restrict = scalarltsel, join = scalarltjoinsel
-);
+    restrict = scalarltsel, join = scalarltjoinsel );
 
 CREATE OPERATOR = (
     leftarg = country, rightarg = country, procedure = country_eq,

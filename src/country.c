@@ -891,7 +891,7 @@ get_country_num_z(char *str)
     }
 }
 
-PG_FUNCTION_INFO_V1(hashcounry);
+PG_FUNCTION_INFO_V1(hashcountry);
 Datum
 hashcountry(PG_FUNCTION_ARGS)
 {
