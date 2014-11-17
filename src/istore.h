@@ -8,6 +8,7 @@
 #include "country.h"
 #include "os_name.h"
 #include "catalog/pg_type.h"
+#include "access/tuptoaster.h"
 
 Datum array_to_istore(Datum *data, int count, bool *nulls);
 Datum type_istore_to_istore(PG_FUNCTION_ARGS);
@@ -70,6 +71,7 @@ Datum istore_sum_up(PG_FUNCTION_ARGS);
     } while(0)
 
 extern void get_typlenbyvalalign(Oid eltype, int16 *i_typlen, bool *i_typbyval, char *i_typalign);
+extern HeapTuple heap_form_tuple(TupleDesc tupleDescriptor, Datum *values, bool *isnull);
 
 struct ISPair {
     int32  key;
