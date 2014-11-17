@@ -187,6 +187,9 @@ describe 'functions_plain' do
     query("SELECT fill_gaps('2=>17, 4=>3'::istore, 0, 0)").should match \
       '"0"=>"0"'
 
+    query("SELECT fill_gaps('2=>17'::istore, 3, NULL)").should match \
+      '"0"=>NULL, "1"=>NULL, "2"=>"17", "3"=>NULL'
+
     query("SELECT fill_gaps('2=>NULL, 3=>3'::istore, 3, 0)").should match \
       '"0"=>"0", "1"=>"0", "2"=>NULL, "3"=>"3"'
 
