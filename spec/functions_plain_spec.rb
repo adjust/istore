@@ -21,6 +21,16 @@ describe 'functions_plain' do
 
   it 'should return set of ints' do
     query("SELECT * FROM each('1=>1'::istore)").should match ['1','1']
+
+    query("SELECT * FROM each('5=>11, 4=>8'::istore)").should match \
+      ['5','11'],
+      ['4','8']
+
+    query("SELECT * FROM each('1=>1, 5=>NULL'::istore)").should match \
+      ['1','1'],
+      ['5',nil]
+
+    query("SELECT * FROM each(NULL::istore)").should match []
   end
 
   it 'should add istores' do
