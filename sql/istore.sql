@@ -99,6 +99,18 @@ CREATE FUNCTION istore_array_add(integer[], integer[])
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION istore(integer[], bigint[])
+    RETURNS istore
+    AS '$libdir/istore.so', 'istore_array_add'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION istore(integer[], integer[])
+    RETURNS istore
+    AS '$libdir/istore.so', 'istore_array_add'
+    LANGUAGE C IMMUTABLE STRICT;
+
+
+
 CREATE AGGREGATE SUM (
     sfunc = array_agg_transfn,
     basetype = istore,

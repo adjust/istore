@@ -162,4 +162,16 @@ describe 'functions_plain' do
     query("SELECT SUM(a) FROM test").should match \
     '"1"=>"1", "2"=>"1", "3"=>"1"'
   end
+
+  it 'should return istores from arrays' do
+    query("SELECT istore_array_add(Array[5,3,4,5], Array[1,2,3,4])").should match \
+      '"3"=>"2", "4"=>"3", "5"=>"5"'
+
+    query("SELECT istore(Array[5,3,4,5], Array[1,2,3,4])").should match \
+      '"3"=>"2", "4"=>"3", "5"=>"5"'
+
+    query("SELECT istore(Array[5,3,4,5], Array[1,2,3,4]::bigint[])").should match \
+      '"3"=>"2", "4"=>"3", "5"=>"5"'
+
+  end
 end
