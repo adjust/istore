@@ -1,4 +1,5 @@
 #include "istore.h"
+#include "funcapi.h"
 
 PG_MODULE_MAGIC;
 
@@ -842,4 +843,91 @@ istore_array_add(PG_FUNCTION_ARGS)
     is_make_empty(tree);
     FINALIZE_ISTORE(out, pairs);
     PG_RETURN_POINTER(out);
+}
+
+/*
+ * Common initialization function for the various set-returning
+ * funcs. fcinfo is only passed if the function is to return a
+ * composite; it will be used to look up the return tupledesc.
+ * we stash a copy of the istore in the multi-call context in
+ * case it was originally toasted.
+ */
+
+static void
+setup_firstcall(FuncCallContext *funcctx, IStore *is,
+                FunctionCallInfoData *fcinfo)
+{
+    MemoryContext oldcontext;
+    IStore     *st;
+
+    oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+
+    st = (IStore *) palloc(ISTORE_SIZE(is));
+    memcpy(st, is, ISTORE_SIZE(is));
+
+    funcctx->user_fctx = (void *) st;
+
+    if (fcinfo)
+    {
+        TupleDesc   tupdesc;
+
+        /* Build a tuple descriptor for our result type */
+        if (get_call_result_type(fcinfo, NULL, &tupdesc) != TYPEFUNC_COMPOSITE)
+            elog(ERROR, "return type must be a row type");
+
+        funcctx->tuple_desc = BlessTupleDesc(tupdesc);
+    }
+
+    MemoryContextSwitchTo(oldcontext);
+}
+
+
+
+PG_FUNCTION_INFO_V1(istore_each);
+Datum
+istore_each(PG_FUNCTION_ARGS)
+{
+    FuncCallContext *funcctx;
+    IStore     *is;
+    int         i;
+    ISPair          *pairs;
+
+    if (SRF_IS_FIRSTCALL())
+    {
+        is = PG_GETARG_IS(0);
+        funcctx = SRF_FIRSTCALL_INIT();
+        setup_firstcall(funcctx, is, fcinfo);
+    }
+
+    funcctx = SRF_PERCALL_SETUP();
+    is = (IStore *) funcctx->user_fctx;
+    i = funcctx->call_cntr;
+    pairs = FIRST_PAIR(is);
+
+    if (i < is->len)
+    {
+        Datum       res,
+                    dvalues[2];
+        bool        nulls[2] = {false, false};
+        HeapTuple   tuple;
+
+        dvalues[0] = UInt8GetDatum(pairs[i].key);
+
+        if (pairs[i].null)
+        {
+            dvalues[1] = UInt16GetDatum(0);
+            nulls[1] = true;
+        }
+        else
+        {
+            dvalues[1] = UInt16GetDatum(pairs[i].val);
+        }
+
+        tuple = heap_form_tuple(funcctx->tuple_desc, dvalues, nulls);
+        res = HeapTupleGetDatum(tuple);
+
+        SRF_RETURN_NEXT(funcctx, PointerGetDatum(res));
+    }
+
+    SRF_RETURN_DONE(funcctx);
 }

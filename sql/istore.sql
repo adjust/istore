@@ -37,6 +37,13 @@ CREATE FUNCTION fetchval(istore, integer)
     AS '$libdir/istore.so', 'is_fetchval'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION each(IN is istore,
+    OUT key int,
+    OUT value bigint)
+RETURNS SETOF record
+AS '$libdir/istore.so','istore_each'
+LANGUAGE C STRICT IMMUTABLE;
+
 CREATE FUNCTION add(istore, istore)
     RETURNS istore
     AS '$libdir/istore.so', 'is_add'

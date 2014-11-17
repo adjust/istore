@@ -19,6 +19,10 @@ describe 'functions_plain' do
     query("SELECT fetchval('1=>1, 1=>1'::istore, 2)").should match nil
   end
 
+  it 'should return set of ints' do
+    query("SELECT * FROM each('1=>1'::istore)").should match ['1','1']
+  end
+
   it 'should add istores' do
     query("SELECT add('1=>1, 2=>1'::istore, '1=>1, 2=>1'::istore)").should match \
     '"1"=>"2", "2"=>"2"'
