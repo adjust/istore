@@ -26,6 +26,14 @@ describe 'functions_plain' do
       ['5','11'],
       ['4','8']
 
+    query("SELECT * FROM each('5=>-411, 4=>8'::istore)").should match \
+      ['5','-411'],
+      ['4','8']
+
+    query("SELECT value + 100 FROM each('5=>-411, 4=>8'::istore)").should match \
+      ['-311'],
+      ['108']
+
     query("SELECT * FROM each('1=>1, 5=>NULL'::istore)").should match \
       ['1','1'],
       ['5',nil]
