@@ -930,3 +930,59 @@ istore_each(PG_FUNCTION_ARGS)
 
     SRF_RETURN_DONE(funcctx);
 }
+
+PG_FUNCTION_INFO_V1(istore_fill_gaps);
+Datum
+istore_fill_gaps(PG_FUNCTION_ARGS)
+{
+    IStore  *is,
+            *result;
+    ISPair  *pairs;
+
+    ISPairs *creator = NULL;
+
+    int     up_to,
+            fill_with;
+    int     index1 = 0,
+            index2 = 0;
+
+    bool    fill_with_null = PG_ARGISNULL(2);
+
+    is = PG_GETARG_IS(0);
+    up_to = PG_GETARG_INT32(1);
+
+    fill_with = PG_GETARG_INT64(2);
+    pairs = FIRST_PAIR(is);
+    creator = palloc0(sizeof *creator);
+
+    if (up_to < 0)
+        elog(ERROR, "parameter upto must be >= 0");
+
+    if (is->type != PLAIN_ISTORE)
+        elog(ERROR, "only supports plain istore ");
+
+    is_pairs_init(creator, up_to + 1 , is->type);
+
+    for(index1=0; index1 <= up_to; ++index1)
+    {
+        if (index1 == pairs[index2].key)
+        {
+            if (pairs[index2].null)
+                is_pairs_insert(creator, pairs[index2].key, pairs[index2].val, null_type_for(is->type));
+            else
+                is_pairs_insert(creator, pairs[index2].key, pairs[index2].val, is->type);
+
+            ++index2;
+        }
+        else
+        {
+            if (fill_with_null)
+                is_pairs_insert(creator, index1, fill_with, null_type_for(is->type));
+            else
+                is_pairs_insert(creator, index1, fill_with, is->type);
+        }
+    }
+
+    FINALIZE_ISTORE(result, creator);
+    PG_RETURN_POINTER(result);
+}

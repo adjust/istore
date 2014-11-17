@@ -109,6 +109,11 @@ CREATE FUNCTION istore(integer[], integer[])
     AS '$libdir/istore.so', 'istore_array_add'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION fill_gaps(istore, integer, bigint DEFAULT 0)
+    RETURNS istore
+    AS '$libdir/istore.so', 'istore_fill_gaps'
+    LANGUAGE C IMMUTABLE;
+
 
 
 CREATE AGGREGATE SUM (
