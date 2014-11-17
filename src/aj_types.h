@@ -5,6 +5,7 @@
 #include "fmgr.h"
 #include "ctype.h"
 #include "libpq/pqformat.h"
+#include "access/hash.h"
 
 #define CONST_STRING(s) (sizeof(s)/sizeof(s[0])), s
 #define CONST_STRING_LENGTH(s) (sizeof(s)/sizeof(s[0]) - 1)

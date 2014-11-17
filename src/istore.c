@@ -862,8 +862,7 @@ setup_firstcall(FuncCallContext *funcctx, IStore *is,
 
     oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
-    st = (IStore *) palloc(ISTORE_SIZE(is));
-    memcpy(st, is, ISTORE_SIZE(is));
+    COPY_ISTORE(st, is);
 
     funcctx->user_fctx = (void *) st;
 
@@ -911,16 +910,16 @@ istore_each(PG_FUNCTION_ARGS)
         bool        nulls[2] = {false, false};
         HeapTuple   tuple;
 
-        dvalues[0] = UInt8GetDatum(pairs[i].key);
+        dvalues[0] = UInt32GetDatum(pairs[i].key);
 
         if (pairs[i].null)
         {
-            dvalues[1] = UInt16GetDatum(0);
+            dvalues[1] = Int64GetDatum(0);
             nulls[1] = true;
         }
         else
         {
-            dvalues[1] = UInt16GetDatum(pairs[i].val);
+            dvalues[1] = Int64GetDatum(pairs[i].val);
         }
 
         tuple = heap_form_tuple(funcctx->tuple_desc, dvalues, nulls);
