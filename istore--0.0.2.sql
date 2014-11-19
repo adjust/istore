@@ -38,13 +38,6 @@ CREATE FUNCTION fetchval(istore, integer)
     AS '$libdir/istore.so', 'is_fetchval'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION each(IN is istore,
-    OUT key int,
-    OUT value bigint)
-RETURNS SETOF record
-AS '$libdir/istore.so','istore_each'
-LANGUAGE C STRICT IMMUTABLE;
-
 CREATE FUNCTION add(istore, istore)
     RETURNS istore
     AS '$libdir/istore.so', 'is_add'
@@ -99,23 +92,6 @@ CREATE FUNCTION istore_array_add(integer[], integer[])
     RETURNS istore
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
-
-CREATE FUNCTION istore(integer[], bigint[])
-    RETURNS istore
-    AS '$libdir/istore.so', 'istore_array_add'
-    LANGUAGE C IMMUTABLE STRICT;
-
-CREATE FUNCTION istore(integer[], integer[])
-    RETURNS istore
-    AS '$libdir/istore.so', 'istore_array_add'
-    LANGUAGE C IMMUTABLE STRICT;
-
-CREATE FUNCTION fill_gaps(istore, integer, bigint DEFAULT 0)
-    RETURNS istore
-    AS '$libdir/istore.so', 'istore_fill_gaps'
-    LANGUAGE C IMMUTABLE;
-
-
 
 CREATE AGGREGATE SUM (
     sfunc = array_agg_transfn,

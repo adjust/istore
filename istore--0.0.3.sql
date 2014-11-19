@@ -38,6 +38,13 @@ CREATE FUNCTION fetchval(istore, integer)
     AS '$libdir/istore.so', 'is_fetchval'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION each(IN is istore,
+    OUT key int,
+    OUT value bigint)
+RETURNS SETOF record
+AS '$libdir/istore.so','istore_each'
+LANGUAGE C STRICT IMMUTABLE;
+
 CREATE FUNCTION add(istore, istore)
     RETURNS istore
     AS '$libdir/istore.so', 'is_add'
@@ -68,6 +75,16 @@ CREATE FUNCTION multiply(istore, integer)
     AS '$libdir/istore.so', 'is_multiply_integer'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION divide(istore, istore)
+    RETURNS istore
+    AS '$libdir/istore.so', 'is_divide'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION divide(istore, integer)
+    RETURNS istore
+    AS '$libdir/istore.so', 'is_divide_integer'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION istore_from_array(integer[])
     RETURNS istore
     AS '$libdir/istore.so'
@@ -92,6 +109,23 @@ CREATE FUNCTION istore_array_add(integer[], integer[])
     RETURNS istore
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION istore(integer[], bigint[])
+    RETURNS istore
+    AS '$libdir/istore.so', 'istore_array_add'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION istore(integer[], integer[])
+    RETURNS istore
+    AS '$libdir/istore.so', 'istore_array_add'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION fill_gaps(istore, integer, bigint DEFAULT 0)
+    RETURNS istore
+    AS '$libdir/istore.so', 'istore_fill_gaps'
+    LANGUAGE C IMMUTABLE;
+
+
 
 CREATE AGGREGATE SUM (
     sfunc = array_agg_transfn,
@@ -147,7 +181,19 @@ CREATE OPERATOR * (
     rightarg  = integer,
     procedure = multiply
 );
- 
+
+CREATE OPERATOR / (
+    leftarg   = istore,
+    rightarg  = istore,
+    procedure = divide
+);
+
+CREATE OPERATOR / (
+    leftarg   = istore,
+    rightarg  = integer,
+    procedure = divide
+);
+
 --source file sql/country.sql
 CREATE TYPE country;
 
@@ -205,6 +251,10 @@ CREATE FUNCTION country_gt(country,country) RETURNS bool
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION hashcountry(country) RETURNS integer
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE OPERATOR < (
     leftarg = country, rightarg = country, procedure = country_lt,
     commutator = > , negator = >= ,
@@ -214,13 +264,12 @@ CREATE OPERATOR < (
 CREATE OPERATOR <= (
     leftarg = country, rightarg = country, procedure = country_le,
     commutator = >= , negator = > ,
-    restrict = scalarltsel, join = scalarltjoinsel
-);
+    restrict = scalarltsel, join = scalarltjoinsel );
 
 CREATE OPERATOR = (
     leftarg = country, rightarg = country, procedure = country_eq,
     commutator = = , negator = <> ,
-    restrict = eqsel, join = eqjoinsel
+    restrict = eqsel, join = eqjoinsel, HASHES, MERGES
 );
 
 CREATE OPERATOR <> (
@@ -253,6 +302,11 @@ CREATE OPERATOR CLASS country_ops
         OPERATOR        4       >= ,
         OPERATOR        5       > ,
         FUNCTION        1       country_cmp(country,country);
+
+CREATE OPERATOR CLASS country_ops
+    DEFAULT FOR TYPE country USING hash AS
+        OPERATOR        1       = ,
+        FUNCTION        1       hashcountry(country);
 
 CREATE TYPE country_istore;
 
@@ -339,6 +393,16 @@ CREATE FUNCTION multiply(country_istore, integer)
     AS '$libdir/istore.so', 'is_multiply_integer'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION divide(country_istore, country_istore)
+    RETURNS country_istore
+    AS '$libdir/istore.so', 'is_divide'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION divide(country_istore, integer)
+    RETURNS country_istore
+    AS '$libdir/istore.so', 'is_divide_integer'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION country_istore_from_array(text[])
     RETURNS country_istore
     AS '$libdir/istore.so'
@@ -423,7 +487,19 @@ CREATE OPERATOR * (
     rightarg  = integer,
     procedure = multiply
 );
- 
+
+CREATE OPERATOR / (
+    leftarg   = country_istore,
+    rightarg  = country_istore,
+    procedure = divide
+);
+
+CREATE OPERATOR / (
+    leftarg   = country_istore,
+    rightarg  = integer,
+    procedure = divide
+);
+
 --source file sql/os_name.sql
 CREATE TYPE os_name;
 
@@ -456,6 +532,10 @@ CREATE TYPE os_name (
     alignment = char,
     PASSEDBYVALUE
 );
+
+CREATE FUNCTION hashos_name(os_name) RETURNS integer
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION os_name_lt(os_name,os_name) RETURNS bool
     AS '$libdir/istore.so'
@@ -496,7 +576,7 @@ CREATE OPERATOR <= (
 CREATE OPERATOR = (
     leftarg = os_name, rightarg = os_name, procedure = os_name_eq,
     commutator = = , negator = <> ,
-    restrict = eqsel, join = eqjoinsel
+    restrict = eqsel, join = eqjoinsel, HASHES, MERGES
 );
 
 CREATE OPERATOR <> (
@@ -529,6 +609,11 @@ CREATE OPERATOR CLASS os_name_ops
         OPERATOR        4       >= ,
         OPERATOR        5       > ,
         FUNCTION        1       os_name_cmp(os_name,os_name);
+
+CREATE OPERATOR CLASS os_name_ops
+    DEFAULT FOR TYPE os_name USING hash AS
+        OPERATOR        1       = ,
+        FUNCTION        1       hashos_name(os_name);
 
 CREATE TYPE os_name_istore;
 
@@ -616,6 +701,16 @@ CREATE FUNCTION multiply(os_name_istore, integer)
     AS '$libdir/istore.so', 'is_multiply_integer'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION divide(os_name_istore, os_name_istore)
+    RETURNS os_name_istore
+    AS '$libdir/istore.so', 'is_divide'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION divide(os_name_istore, integer)
+    RETURNS os_name_istore
+    AS '$libdir/istore.so', 'is_divide_integer'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION os_name_istore_from_array(text[])
     RETURNS os_name_istore
     AS '$libdir/istore.so'
@@ -700,7 +795,19 @@ CREATE OPERATOR * (
     rightarg  = integer,
     procedure = multiply
 );
- 
+
+CREATE OPERATOR / (
+    leftarg   = os_name_istore,
+    rightarg  = os_name_istore,
+    procedure = divide
+);
+
+CREATE OPERATOR / (
+    leftarg   = os_name_istore,
+    rightarg  = integer,
+    procedure = divide
+);
+
 --source file sql/device_type.sql
 CREATE TYPE device_type;
 
@@ -733,6 +840,10 @@ CREATE TYPE device_type (
     alignment = char,
     PASSEDBYVALUE
 );
+
+CREATE FUNCTION hashdevice_type(device_type) RETURNS integer
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION device_type_lt(device_type,device_type) RETURNS bool
     AS '$libdir/istore.so'
@@ -772,7 +883,7 @@ CREATE OPERATOR <= (
 CREATE OPERATOR = (
     leftarg = device_type, rightarg = device_type, procedure = device_type_eq,
     commutator = = , negator = <> ,
-    restrict = eqsel, join = eqjoinsel
+    restrict = eqsel, join = eqjoinsel, HASHES, MERGES
 );
 
 CREATE OPERATOR <> (
@@ -805,6 +916,13 @@ CREATE OPERATOR CLASS device_type_ops
         OPERATOR        4       >= ,
         OPERATOR        5       > ,
         FUNCTION        1       device_type_cmp(device_type,device_type);
+
+CREATE OPERATOR CLASS device_type_ops
+    DEFAULT FOR TYPE device_type USING hash AS
+        OPERATOR        1       = ,
+        FUNCTION        1       hashdevice_type(device_type);
+
+
 CREATE TYPE device_istore;
 
 CREATE FUNCTION device_istore_in(cstring)
@@ -888,6 +1006,16 @@ CREATE FUNCTION multiply(device_istore, device_istore)
 CREATE FUNCTION multiply(device_istore, integer)
     RETURNS device_istore
     AS '$libdir/istore.so', 'is_multiply_integer'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION divide(device_istore, device_istore)
+    RETURNS device_istore
+    AS '$libdir/istore.so', 'is_divide'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION divide(device_istore, integer)
+    RETURNS device_istore
+    AS '$libdir/istore.so', 'is_divide_integer'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION device_istore_from_array(text[])
@@ -974,7 +1102,19 @@ CREATE OPERATOR * (
     rightarg  = integer,
     procedure = multiply
 );
- 
+
+CREATE OPERATOR / (
+    leftarg   = device_istore,
+    rightarg  = device_istore,
+    procedure = divide
+);
+
+CREATE OPERATOR / (
+    leftarg   = device_istore,
+    rightarg  = integer,
+    procedure = divide
+);
+
 --source file sql/cistore.sql
 CREATE TYPE cistore;
 
@@ -1013,4 +1153,4 @@ CREATE OPERATOR + (
     rightarg  = cistore,
     procedure = add
 );
- 
+
