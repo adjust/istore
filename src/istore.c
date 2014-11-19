@@ -935,6 +935,9 @@ PG_FUNCTION_INFO_V1(istore_fill_gaps);
 Datum
 istore_fill_gaps(PG_FUNCTION_ARGS)
 {
+    if (PG_ARGISNULL(0))
+        PG_RETURN_NULL();
+
     IStore  *is,
             *result;
     ISPair  *pairs;
