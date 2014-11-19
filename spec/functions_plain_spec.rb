@@ -215,6 +215,8 @@ describe 'functions_plain' do
     query("SELECT fill_gaps(''::istore, 3, 0)").should match \
       '"0"=>"0", "1"=>"0", "2"=>"0", "3"=>"0"'
 
+    query("SELECT fill_gaps(NULL::istore, 3, 0)").should match nil
+
     expect{query("SELECT fill_gaps('2=>17, 4=>3'::istore, -5, 0)")}.to throw_error 'parameter upto must be >= 0'
   end
 end

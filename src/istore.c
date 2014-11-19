@@ -1033,6 +1033,9 @@ PG_FUNCTION_INFO_V1(istore_fill_gaps);
 Datum
 istore_fill_gaps(PG_FUNCTION_ARGS)
 {
+    if (PG_ARGISNULL(0))
+        PG_RETURN_NULL();
+
     IStore  *is,
             *result;
     ISPair  *pairs;
@@ -1063,7 +1066,7 @@ istore_fill_gaps(PG_FUNCTION_ARGS)
 
     for(index1=0; index1 <= up_to; ++index1)
     {
-        if (index1 == pairs[index2].key)
+        if (index2 < is->len && index1 == pairs[index2].key)
         {
             if (pairs[index2].null)
                 is_pairs_insert(creator, pairs[index2].key, pairs[index2].val, null_type_for(is->type));
