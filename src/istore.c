@@ -965,7 +965,7 @@ istore_fill_gaps(PG_FUNCTION_ARGS)
 
     for(index1=0; index1 <= up_to; ++index1)
     {
-        if (index1 == pairs[index2].key)
+        if (index2 < is->len && index1 == pairs[index2].key)
         {
             if (pairs[index2].null)
                 is_pairs_insert(creator, pairs[index2].key, pairs[index2].val, null_type_for(is->type));
