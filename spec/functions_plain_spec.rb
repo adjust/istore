@@ -98,6 +98,25 @@ describe 'functions_plain' do
       '"-1"=>"0", "2"=>"0"'
   end
 
+  it 'should divide istores' do
+    query("SELECT divide('1=>1, 2=>1'::istore, '1=>1, 2=>1'::istore)").should match \
+      '"1"=>"1", "2"=>"1"'
+    query("SELECT divide('1=>1, 2=>1'::istore, '-1=>1, 2=>1'::istore)").should match \
+      '"-1"=>NULL, "1"=>NULL, "2"=>"1"'
+    query("SELECT divide('1=>1, 2=>1'::istore, '-1=>-1, 2=>1'::istore)").should match \
+      '"-1"=>NULL, "1"=>NULL, "2"=>"1"'
+    query("SELECT divide('-1=>1, 2=>1'::istore, '-1=>-1, 2=>1'::istore)").should match \
+      '"-1"=>"-1", "2"=>"1"'
+    query("SELECT divide('-1=>-1, 2=>1'::istore, '-1=>-1, 2=>1'::istore)").should match \
+      '"-1"=>"1", "2"=>"1"'
+    query("SELECT divide('-1=>-1, 2=>1'::istore, 1)").should match \
+      '"-1"=>"-1", "2"=>"1"'
+    query("SELECT divide('-1=>-1, 2=>1'::istore, -1)").should match \
+      '"-1"=>"1", "2"=>"-1"'
+    query("SELECT divide('-1=>-1, 2=>1'::istore, 0)").should match \
+      '"-1"=>NULL, "2"=>NULL'
+  end
+
   it 'should generate istore from array' do
     query("SELECT istore_from_array(ARRAY[1])").should match \
     '"1"=>"1"'
