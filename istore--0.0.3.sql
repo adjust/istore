@@ -85,6 +85,11 @@ CREATE FUNCTION divide(istore, integer)
     AS '$libdir/istore.so', 'is_divide_integer'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION divide(istore, bigint)
+    RETURNS istore
+    AS '$libdir/istore.so', 'is_divide_int8'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION istore_from_array(integer[])
     RETURNS istore
     AS '$libdir/istore.so'
@@ -194,6 +199,12 @@ CREATE OPERATOR / (
     procedure = divide
 );
 
+CREATE OPERATOR / (
+    leftarg   = istore,
+    rightarg  = bigint,
+    procedure = divide
+);
+ 
 --source file sql/country.sql
 CREATE TYPE country;
 
@@ -403,6 +414,11 @@ CREATE FUNCTION divide(country_istore, integer)
     AS '$libdir/istore.so', 'is_divide_integer'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION divide(country_istore, bigint)
+    RETURNS country_istore
+    AS '$libdir/istore.so', 'is_divide_int8'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION country_istore_from_array(text[])
     RETURNS country_istore
     AS '$libdir/istore.so'
@@ -500,6 +516,12 @@ CREATE OPERATOR / (
     procedure = divide
 );
 
+CREATE OPERATOR / (
+    leftarg   = country_istore,
+    rightarg  = bigint,
+    procedure = divide
+);
+ 
 --source file sql/os_name.sql
 CREATE TYPE os_name;
 
@@ -711,6 +733,11 @@ CREATE FUNCTION divide(os_name_istore, integer)
     AS '$libdir/istore.so', 'is_divide_integer'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION divide(os_name_istore, bigint)
+    RETURNS os_name_istore
+    AS '$libdir/istore.so', 'is_divide_int8'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION os_name_istore_from_array(text[])
     RETURNS os_name_istore
     AS '$libdir/istore.so'
@@ -808,6 +835,12 @@ CREATE OPERATOR / (
     procedure = divide
 );
 
+CREATE OPERATOR / (
+    leftarg   = os_name_istore,
+    rightarg  = bigint,
+    procedure = divide
+);
+ 
 --source file sql/device_type.sql
 CREATE TYPE device_type;
 
@@ -1018,6 +1051,11 @@ CREATE FUNCTION divide(device_istore, integer)
     AS '$libdir/istore.so', 'is_divide_integer'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION divide(device_istore, bigint)
+    RETURNS device_istore
+    AS '$libdir/istore.so', 'is_divide_int8'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION device_istore_from_array(text[])
     RETURNS device_istore
     AS '$libdir/istore.so'
@@ -1115,6 +1153,12 @@ CREATE OPERATOR / (
     procedure = divide
 );
 
+CREATE OPERATOR / (
+    leftarg   = device_istore,
+    rightarg  = bigint,
+    procedure = divide
+);
+ 
 --source file sql/cistore.sql
 CREATE TYPE cistore;
 
@@ -1153,4 +1197,4 @@ CREATE OPERATOR + (
     rightarg  = cistore,
     procedure = add
 );
-
+ 

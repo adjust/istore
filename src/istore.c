@@ -484,6 +484,35 @@ is_divide_integer(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(is_divide_int8);
+Datum
+is_divide_int8(PG_FUNCTION_ARGS)
+{
+    IStore  *is,
+            *result;
+    ISPair  *pairs;
+    ISPairs *creator = NULL;
+
+    int     index = 0;
+    int64   int_arg;
+    /* TODO NULL handling */
+    is     = PG_GETARG_IS(0);
+    int_arg = PG_GETARG_INT64(1);
+    pairs = FIRST_PAIR(is);
+    creator = palloc0(sizeof *creator);
+    is_pairs_init(creator, 200, is->type);
+    while (index < is->len)
+    {
+        if (pairs[index].null || int_arg == 0)
+            is_pairs_insert(creator, pairs[index].key, 0, null_type_for(is->type));
+        else
+            is_pairs_insert(creator, pairs[index].key, pairs[index].val / int_arg, is->type);
+        ++index;
+    }
+    FINALIZE_ISTORE(result, creator);
+    PG_RETURN_POINTER(result);
+}
+
 static Datum
 type_istore_from_int_array(ArrayType *input, int type)
 {

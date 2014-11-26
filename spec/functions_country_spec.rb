@@ -93,6 +93,14 @@ describe 'functions_country' do
      '"es"=>"1", "us"=>"-1"'
     query("SELECT divide('es=>-1, us=>1'::country_istore, 0)").should match \
      '"es"=>NULL, "us"=>NULL'
+    query("SELECT divide('es=>-1, us=>1'::country_istore, 1::bigint)").should match \
+     '"es"=>"-1", "us"=>"1"'
+    query("SELECT divide('es=>-1, us=>1'::country_istore, -1::bigint)").should match \
+     '"es"=>"1", "us"=>"-1"'
+    query("SELECT divide('es=>-1, us=>1'::country_istore, 0::bigint)").should match \
+     '"es"=>NULL, "us"=>NULL'
+    query("SELECT divide('es=>-8000000000, us=>8000000000'::country_istore, 4000000000)").should match \
+     '"es"=>"-2", "us"=>"2"'
   end
 
   it 'should build a country_isotre_from array aka array_count' do
