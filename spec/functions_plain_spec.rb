@@ -115,6 +115,14 @@ describe 'functions_plain' do
       '"-1"=>"1", "2"=>"-1"'
     query("SELECT divide('-1=>-1, 2=>1'::istore, 0)").should match \
       '"-1"=>NULL, "2"=>NULL'
+    query("SELECT divide('-1=>-1, 2=>1'::istore, 1::bigint)").should match \
+      '"-1"=>"-1", "2"=>"1"'
+    query("SELECT divide('-1=>-1, 2=>1'::istore, -1::bigint)").should match \
+      '"-1"=>"1", "2"=>"-1"'
+    query("SELECT divide('-1=>-1, 2=>1'::istore, 0::bigint)").should match \
+      '"-1"=>NULL, "2"=>NULL'
+    query("SELECT divide('-1=>-8000000000, 2=>8000000000'::istore, 4000000000)").should match \
+      '"-1"=>"-2", "2"=>"2"'
   end
 
   it 'should generate istore from array' do

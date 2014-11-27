@@ -35,6 +35,7 @@ Datum istore_from_array(PG_FUNCTION_ARGS);
 Datum is_multiply_integer(PG_FUNCTION_ARGS);
 Datum is_multiply(PG_FUNCTION_ARGS);
 Datum is_divide_integer(PG_FUNCTION_ARGS);
+Datum is_divide_int8(PG_FUNCTION_ARGS);
 Datum is_divide(PG_FUNCTION_ARGS);
 Datum is_subtract_integer(PG_FUNCTION_ARGS);
 Datum is_subtract(PG_FUNCTION_ARGS);

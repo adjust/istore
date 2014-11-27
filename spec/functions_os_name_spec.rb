@@ -121,6 +121,18 @@ describe 'functions_os_name' do
 
     query("SELECT divide('android=>-1, windows=>1'::os_name_istore, 0)").should match \
      '"android"=>NULL, "windows"=>NULL'
+
+    query("SELECT divide('android=>-1, windows=>1'::os_name_istore, 1::bigint)").should match \
+     '"android"=>"-1", "windows"=>"1"'
+
+    query("SELECT divide('android=>-1, windows=>1'::os_name_istore, -1::bigint)").should match \
+     '"android"=>"1", "windows"=>"-1"'
+
+    query("SELECT divide('android=>-1, windows=>1'::os_name_istore, 0::bigint)").should match \
+     '"android"=>NULL, "windows"=>NULL'
+
+    query("SELECT divide('android=>-8000000000, windows=>8000000000'::os_name_istore, 4000000000)").should match \
+     '"android"=>"-2", "windows"=>"2"'
    end
 
    it 'should generate an os_name_istore from array' do

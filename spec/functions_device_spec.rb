@@ -93,6 +93,14 @@ describe 'functions_device' do
       '"bot"=>"1", "tablet"=>"-1"'
     query("SELECT divide('bot=>-1, tablet=>1'::device_istore, 0)").should match \
       '"bot"=>NULL, "tablet"=>NULL'
+    query("SELECT divide('bot=>-1, tablet=>1'::device_istore, 1::bigint)").should match \
+      '"bot"=>"-1", "tablet"=>"1"'
+    query("SELECT divide('bot=>-1, tablet=>1'::device_istore, -1::bigint)").should match \
+      '"bot"=>"1", "tablet"=>"-1"'
+    query("SELECT divide('bot=>-1, tablet=>1'::device_istore, 0::bigint)").should match \
+      '"bot"=>NULL, "tablet"=>NULL'
+    query("SELECT divide('bot=>-8000000000, tablet=>8000000000'::device_istore, 4000000000)").should match \
+      '"bot"=>"-2", "tablet"=>"2"'
   end
 
   it 'should create an device_istore from array' do

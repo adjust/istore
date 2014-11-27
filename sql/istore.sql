@@ -84,6 +84,11 @@ CREATE FUNCTION divide(istore, integer)
     AS '$libdir/istore.so', 'is_divide_integer'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION divide(istore, bigint)
+    RETURNS istore
+    AS '$libdir/istore.so', 'is_divide_int8'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION istore_from_array(integer[])
     RETURNS istore
     AS '$libdir/istore.so'
@@ -190,5 +195,11 @@ CREATE OPERATOR / (
 CREATE OPERATOR / (
     leftarg   = istore,
     rightarg  = integer,
+    procedure = divide
+);
+
+CREATE OPERATOR / (
+    leftarg   = istore,
+    rightarg  = bigint,
     procedure = divide
 );
