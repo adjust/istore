@@ -4,7 +4,6 @@
 #include "postgres.h"
 #include "fmgr.h"
 #include "utils/array.h"
-#include "utils/builtins.h"
 #include "device_type.h"
 #include "country.h"
 #include "os_name.h"
