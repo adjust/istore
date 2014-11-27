@@ -4,6 +4,7 @@
 #include "postgres.h"
 #include "fmgr.h"
 #include "utils/array.h"
+#include "utils/builtins.h"
 #include "device_type.h"
 #include "country.h"
 #include "os_name.h"
@@ -308,6 +309,7 @@ typedef struct
 } IStore;
 
 uint8 null_type_for(uint8 type);
+uint8 oid_to_istore_type(Oid eltype);
 
 #define PG_GETARG_IS(x) (IStore *)PG_DETOAST_DATUM(PG_GETARG_DATUM(x))
 #define ISHDRSZ VARHDRSZ + sizeof(int32) + sizeof(int32) + sizeof(uint8)

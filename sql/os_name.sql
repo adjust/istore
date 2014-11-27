@@ -214,6 +214,11 @@ CREATE FUNCTION divide(os_name_istore, bigint)
     AS '$libdir/istore.so', 'is_divide_int8'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION istore_array_add(os_name[], integer[])
+    RETURNS os_name_istore
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION os_name_istore_from_array(text[])
     RETURNS os_name_istore
     AS '$libdir/istore.so'
@@ -238,11 +243,6 @@ CREATE FUNCTION os_name_istore_sum_up(os_name_istore)
     RETURNS bigint
     AS '$libdir/istore.so', 'istore_sum_up'
     LANGUAGE C IMMUTABLE STRICT;
-
---CREATE FUNCTION os_name_istore_array_add(integer[], integer[])
---    RETURNS os_name_istore
---    AS '$libdir/istore.so'
---    LANGUAGE C IMMUTABLE STRICT;
 
 CREATE AGGREGATE SUM (
     sfunc = array_agg_transfn,

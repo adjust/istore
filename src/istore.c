@@ -19,6 +19,22 @@ null_type_for(uint8 type)
     }
 }
 
+uint8
+oid_to_istore_type(Oid eltype)
+{
+    char *sm = format_type_be(eltype);
+
+    switch (*sm)
+    {
+        case 'c': return COUNTRY_ISTORE;
+        case 'd': return DEVICE_ISTORE;
+        case 'o': return OS_NAME_ISTORE;
+        case 'i': return PLAIN_ISTORE;
+        default:
+            elog(ERROR, "unknown istore type");
+    }
+}
+
 PG_FUNCTION_INFO_V1(istore_sum_up);
 Datum
 istore_sum_up(PG_FUNCTION_ARGS)
@@ -894,6 +910,7 @@ istore_array_add(PG_FUNCTION_ARGS)
     Position   position;
     long       key,
                value;
+    uint8      istore_type;
 
     if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
         PG_RETURN_NULL();
@@ -965,7 +982,9 @@ istore_array_add(PG_FUNCTION_ARGS)
     if (n1 == 0)
         PG_RETURN_NULL();
     pairs = palloc(sizeof *pairs);
-    is_pairs_init(pairs, 200, PLAIN_ISTORE);
+
+    istore_type = oid_to_istore_type(i_eltype1);
+    is_pairs_init(pairs, 200, istore_type);
     is_tree_to_pairs(tree, pairs, 0);
     is_make_empty(tree);
     FINALIZE_ISTORE(out, pairs);
