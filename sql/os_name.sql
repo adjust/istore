@@ -216,7 +216,7 @@ CREATE FUNCTION divide(os_name_istore, bigint)
 
 CREATE FUNCTION istore_array_add(os_name[], integer[])
     RETURNS os_name_istore
-    AS '$libdir/istore.so'
+    AS '$libdir/istore.so', 'os_name_istore_array_add'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION os_name_istore_from_array(text[])

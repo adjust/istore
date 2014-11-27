@@ -215,7 +215,7 @@ CREATE FUNCTION divide(device_istore, bigint)
 
 CREATE FUNCTION istore_array_add(device_type[], integer[])
     RETURNS device_istore
-    AS '$libdir/istore.so'
+    AS '$libdir/istore.so', 'device_type_istore_array_add'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION device_istore_from_array(text[])

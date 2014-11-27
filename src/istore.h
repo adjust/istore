@@ -28,6 +28,9 @@ Datum os_name_istore_in(PG_FUNCTION_ARGS);
 Datum cistore_from_types(PG_FUNCTION_ARGS);
 Datum cistore_cohort_from_types(PG_FUNCTION_ARGS);
 Datum istore_array_add(PG_FUNCTION_ARGS);
+Datum country_istore_array_add(PG_FUNCTION_ARGS);
+Datum device_type_istore_array_add(PG_FUNCTION_ARGS);
+Datum os_name_istore_array_add(PG_FUNCTION_ARGS);
 Datum istore_agg_finalfn(PG_FUNCTION_ARGS);
 Datum os_name_istore_from_array(PG_FUNCTION_ARGS);
 Datum country_istore_from_array(PG_FUNCTION_ARGS);
@@ -309,7 +312,6 @@ typedef struct
 } IStore;
 
 uint8 null_type_for(uint8 type);
-uint8 oid_to_istore_type(Oid eltype);
 
 #define PG_GETARG_IS(x) (IStore *)PG_DETOAST_DATUM(PG_GETARG_DATUM(x))
 #define ISHDRSZ VARHDRSZ + sizeof(int32) + sizeof(int32) + sizeof(uint8)

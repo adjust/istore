@@ -239,7 +239,7 @@ CREATE FUNCTION country_istore_sum_up(country_istore)
 
 CREATE FUNCTION istore_array_add(country[], integer[])
     RETURNS country_istore
-    AS '$libdir/istore.so'
+    AS '$libdir/istore.so', 'country_istore_array_add'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE AGGREGATE SUM (

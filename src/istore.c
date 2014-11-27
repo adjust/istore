@@ -19,22 +19,6 @@ null_type_for(uint8 type)
     }
 }
 
-uint8
-oid_to_istore_type(Oid eltype)
-{
-    char *sm = format_type_be(eltype);
-
-    switch (*sm)
-    {
-        case 'c': return COUNTRY_ISTORE;
-        case 'd': return DEVICE_ISTORE;
-        case 'o': return OS_NAME_ISTORE;
-        case 'i': return PLAIN_ISTORE;
-        default:
-            elog(ERROR, "unknown istore type");
-    }
-}
-
 PG_FUNCTION_INFO_V1(istore_sum_up);
 Datum
 istore_sum_up(PG_FUNCTION_ARGS)
@@ -694,7 +678,8 @@ istore_from_array(PG_FUNCTION_ARGS)
         PG_RETURN_NULL();
     input = PG_GETARG_ARRAYTYPE_P(0);
     result = type_istore_from_int_array(input, PLAIN_ISTORE);
-
+    if (result == 0)
+        PG_RETURN_NULL();
     return result;
 }
 
@@ -715,7 +700,8 @@ device_istore_from_array(PG_FUNCTION_ARGS)
         result = type_istore_from_text_array(input, DEVICE_ISTORE);
     else
         result = type_istore_from_int_array(input, DEVICE_ISTORE);
-
+    if (result == 0)
+        PG_RETURN_NULL();
     return result;
 }
 
@@ -736,7 +722,8 @@ country_istore_from_array(PG_FUNCTION_ARGS)
         result = type_istore_from_text_array(input, COUNTRY_ISTORE);
     else
         result = type_istore_from_int_array(input, COUNTRY_ISTORE);
-
+    if (result == 0)
+        PG_RETURN_NULL();
     return result;
 }
 
@@ -757,7 +744,8 @@ os_name_istore_from_array(PG_FUNCTION_ARGS)
         result = type_istore_from_text_array(input, OS_NAME_ISTORE);
     else
         result = type_istore_from_int_array(input, OS_NAME_ISTORE);
-
+    if (result == 0)
+        PG_RETURN_NULL();
     return result;
 }
 
@@ -883,13 +871,10 @@ istore_agg_finalfn(PG_FUNCTION_ARGS)
         return result;
 }
 
-PG_FUNCTION_INFO_V1(istore_array_add);
-Datum
-istore_array_add(PG_FUNCTION_ARGS)
+static Datum
+istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2, int type)
 {
     IStore    *out;
-    ArrayType *input1,
-              *input2;
     Datum     *i_data1,
               *i_data2;
     bool      *nulls1,
@@ -910,13 +895,6 @@ istore_array_add(PG_FUNCTION_ARGS)
     Position   position;
     long       key,
                value;
-    uint8      istore_type;
-
-    if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
-        PG_RETURN_NULL();
-
-    input1 = PG_GETARG_ARRAYTYPE_P(0);
-    input2 = PG_GETARG_ARRAYTYPE_P(1);
 
     i_eltype1 = ARR_ELEMTYPE(input1);
     i_eltype2 = ARR_ELEMTYPE(input2);
@@ -960,9 +938,9 @@ istore_array_add(PG_FUNCTION_ARGS)
     if (n1 != n2)
         elog(ERROR, "array dont have the same length");
     else if (n1 == 0 || (n1 == 1 && nulls1[0]))
-        PG_RETURN_NULL();
+        return 0;
     else if (n2 == 0 || (n2 == 1 && nulls2[0]))
-        PG_RETURN_NULL();
+        return 0;
 
     tree = is_make_empty(NULL);
 
@@ -980,15 +958,87 @@ istore_array_add(PG_FUNCTION_ARGS)
     }
     n1 = is_tree_length(tree);
     if (n1 == 0)
-        PG_RETURN_NULL();
+        return 0;
     pairs = palloc(sizeof *pairs);
 
-    istore_type = oid_to_istore_type(i_eltype1);
-    is_pairs_init(pairs, 200, istore_type);
+    is_pairs_init(pairs, 200, type);
     is_tree_to_pairs(tree, pairs, 0);
     is_make_empty(tree);
     FINALIZE_ISTORE(out, pairs);
     PG_RETURN_POINTER(out);
+}
+
+PG_FUNCTION_INFO_V1(istore_array_add);
+Datum
+istore_array_add(PG_FUNCTION_ARGS)
+{
+    Datum    result;
+    ArrayType *input1,
+              *input2;
+    if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
+        PG_RETURN_NULL();
+
+    input1 = PG_GETARG_ARRAYTYPE_P(0);
+    input2 = PG_GETARG_ARRAYTYPE_P(1);
+    result = istore_add_from_int_arrays(input1, input2, PLAIN_ISTORE);
+    if (result == 0)
+        PG_RETURN_NULL();
+    return result;
+}
+
+PG_FUNCTION_INFO_V1(country_istore_array_add);
+Datum
+country_istore_array_add(PG_FUNCTION_ARGS)
+{
+    Datum    result;
+    ArrayType *input1,
+              *input2;
+    if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
+        PG_RETURN_NULL();
+
+    input1 = PG_GETARG_ARRAYTYPE_P(0);
+    input2 = PG_GETARG_ARRAYTYPE_P(1);
+    result = istore_add_from_int_arrays(input1, input2, COUNTRY_ISTORE);
+    if (result == 0)
+        PG_RETURN_NULL();
+    return result;
+}
+
+PG_FUNCTION_INFO_V1(device_type_istore_array_add);
+Datum
+device_type_istore_array_add(PG_FUNCTION_ARGS)
+{
+    Datum    result;
+    ArrayType *input1,
+              *input2;
+    if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
+        PG_RETURN_NULL();
+
+    input1 = PG_GETARG_ARRAYTYPE_P(0);
+    input2 = PG_GETARG_ARRAYTYPE_P(1);
+    result = istore_add_from_int_arrays(input1, input2, DEVICE_ISTORE);
+    if (result == 0)
+        PG_RETURN_NULL();
+    return result;
+}
+
+
+PG_FUNCTION_INFO_V1(os_name_istore_array_add);
+Datum
+os_name_istore_array_add(PG_FUNCTION_ARGS)
+{
+    Datum    result;
+    ArrayType *input1,
+              *input2;
+    if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
+        PG_RETURN_NULL();
+
+    input1 = PG_GETARG_ARRAYTYPE_P(0);
+    input2 = PG_GETARG_ARRAYTYPE_P(1);
+    result = istore_add_from_int_arrays(input1, input2, OS_NAME_ISTORE);
+    if (result == 0)
+        PG_RETURN_NULL();
+    return result;
 }
 
 /*

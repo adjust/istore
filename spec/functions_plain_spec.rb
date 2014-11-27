@@ -203,6 +203,8 @@ describe 'functions_plain' do
     query("SELECT istore_array_add(Array['ios', 'android', 'ios']::os_name[], Array[2,3,4])").should match \
       '"android"=>"3", "ios"=>"6"'
 
+    query("SELECT istore_array_add(Array[]::os_name[], Array[]::int[])").should match nil
+
     query("SELECT istore(Array[5,3,4,5], Array[1,2,3,4])").should match \
       '"3"=>"2", "4"=>"3", "5"=>"5"'
 

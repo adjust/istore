@@ -446,7 +446,7 @@ CREATE FUNCTION country_istore_sum_up(country_istore)
 
 CREATE FUNCTION istore_array_add(country[], integer[])
     RETURNS country_istore
-    AS '$libdir/istore.so'
+    AS '$libdir/istore.so', 'country_istore_array_add'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE AGGREGATE SUM (
@@ -740,7 +740,7 @@ CREATE FUNCTION divide(os_name_istore, bigint)
 
 CREATE FUNCTION istore_array_add(os_name[], integer[])
     RETURNS os_name_istore
-    AS '$libdir/istore.so'
+    AS '$libdir/istore.so', 'os_name_istore_array_add'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION os_name_istore_from_array(text[])
@@ -1058,7 +1058,7 @@ CREATE FUNCTION divide(device_istore, bigint)
 
 CREATE FUNCTION istore_array_add(device_type[], integer[])
     RETURNS device_istore
-    AS '$libdir/istore.so'
+    AS '$libdir/istore.so', 'device_type_istore_array_add'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION device_istore_from_array(text[])
