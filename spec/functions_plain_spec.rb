@@ -194,6 +194,17 @@ describe 'functions_plain' do
     query("SELECT istore_array_add(Array[5,3,4,5], Array[1,2,3,4])").should match \
       '"3"=>"2", "4"=>"3", "5"=>"5"'
 
+    query("SELECT istore_array_add(Array['de', 'de', 'us']::country[], Array[7,2,5])").should match \
+      '"de"=>"9", "us"=>"5"'
+
+    query("SELECT istore_array_add(Array['mac', 'mac']::device_type[], Array[1,4])").should match \
+      '"mac"=>"5"'
+
+    query("SELECT istore_array_add(Array['ios', 'android', 'ios']::os_name[], Array[2,3,4])").should match \
+      '"android"=>"3", "ios"=>"6"'
+
+    query("SELECT istore_array_add(Array[]::os_name[], Array[]::int[])").should match ''
+
     query("SELECT istore(Array[5,3,4,5], Array[1,2,3,4])").should match \
       '"3"=>"2", "4"=>"3", "5"=>"5"'
 
