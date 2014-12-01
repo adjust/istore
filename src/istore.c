@@ -658,8 +658,6 @@ type_istore_from_text_array(ArrayType *input, int type)
     }
 
     n = is_tree_length(tree);
-    if (n == 0)
-        return 0;
     pairs = palloc0(sizeof *pairs);
     is_pairs_init(pairs, 200, type);
     is_tree_to_pairs(tree, pairs, 0);
@@ -785,8 +783,6 @@ array_to_istore(Datum *data, int count, bool *nulls)
         }
     }
     i = is_tree_length(tree);
-    if (i == 0)
-        return 0;
 
     pairs = palloc(sizeof *pairs);
     is_pairs_init(pairs, 200, type);
@@ -937,10 +933,6 @@ istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2, int type)
 
     if (n1 != n2)
         elog(ERROR, "array dont have the same length");
-    else if (n1 == 0 || (n1 == 1 && nulls1[0]))
-        return 0;
-    else if (n2 == 0 || (n2 == 1 && nulls2[0]))
-        return 0;
 
     tree = is_make_empty(NULL);
 
@@ -956,9 +948,7 @@ istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2, int type)
         else
             position->value += value;
     }
-    n1 = is_tree_length(tree);
-    if (n1 == 0)
-        return 0;
+
     pairs = palloc(sizeof *pairs);
 
     is_pairs_init(pairs, 200, type);
