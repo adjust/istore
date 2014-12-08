@@ -784,7 +784,7 @@ array_to_istore(Datum *data, int count, bool *nulls)
     }
     i = is_tree_length(tree);
 
-    pairs = palloc(sizeof *pairs);
+    pairs = palloc0(sizeof *pairs);
     is_pairs_init(pairs, 200, type);
     is_tree_to_pairs(tree, pairs, 0);
     is_make_empty(tree);
@@ -941,7 +941,8 @@ istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2, int type)
         if (nulls1[i] || nulls2[i])
             continue;
         key   = DatumGetInt32(i_data1[i]);
-        value = DatumGetInt64(i_data2[i]);
+        //TODO switch over i_eltype2 and GetInt64
+        value = DatumGetInt32(i_data2[i]);
         position = is_tree_find(key, tree);
         if (position == NULL)
             tree = is_insert(key, value, false, tree);
@@ -949,7 +950,7 @@ istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2, int type)
             position->value += value;
     }
 
-    pairs = palloc(sizeof *pairs);
+    pairs = palloc0(sizeof *pairs);
 
     is_pairs_init(pairs, 200, type);
     is_tree_to_pairs(tree, pairs, 0);

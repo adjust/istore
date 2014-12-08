@@ -227,7 +227,7 @@ is_tree_to_pairs(Position p, ISPairs *pairs, int n)
 void
 is_pairs_init(ISPairs *pairs, size_t initial_size, int type)
 {
-    pairs->pairs  = palloc(initial_size * sizeof(ISPair));
+    pairs->pairs  = palloc0(initial_size * sizeof(ISPair));
     pairs->used   = 0;
     pairs->size   = initial_size;
     pairs->buflen = 0;
@@ -242,7 +242,7 @@ is_pairs_insert(ISPairs *pairs, int32 key, long val, int type)
 
     if (pairs->size == pairs->used) {
         pairs->size *= 2;
-        pairs->pairs = repalloc(pairs->pairs, pairs->size * sizeof(ISPair));
+        pairs->pairs = repalloc0(pairs->pairs, pairs->size * sizeof(ISPair));
     }
 
     pairs->pairs[pairs->used].key  = key;

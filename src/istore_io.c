@@ -182,6 +182,7 @@ is_serialize_istore(IStore *in)
         {
             switch (in->type)
             {
+                case 255:
                 case PLAIN_ISTORE:
                     ptr += sprintf(
                         out+ptr,
@@ -474,7 +475,7 @@ cistore_from_types(PG_FUNCTION_ARGS)
     C_ISTORE_KEY_LEN(key, keylen);
     DIGIT_WIDTH(val, vallen);
 
-    out = palloc(vallen + keylen + 6);
+    out = palloc0(vallen + keylen + 6);
 
     ptr += sprintf(
         out+ptr,
@@ -510,7 +511,7 @@ cistore_cohort_from_types(PG_FUNCTION_ARGS)
     C_ISTORE_COHORT_KEY_LEN(key, keylen);
     DIGIT_WIDTH(val, vallen);
 
-    out = palloc(vallen + keylen + 6);
+    out = palloc0(vallen + keylen + 6);
     ptr += sprintf(
         out+ptr,
         "\"%s::%s::%s::%d\"=>\"%ld\"",
