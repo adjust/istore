@@ -319,14 +319,14 @@ uint8 null_type_for(uint8 type);
 
 #define COPY_ISTORE(_dst, _src)                \
     do {                                       \
-        _dst = palloc(ISTORE_SIZE(_src));      \
+        _dst = palloc0(ISTORE_SIZE(_src));      \
         memcpy(_dst, _src, ISTORE_SIZE(_src)); \
     } while(0)
 
 #define FINALIZE_ISTORE(_istore, _pairs)                                    \
     do {                                                                    \
         is_pairs_sort(_pairs);                                              \
-        _istore = palloc(ISHDRSZ + PAYLOAD_SIZE(_pairs));                   \
+        _istore = palloc0(ISHDRSZ + PAYLOAD_SIZE(_pairs));                   \
         _istore->buflen = _pairs->buflen;                                   \
         _istore->len    = _pairs->used;                                     \
         _istore->type   = _pairs->type;                                     \

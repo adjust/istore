@@ -242,7 +242,7 @@ is_pairs_insert(ISPairs *pairs, int32 key, long val, int type)
 
     if (pairs->size == pairs->used) {
         pairs->size *= 2;
-        pairs->pairs = repalloc0(pairs->pairs, pairs->size * sizeof(ISPair));
+        pairs->pairs = repalloc(pairs->pairs, pairs->size * sizeof(ISPair));
     }
 
     pairs->pairs[pairs->used].key  = key;
