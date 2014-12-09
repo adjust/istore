@@ -1123,8 +1123,6 @@ PG_FUNCTION_INFO_V1(istore_fill_gaps);
 Datum
 istore_fill_gaps(PG_FUNCTION_ARGS)
 {
-    if (PG_ARGISNULL(0))
-        PG_RETURN_NULL();
 
     IStore  *is,
             *result;
@@ -1136,6 +1134,9 @@ istore_fill_gaps(PG_FUNCTION_ARGS)
             fill_with;
     int     index1 = 0,
             index2 = 0;
+
+    if (PG_ARGISNULL(0))
+        PG_RETURN_NULL();
 
     bool    fill_with_null = PG_ARGISNULL(2);
 
