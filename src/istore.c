@@ -953,7 +953,7 @@ istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2, uint8 type)
         if (nulls1[i] || nulls2[i])
             continue;
         key   = DatumGetInt32(i_data1[i]);
-        //TODO switch over i_eltype2 and GetInt64
+
         switch (i_eltype2)
         {
             case INT4OID:
