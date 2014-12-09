@@ -1,7 +1,7 @@
 #include "istore.h"
 
-void is_pairs_init(ISPairs *pairs, size_t initial_size, int type);
-void is_pairs_insert(ISPairs *pairs, int32 key, long val, int type);
+void is_pairs_init(ISPairs *pairs, size_t initial_size, uint8 type);
+void is_pairs_insert(ISPairs *pairs, int32 key, long val, uint8 type);
 int  is_pairs_cmp(const void *a, const void *b);
 void is_pairs_sort(ISPairs *pairs);
 void is_pairs_deinit(ISPairs *pairs);
@@ -225,7 +225,7 @@ is_tree_to_pairs(Position p, ISPairs *pairs, int n)
 }
 
 void
-is_pairs_init(ISPairs *pairs, size_t initial_size, int type)
+is_pairs_init(ISPairs *pairs, size_t initial_size, uint8 type)
 {
     pairs->pairs  = palloc0(initial_size * sizeof(ISPair));
     pairs->used   = 0;
@@ -235,7 +235,7 @@ is_pairs_init(ISPairs *pairs, size_t initial_size, int type)
 }
 
 void
-is_pairs_insert(ISPairs *pairs, int32 key, long val, int type)
+is_pairs_insert(ISPairs *pairs, int32 key, long val, uint8 type)
 {
     int keylen,
         vallen;
