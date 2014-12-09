@@ -1145,11 +1145,12 @@ istore_fill_gaps(PG_FUNCTION_ARGS)
             fill_with;
     int     index1 = 0,
             index2 = 0;
+    bool    fill_with_null;
 
     if (PG_ARGISNULL(0))
         PG_RETURN_NULL();
 
-    bool    fill_with_null = PG_ARGISNULL(2);
+    fill_with_null = PG_ARGISNULL(2);
 
     is = PG_GETARG_IS(0);
     up_to = PG_GETARG_INT32(1);
