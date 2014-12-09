@@ -137,19 +137,9 @@ is_add(PG_FUNCTION_ARGS)
         else
         {
             if (pairs1[index1].null || pairs2[index2].null)
-                is_pairs_insert(
-                    creator,
-                    pairs1[index1].key,
-                    0,
-                    null_type_for(is1->type)
-                );
+                is_pairs_insert(creator, pairs1[index1].key, 0, null_type_for(is1->type));
             else
-                is_pairs_insert(
-                    creator,
-                    pairs1[index1].key,
-                    pairs1[index1].val + pairs2[index2].val,
-                    is1->type
-                );
+                is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val + pairs2[index2].val, is1->type);
             ++index1;
             ++index2;
         }
@@ -157,12 +147,18 @@ is_add(PG_FUNCTION_ARGS)
 
     while (index1 < is1->len)
     {
-        is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val, is1->type);
+        if (pairs1[index1].null)
+            is_pairs_insert(creator, pairs1[index1].key, 0, null_type_for(is1->type));
+        else
+            is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val, is1->type);
         ++index1;
     }
     while (index2 < is2->len)
     {
-        is_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val, is2->type);
+        if (pairs2[index2].null)
+            is_pairs_insert(creator, pairs2[index2].key, 0, null_type_for(is2->type));
+        else
+            is_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val, is2->type);
         ++index2;
     }
     FINALIZE_ISTORE(result, creator);
@@ -253,12 +249,18 @@ is_subtract(PG_FUNCTION_ARGS)
 
     while (index1 < is1->len)
     {
-        is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val, is1->type);
+        if (pairs1[index1].null)
+            is_pairs_insert(creator, pairs1[index1].key, 0, null_type_for(is1->type));
+        else
+            is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val, is1->type);
         ++index1;
     }
     while (index2 < is2->len)
     {
-        is_pairs_insert(creator, pairs2[index2].key, -pairs2[index2].val, is2->type);
+        if (pairs2[index2].null)
+            is_pairs_insert(creator, pairs2[index2].key, 0, null_type_for(is2->type));
+        else
+            is_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val, is2->type);
         ++index2;
     }
     FINALIZE_ISTORE(result, creator);
@@ -1143,11 +1145,12 @@ istore_fill_gaps(PG_FUNCTION_ARGS)
             fill_with;
     int     index1 = 0,
             index2 = 0;
+    bool    fill_with_null;
 
     if (PG_ARGISNULL(0))
         PG_RETURN_NULL();
 
-    bool    fill_with_null = PG_ARGISNULL(2);
+    fill_with_null = PG_ARGISNULL(2);
 
     is = PG_GETARG_IS(0);
     up_to = PG_GETARG_INT32(1);
