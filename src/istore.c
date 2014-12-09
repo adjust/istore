@@ -860,7 +860,11 @@ istore_agg_finalfn(PG_FUNCTION_ARGS)
     nulls = input->dnulls;
     data  = input->dvalues;
 
+    if (count == 0)
+        PG_RETURN_NULL();
+
     result = array_to_istore(data, count, nulls);
+
     if (result == 0)
         PG_RETURN_NULL();
     else
