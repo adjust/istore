@@ -791,6 +791,8 @@ array_to_istore(Datum *data, int count, bool *nulls)
         }
     }
     i = is_tree_length(tree);
+    if (i == 0)
+        return 0;
 
     pairs = palloc0(sizeof *pairs);
     is_pairs_init(pairs, 200, type);
