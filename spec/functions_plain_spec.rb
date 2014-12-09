@@ -58,6 +58,8 @@ describe 'functions_plain' do
     '"-1"=>"-2", "2"=>"0"'
     query("SELECT add('-1=>-1, 2=>1'::istore, 0)").should match \
     '"-1"=>"-1", "2"=>"1"'
+    query("SELECT add(istore(Array[]::integer[], Array[]::integer[]), '1=>NULL'::istore);").should match \
+    '"1"=>NULL'
   end
 
   it 'should substract istores' do
@@ -77,6 +79,8 @@ describe 'functions_plain' do
     '"-1"=>"0", "2"=>"2"'
     query("SELECT subtract('-1=>-1, 2=>1'::istore, 0)").should match \
     '"-1"=>"-1", "2"=>"1"'
+    query("SELECT subtract(istore(Array[]::integer[], Array[]::integer[]), '1=>NULL'::istore);").should match \
+    '"1"=>NULL'
   end
 
   it 'should multiply istores' do
