@@ -954,7 +954,18 @@ istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2, uint8 type)
             continue;
         key   = DatumGetInt32(i_data1[i]);
         //TODO switch over i_eltype2 and GetInt64
-        value = DatumGetInt32(i_data2[i]);
+        switch (i_eltype2)
+        {
+            case INT4OID:
+                value = DatumGetInt32(i_data2[i]);
+                break;
+            case INT8OID:
+                value = DatumGetInt64(i_data2[i]);
+                break;
+            default:
+                elog(ERROR, "istore_add_from_int_arrays unsupported array type %d", i_eltype2);
+        }
+
         position = is_tree_find(key, tree);
         if (position == NULL)
             tree = is_insert(key, value, false, tree);

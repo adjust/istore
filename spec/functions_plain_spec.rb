@@ -214,6 +214,9 @@ describe 'functions_plain' do
 
     query("SELECT istore(Array[5,3,4,5], Array[1,2,3,4]::bigint[])").should match \
       '"3"=>"2", "4"=>"3", "5"=>"5"'
+
+    query("SELECT istore(Array[5,3,4,5], Array[4000000000,2,4000000000,4]::bigint[])").should match \
+      '"3"=>"2", "4"=>"4000000000", "5"=>"4000000004"'
   end
 
   it 'should fill gaps' do
