@@ -108,10 +108,15 @@ is_add(PG_FUNCTION_ARGS)
 
     int     index1 = 0,
             index2 = 0;
-    /* TODO NULL handling */
-    /* throw error if istore types differ? */
+
+    if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
+        PG_RETURN_NULL();
+
     is1 = PG_GETARG_IS(0);
     is2 = PG_GETARG_IS(1);
+
+    if (is1->type != is2->type)
+        elog(ERROR, "is_add istore types differ %d != %d", is1->type, is2->type );
 
     pairs1 = FIRST_PAIR(is1);
     pairs2 = FIRST_PAIR(is2);
