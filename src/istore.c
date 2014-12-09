@@ -112,6 +112,7 @@ is_add(PG_FUNCTION_ARGS)
     /* throw error if istore types differ? */
     is1 = PG_GETARG_IS(0);
     is2 = PG_GETARG_IS(1);
+
     pairs1 = FIRST_PAIR(is1);
     pairs2 = FIRST_PAIR(is2);
     creator = palloc0(sizeof *creator);
@@ -514,7 +515,7 @@ is_divide_int8(PG_FUNCTION_ARGS)
 }
 
 static Datum
-type_istore_from_int_array(ArrayType *input, int type)
+type_istore_from_int_array(ArrayType *input, uint8 type)
 {
     IStore    *result;
     Datum     *i_data;
@@ -586,7 +587,7 @@ type_istore_from_int_array(ArrayType *input, int type)
 }
 
 static Datum
-type_istore_from_text_array(ArrayType *input, int type)
+type_istore_from_text_array(ArrayType *input, uint8 type)
 {
     IStore    *result;
     Datum     *i_data;
@@ -754,8 +755,8 @@ array_to_istore(Datum *data, int count, bool *nulls)
            *istore;
     AvlTree  tree;
     int i,
-        type = -1,
         index;
+    uint8 type = 0;
     ISPair *payload;
     ISPairs   *pairs;
     Position position;
@@ -767,7 +768,7 @@ array_to_istore(Datum *data, int count, bool *nulls)
         if (nulls[i])
             continue;
         istore = (IStore *) data[i];
-        if (type == -1)
+        if (type == 0)
             type = istore->type;
         else if (type != istore->type)
             elog(ERROR, "inconsistent istore types in array");
@@ -868,7 +869,7 @@ istore_agg_finalfn(PG_FUNCTION_ARGS)
 }
 
 static Datum
-istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2, int type)
+istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2, uint8 type)
 {
     IStore    *out;
     Datum     *i_data1,
