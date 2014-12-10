@@ -8,7 +8,11 @@
 #include "country.h"
 #include "os_name.h"
 #include "catalog/pg_type.h"
+#if PG_VERSION_NUM >= 90300
 #include "access/htup_details.h"
+#else
+#include "access/htup.h"
+#endif
 
 Datum array_to_istore(Datum *data, int count, bool *nulls);
 Datum type_istore_to_istore(PG_FUNCTION_ARGS);
