@@ -138,7 +138,7 @@ is_serialize_istore(IStore *in)
         out = palloc0(1);
         PG_RETURN_CSTRING(out);
     }
-    out = palloc0(in->buflen);
+    out = palloc0(in->buflen + 1);
     pairs = FIRST_PAIR(in);
     for (i = 0; i<in->len; ++i)
     {
@@ -182,7 +182,6 @@ is_serialize_istore(IStore *in)
         {
             switch (in->type)
             {
-                case 255:
                 case PLAIN_ISTORE:
                     ptr += sprintf(
                         out+ptr,
