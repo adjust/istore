@@ -510,7 +510,7 @@ cistore_cohort_from_types(PG_FUNCTION_ARGS)
     C_ISTORE_COHORT_KEY_LEN(key, keylen);
     DIGIT_WIDTH(val, vallen);
 
-    out = palloc0(vallen + keylen + 6);
+    out = palloc0(vallen + keylen + 6 + 1);
     ptr += sprintf(
         out+ptr,
         "\"%s::%s::%s::%d\"=>\"%ld\"",
