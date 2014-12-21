@@ -103,10 +103,10 @@ is_parse_istore(ISParser *parser)
         }
         else if (parser->state == WDEL)
         {
-            if (*(parser->ptr) == ',')
-                parser->state = WKEY;
-            else if (*(parser->ptr) == '\0')
+            if (*(parser->ptr) == '\0')
                 break;
+            else if (*(parser->ptr) == ',')
+                parser->state = WKEY;
             parser->ptr++;
         }
         else
@@ -138,7 +138,7 @@ is_serialize_istore(IStore *in)
         out = palloc0(1);
         PG_RETURN_CSTRING(out);
     }
-    out = palloc0(in->buflen);
+    out = palloc0(in->buflen + 1);
     pairs = FIRST_PAIR(in);
     for (i = 0; i<in->len; ++i)
     {
@@ -182,7 +182,6 @@ is_serialize_istore(IStore *in)
         {
             switch (in->type)
             {
-                case 255:
                 case PLAIN_ISTORE:
                     ptr += sprintf(
                         out+ptr,
@@ -475,7 +474,7 @@ cistore_from_types(PG_FUNCTION_ARGS)
     C_ISTORE_KEY_LEN(key, keylen);
     DIGIT_WIDTH(val, vallen);
 
-    out = palloc0(vallen + keylen + 6);
+    out = palloc0(vallen + keylen + 6 + 1);
 
     ptr += sprintf(
         out+ptr,
@@ -511,7 +510,7 @@ cistore_cohort_from_types(PG_FUNCTION_ARGS)
     C_ISTORE_COHORT_KEY_LEN(key, keylen);
     DIGIT_WIDTH(val, vallen);
 
-    out = palloc0(vallen + keylen + 6);
+    out = palloc0(vallen + keylen + 6 + 1);
     ptr += sprintf(
         out+ptr,
         "\"%s::%s::%s::%d\"=>\"%ld\"",
