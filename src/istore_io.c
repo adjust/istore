@@ -103,10 +103,10 @@ is_parse_istore(ISParser *parser)
         }
         else if (parser->state == WDEL)
         {
-            if (*(parser->ptr) == ',')
-                parser->state = WKEY;
-            else if (*(parser->ptr) == '\0')
+            if (*(parser->ptr) == '\0')
                 break;
+            else if (*(parser->ptr) == ',')
+                parser->state = WKEY;
             parser->ptr++;
         }
         else
