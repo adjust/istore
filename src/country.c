@@ -15,7 +15,7 @@ country_in(PG_FUNCTION_ARGS)
     LOWER_STRING(str);
     result = get_country_num(str);
     if (result == 0)
-        elog(ERROR, "unknown input country type");
+        elog(ERROR, "unknown input country type: %s", str);
     PG_RETURN_COUNTRY(result);
 }
 
