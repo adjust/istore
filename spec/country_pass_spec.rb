@@ -42,7 +42,7 @@ describe 'country_pass' do
   end
 
   it 'should throw an error for invalid countries' do
-    expect{query("SELECT 'aa'::country")}.to throw_error 'unknown input country type'
+    expect{query("SELECT 'aa'::country")}.to throw_error 'unknown input country type: aa'
   end
 
   it 'should throw an error for invalid countries' do

@@ -29,7 +29,7 @@ device_type_in(PG_FUNCTION_ARGS)
     LOWER_STRING(str);
     result = get_device_type_num(str);
     if (result == 0)
-        elog(ERROR, "unknown input device_type");
+        elog(ERROR, "unknown input device_type: %s", str);
     PG_RETURN_DEVICE_TYPE(result);
 }
 

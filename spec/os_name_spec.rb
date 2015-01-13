@@ -24,6 +24,6 @@ describe 'os_name' do
   end
 
   it 'should rais an exception on invalid os_name' do
-    expect{query("SELECT 'kermit'::os_name")}.to throw_error('unknown input os_name')
+    expect{query("SELECT 'kermit'::os_name")}.to throw_error('unknown input os_name: kermit')
   end
 end

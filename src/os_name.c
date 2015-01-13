@@ -10,11 +10,11 @@ os_name_in(PG_FUNCTION_ARGS)
     char *str = PG_GETARG_CSTRING(0);
     os_name result;
     if (str == NULL)
-        elog(ERROR, "unknown input os_name");
+        elog(ERROR, "NULL input not allowed for os_name");
     LOWER_STRING(str);
     result = get_os_name_num(str);
     if (result == 0)
-        elog(ERROR, "unknown input os_name");
+        elog(ERROR, "unknown input os_name: %s", str);
     PG_RETURN_OS_NAME(result);
 }
 
