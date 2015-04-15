@@ -256,5 +256,9 @@ describe 'functions_plain' do
     query("SELECT accumulate(''::istore)").should match \
       ''
     query("SELECT accumulate(NULL::istore)").should match nil
+    query("SELECT accumulate('-20=> 5, -10=> 5'::istore)").should match \
+      '"-20"=>"5", "-19"=>"5", "-18"=>"5", "-17"=>"5", "-16"=>"5", "-15"=>"5", "-14"=>"5", "-13"=>"5", "-12"=>"5", "-11"=>"5", "-10"=>"10"'
+    query("SELECT accumulate('-5=> 5, 3=> 5'::istore);").should match \
+      ' "-5"=>"5", "-4"=>"5", "-3"=>"5", "-2"=>"5", "-1"=>"5", "0"=>"5", "1"=>"5", "2"=>"5", "3"=>"10"'
   end
 end
