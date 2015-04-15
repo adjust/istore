@@ -216,8 +216,85 @@ SELECT multiply('es=>-1, us=>1'::country_istore, 0);
 
 ROLLBACK;
 BEGIN;
--- functions_country should build a country_isotre_from array aka array_count;
+-- functions_country should divide country_istores;
 -- ./spec/functions_country_spec.rb:79;
+CREATE EXTENSION istore;
+SELECT divide('de=>1, us=>1'::country_istore, 'de=>1, us=>1'::country_istore);
+        divide        
+----------------------
+ "de"=>"1", "us"=>"1"
+(1 row)
+
+SELECT divide('de=>1, us=>1'::country_istore, 'es=>1, us=>1'::country_istore);
+              divide               
+-----------------------------------
+ "de"=>NULL, "es"=>NULL, "us"=>"1"
+(1 row)
+
+SELECT divide('de=>1, us=>1'::country_istore, 'es=>-1, us=>1'::country_istore);
+              divide               
+-----------------------------------
+ "de"=>NULL, "es"=>NULL, "us"=>"1"
+(1 row)
+
+SELECT divide('es=>1, us=>1'::country_istore, 'es=>-1, us=>1'::country_istore);
+        divide         
+-----------------------
+ "es"=>"-1", "us"=>"1"
+(1 row)
+
+SELECT divide('es=>-1, us=>1'::country_istore, 'es=>-1, us=>1'::country_istore);
+        divide        
+----------------------
+ "es"=>"1", "us"=>"1"
+(1 row)
+
+SELECT divide('es=>-1, us=>1'::country_istore, 1);
+        divide         
+-----------------------
+ "es"=>"-1", "us"=>"1"
+(1 row)
+
+SELECT divide('es=>-1, us=>1'::country_istore, -1);
+        divide         
+-----------------------
+ "es"=>"1", "us"=>"-1"
+(1 row)
+
+SELECT divide('es=>-1, us=>1'::country_istore, 0);
+         divide         
+------------------------
+ "es"=>NULL, "us"=>NULL
+(1 row)
+
+SELECT divide('es=>-1, us=>1'::country_istore, 1::bigint);
+        divide         
+-----------------------
+ "es"=>"-1", "us"=>"1"
+(1 row)
+
+SELECT divide('es=>-1, us=>1'::country_istore, -1::bigint);
+        divide         
+-----------------------
+ "es"=>"1", "us"=>"-1"
+(1 row)
+
+SELECT divide('es=>-1, us=>1'::country_istore, 0::bigint);
+         divide         
+------------------------
+ "es"=>NULL, "us"=>NULL
+(1 row)
+
+SELECT divide('es=>-8000000000, us=>8000000000'::country_istore, 4000000000);
+        divide         
+-----------------------
+ "es"=>"-2", "us"=>"2"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- functions_country should build a country_isotre_from array aka array_count;
+-- ./spec/functions_country_spec.rb:106;
 CREATE EXTENSION istore;
 SELECT country_istore_from_array(ARRAY['de']);
  country_istore_from_array 
@@ -327,10 +404,22 @@ SELECT country_istore_from_array(ARRAY['de'::country,'es'::country,'io'::country
  "de"=>"5", "es"=>"4", "io"=>"4", "us"=>"4"
 (1 row)
 
+SELECT country_istore_from_array(ARRAY[NULL::country,NULL::country,NULL::country,NULL::country,NULL::country,NULL::country,NULL::country,NULL::country,NULL,NULL::country,NULL]);
+ country_istore_from_array 
+---------------------------
+ 
+(1 row)
+
+SELECT country_istore_from_array(ARRAY[]::country[]);
+ country_istore_from_array 
+---------------------------
+ 
+(1 row)
+
 ROLLBACK;
 BEGIN;
 -- functions_country should sum up an array of country_istores;
--- ./spec/functions_country_spec.rb:116;
+-- ./spec/functions_country_spec.rb:145;
 CREATE EXTENSION istore;
 SELECT country_istore_agg(ARRAY['de=>1']::country_istore[]);;
  country_istore_agg 
@@ -371,7 +460,7 @@ SELECT country_istore_agg(ARRAY[NULL,'de=>1,us=>1','de=>1,us=>-1',NULL]::country
 ROLLBACK;
 BEGIN;
 -- functions_country should sum up the total;
--- ./spec/functions_country_spec.rb:131;
+-- ./spec/functions_country_spec.rb:160;
 CREATE EXTENSION istore;
 SELECT country_istore_sum_up('de=>1'::country_istore);
  country_istore_sum_up 
@@ -406,7 +495,7 @@ SELECT country_istore_sum_up('de=>3000000000 ,us=>4000000000, de=>3000000000'::c
 ROLLBACK;
 BEGIN;
 -- functions_country should SUM istores;
--- ./spec/functions_country_spec.rb:139;
+-- ./spec/functions_country_spec.rb:168;
 CREATE EXTENSION istore;
 CREATE TABLE test (a country_istore);
 INSERT INTO test VALUES ('de=>1'), ('us=>1'),('io=>1');
@@ -419,7 +508,7 @@ SELECT SUM(a) FROM test;
 ROLLBACK;
 BEGIN;
 -- functions_country should SUM istores;
--- ./spec/functions_country_spec.rb:146;
+-- ./spec/functions_country_spec.rb:175;
 CREATE EXTENSION istore;
 CREATE TABLE test (a country_istore);
 INSERT INTO test VALUES ('de=>1'), ('us=>1'), ('io=>1'), (NULL), ('io=>3');

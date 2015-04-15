@@ -118,3 +118,15 @@ SELECT * FROM os_name_istore_io;
 (1 row)
 
 ROLLBACK;
+BEGIN;
+-- os_name_iostore_io should persist emptz os_name_iostores;
+-- ./spec/os_name_iostore_io_spec.rb:68;
+CREATE EXTENSION istore;
+CREATE TABLE os_name_istore_io AS SELECT ''::os_name_istore;
+SELECT * FROM os_name_istore_io;
+ os_name_istore 
+----------------
+ 
+(1 row)
+
+ROLLBACK;

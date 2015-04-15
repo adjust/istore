@@ -118,3 +118,15 @@ SELECT * FROM istore_io;
 (1 row)
 
 ROLLBACK;
+BEGIN;
+-- istore_io should persist empty istores;
+-- ./spec/istore_io_spec.rb:68;
+CREATE EXTENSION istore;
+CREATE TABLE istore_io AS SELECT ''::istore;
+SELECT * FROM istore_io;
+ istore 
+--------
+ 
+(1 row)
+
+ROLLBACK;

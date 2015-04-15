@@ -1523,7 +1523,7 @@ BEGIN;
 -- ./spec/country_pass_spec.rb:44;
 CREATE EXTENSION istore;
 SELECT 'aa'::country;
-ERROR:  unknown input country type
+ERROR:  unknown input country type: aa
 LINE 1: SELECT 'aa'::country;
                ^
 ROLLBACK;
