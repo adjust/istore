@@ -1219,8 +1219,8 @@ istore_accumulate(PG_FUNCTION_ARGS)
     long    sum = 0;
     int     index1 = 0,
             index2 = 0;
-    int     size = 0 ,
-            start_key = 0,
+    size_t  size = 0 ;
+    int32   start_key = 0,
             end_key = -1;
 
     if (PG_ARGISNULL(0))
