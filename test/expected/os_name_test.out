@@ -74,7 +74,7 @@ BEGIN;
 -- ./spec/os_name_spec.rb:26;
 CREATE EXTENSION istore;
 SELECT 'kermit'::os_name;
-ERROR:  unknown input os_name
+ERROR:  unknown input os_name: kermit
 LINE 1: SELECT 'kermit'::os_name;
                ^
 ROLLBACK;

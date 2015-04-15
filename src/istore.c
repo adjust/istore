@@ -1203,3 +1203,55 @@ istore_fill_gaps(PG_FUNCTION_ARGS)
     FINALIZE_ISTORE(result, creator);
     PG_RETURN_POINTER(result);
 }
+
+
+PG_FUNCTION_INFO_V1(istore_accumulate);
+Datum
+istore_accumulate(PG_FUNCTION_ARGS)
+{
+
+    IStore  *is,
+            *result;
+    ISPair  *pairs;
+
+    ISPairs *creator = NULL;
+
+    long    sum = 0;
+    int     index1 = 0,
+            index2 = 0;
+    size_t  size = 0 ;
+    int32   start_key = 0,
+            end_key = -1;
+
+    if (PG_ARGISNULL(0))
+        PG_RETURN_NULL();
+
+    is = PG_GETARG_IS(0);
+    pairs = FIRST_PAIR(is);
+    creator = palloc0(sizeof *creator);
+
+    if (is->type != PLAIN_ISTORE)
+        elog(ERROR, "only supports plain istore ");
+
+    if (is->len > 0)
+    {
+        start_key = pairs[0].key;
+        end_key = pairs[is->len - 1].key;
+        size = end_key - start_key + 1;
+    }
+    is_pairs_init(creator, size , is->type);
+
+    for(index1=start_key; index1 <= end_key; ++index1)
+    {
+        if (index2 < is->len && index1 == pairs[index2].key)
+        {
+            if (!pairs[index2].null)
+                sum += pairs[index2].val;
+            ++index2;
+        }
+        is_pairs_insert(creator, index1, sum, is->type);
+    }
+
+    FINALIZE_ISTORE(result, creator);
+    PG_RETURN_POINTER(result);
+}

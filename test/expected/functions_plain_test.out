@@ -57,8 +57,52 @@ SELECT fetchval('1=>1, 1=>1'::istore, 2);
 
 ROLLBACK;
 BEGIN;
--- functions_plain should add istores;
+-- functions_plain should return set of ints;
 -- ./spec/functions_plain_spec.rb:22;
+CREATE EXTENSION istore;
+SELECT * FROM each('1=>1'::istore);
+ key | value 
+-----+-------
+   1 |     1
+(1 row)
+
+SELECT * FROM each('5=>11, 4=>8'::istore);
+ key | value 
+-----+-------
+   4 |     8
+   5 |    11
+(2 rows)
+
+SELECT * FROM each('5=>-411, 4=>8'::istore);
+ key | value 
+-----+-------
+   4 |     8
+   5 |  -411
+(2 rows)
+
+SELECT value + 100 FROM each('5=>-411, 4=>8'::istore);
+ ?column? 
+----------
+      108
+     -311
+(2 rows)
+
+SELECT * FROM each('1=>1, 5=>NULL'::istore);
+ key | value 
+-----+-------
+   1 |     1
+   5 |      
+(2 rows)
+
+SELECT * FROM each(NULL::istore);
+ key | value 
+-----+-------
+(0 rows)
+
+ROLLBACK;
+BEGIN;
+-- functions_plain should add istores;
+-- ./spec/functions_plain_spec.rb:44;
 CREATE EXTENSION istore;
 SELECT add('1=>1, 2=>1'::istore, '1=>1, 2=>1'::istore);
         add         
@@ -108,10 +152,16 @@ SELECT add('-1=>-1, 2=>1'::istore, 0);
  "-1"=>"-1", "2"=>"1"
 (1 row)
 
+SELECT add(istore(Array[]::integer[], Array[]::integer[]), '1=>NULL'::istore);;
+    add    
+-----------
+ "1"=>NULL
+(1 row)
+
 ROLLBACK;
 BEGIN;
 -- functions_plain should substract istores;
--- ./spec/functions_plain_spec.rb:41;
+-- ./spec/functions_plain_spec.rb:65;
 CREATE EXTENSION istore;
 SELECT subtract('1=>1, 2=>1'::istore, '1=>1, 2=>1'::istore);
       subtract      
@@ -161,10 +211,16 @@ SELECT subtract('-1=>-1, 2=>1'::istore, 0);
  "-1"=>"-1", "2"=>"1"
 (1 row)
 
+SELECT subtract(istore(Array[]::integer[], Array[]::integer[]), '1=>NULL'::istore);;
+ subtract  
+-----------
+ "1"=>NULL
+(1 row)
+
 ROLLBACK;
 BEGIN;
 -- functions_plain should multiply istores;
--- ./spec/functions_plain_spec.rb:60;
+-- ./spec/functions_plain_spec.rb:86;
 CREATE EXTENSION istore;
 SELECT multiply('1=>1, 2=>1'::istore, '1=>1, 2=>1'::istore);
       multiply      
@@ -216,8 +272,85 @@ SELECT multiply('-1=>-1, 2=>1'::istore, 0);
 
 ROLLBACK;
 BEGIN;
+-- functions_plain should divide istores;
+-- ./spec/functions_plain_spec.rb:105;
+CREATE EXTENSION istore;
+SELECT divide('1=>1, 2=>1'::istore, '1=>1, 2=>1'::istore);
+       divide       
+--------------------
+ "1"=>"1", "2"=>"1"
+(1 row)
+
+SELECT divide('1=>1, 2=>1'::istore, '-1=>1, 2=>1'::istore);
+             divide              
+---------------------------------
+ "-1"=>NULL, "1"=>NULL, "2"=>"1"
+(1 row)
+
+SELECT divide('1=>1, 2=>1'::istore, '-1=>-1, 2=>1'::istore);
+             divide              
+---------------------------------
+ "-1"=>NULL, "1"=>NULL, "2"=>"1"
+(1 row)
+
+SELECT divide('-1=>1, 2=>1'::istore, '-1=>-1, 2=>1'::istore);
+        divide        
+----------------------
+ "-1"=>"-1", "2"=>"1"
+(1 row)
+
+SELECT divide('-1=>-1, 2=>1'::istore, '-1=>-1, 2=>1'::istore);
+       divide        
+---------------------
+ "-1"=>"1", "2"=>"1"
+(1 row)
+
+SELECT divide('-1=>-1, 2=>1'::istore, 1);
+        divide        
+----------------------
+ "-1"=>"-1", "2"=>"1"
+(1 row)
+
+SELECT divide('-1=>-1, 2=>1'::istore, -1);
+        divide        
+----------------------
+ "-1"=>"1", "2"=>"-1"
+(1 row)
+
+SELECT divide('-1=>-1, 2=>1'::istore, 0);
+        divide         
+-----------------------
+ "-1"=>NULL, "2"=>NULL
+(1 row)
+
+SELECT divide('-1=>-1, 2=>1'::istore, 1::bigint);
+        divide        
+----------------------
+ "-1"=>"-1", "2"=>"1"
+(1 row)
+
+SELECT divide('-1=>-1, 2=>1'::istore, -1::bigint);
+        divide        
+----------------------
+ "-1"=>"1", "2"=>"-1"
+(1 row)
+
+SELECT divide('-1=>-1, 2=>1'::istore, 0::bigint);
+        divide         
+-----------------------
+ "-1"=>NULL, "2"=>NULL
+(1 row)
+
+SELECT divide('-1=>-8000000000, 2=>8000000000'::istore, 4000000000);
+        divide        
+----------------------
+ "-1"=>"-2", "2"=>"2"
+(1 row)
+
+ROLLBACK;
+BEGIN;
 -- functions_plain should generate istore from array;
--- ./spec/functions_plain_spec.rb:79;
+-- ./spec/functions_plain_spec.rb:132;
 CREATE EXTENSION istore;
 SELECT istore_from_array(ARRAY[1]);
  istore_from_array 
@@ -273,10 +406,22 @@ SELECT istore_from_array(ARRAY[1,2,3,NULL,1,NULL,3,4,1,2,3]);
  "1"=>"3", "2"=>"2", "3"=>"3", "4"=>"1"
 (1 row)
 
+SELECT istore_from_array(ARRAY[NULL,NULL,NULL,NULL]::integer[]);
+ istore_from_array 
+-------------------
+ 
+(1 row)
+
+SELECT istore_from_array(ARRAY[]::integer[]);
+ istore_from_array 
+-------------------
+ 
+(1 row)
+
 ROLLBACK;
 BEGIN;
 -- functions_plain should agg an array of istores;
--- ./spec/functions_plain_spec.rb:99;
+-- ./spec/functions_plain_spec.rb:154;
 CREATE EXTENSION istore;
 SELECT istore_agg(ARRAY['1=>1']::istore[]);
  istore_agg 
@@ -317,7 +462,7 @@ SELECT istore_agg(ARRAY[NULL,'1=>1,2=>1','1=>1,2=>-1',NULL]::istore[]);
 ROLLBACK;
 BEGIN;
 -- functions_plain should sum up istores;
--- ./spec/functions_plain_spec.rb:114;
+-- ./spec/functions_plain_spec.rb:169;
 CREATE EXTENSION istore;
 SELECT istore_sum_up('1=>1'::istore);
  istore_sum_up 
@@ -346,7 +491,7 @@ SELECT istore_sum_up('1=>1 ,2=>-1, 1=>1'::istore);
 ROLLBACK;
 BEGIN;
 -- functions_plain should sum istores from table;
--- ./spec/functions_plain_spec.rb:121;
+-- ./spec/functions_plain_spec.rb:176;
 CREATE EXTENSION istore;
 CREATE TABLE test (a istore);
 INSERT INTO test VALUES('1=>1'),('2=>1'), ('3=>1');
@@ -359,7 +504,7 @@ SELECT SUM(a) FROM test;
 ROLLBACK;
 BEGIN;
 -- functions_plain should sum istores from table;
--- ./spec/functions_plain_spec.rb:128;
+-- ./spec/functions_plain_spec.rb:183;
 CREATE EXTENSION istore;
 CREATE TABLE test (a istore);
 INSERT INTO test VALUES('1=>1'),('2=>1'),('3=>1'),(NULL),('3=>3');
@@ -372,7 +517,7 @@ SELECT SUM(a) FROM test;
 ROLLBACK;
 BEGIN;
 -- functions_plain should sum istores from table;
--- ./spec/functions_plain_spec.rb:135;
+-- ./spec/functions_plain_spec.rb:190;
 CREATE EXTENSION istore;
 CREATE TABLE test (a istore);
 INSERT INTO test VALUES('1=>1'),('2=>1'),('3=>1'),(NULL),('3=>NULL');
@@ -380,6 +525,161 @@ SELECT SUM(a) FROM test;
              sum              
 ------------------------------
  "1"=>"1", "2"=>"1", "3"=>"1"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- functions_plain should return istores from arrays;
+-- ./spec/functions_plain_spec.rb:197;
+CREATE EXTENSION istore;
+SELECT istore_array_add(Array[5,3,4,5], Array[1,2,3,4]);
+       istore_array_add       
+------------------------------
+ "3"=>"2", "4"=>"3", "5"=>"5"
+(1 row)
+
+SELECT istore_array_add(Array['de', 'de', 'us']::country[], Array[7,2,5]);
+   istore_array_add   
+----------------------
+ "de"=>"9", "us"=>"5"
+(1 row)
+
+SELECT istore_array_add(Array['mac', 'mac']::device_type[], Array[1,4]);
+ istore_array_add 
+------------------
+ "mac"=>"5"
+(1 row)
+
+SELECT istore_array_add(Array['ios', 'android', 'ios']::os_name[], Array[2,3,4]);
+      istore_array_add      
+----------------------------
+ "android"=>"3", "ios"=>"6"
+(1 row)
+
+SELECT istore_array_add(Array[]::os_name[], Array[]::int[]);
+ istore_array_add 
+------------------
+ 
+(1 row)
+
+SELECT istore(Array[5,3,4,5], Array[1,2,3,4]);
+            istore            
+------------------------------
+ "3"=>"2", "4"=>"3", "5"=>"5"
+(1 row)
+
+SELECT istore(Array[5,3,4,5], Array[1,2,3,4]::bigint[]);
+            istore            
+------------------------------
+ "3"=>"2", "4"=>"3", "5"=>"5"
+(1 row)
+
+SELECT istore(Array[5,3,4,5], Array[4000000000,2,4000000000,4]::bigint[]);
+                     istore                     
+------------------------------------------------
+ "3"=>"2", "4"=>"4000000000", "5"=>"4000000004"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- functions_plain should fill gaps;
+-- ./spec/functions_plain_spec.rb:222;
+CREATE EXTENSION istore;
+SELECT fill_gaps('2=>17, 4=>3'::istore, 5, 0);
+                          fill_gaps                          
+-------------------------------------------------------------
+ "0"=>"0", "1"=>"0", "2"=>"17", "3"=>"0", "4"=>"3", "5"=>"0"
+(1 row)
+
+SELECT fill_gaps('2=>17, 4=>3'::istore, 5);
+                          fill_gaps                          
+-------------------------------------------------------------
+ "0"=>"0", "1"=>"0", "2"=>"17", "3"=>"0", "4"=>"3", "5"=>"0"
+(1 row)
+
+SELECT fill_gaps('2=>17, 4=>3'::istore, 3, 11);
+                 fill_gaps                  
+--------------------------------------------
+ "0"=>"11", "1"=>"11", "2"=>"17", "3"=>"11"
+(1 row)
+
+SELECT fill_gaps('2=>17, 4=>3'::istore, 0, 0);
+ fill_gaps 
+-----------
+ "0"=>"0"
+(1 row)
+
+SELECT fill_gaps('2=>17'::istore, 3, NULL);
+                 fill_gaps                  
+--------------------------------------------
+ "0"=>NULL, "1"=>NULL, "2"=>"17", "3"=>NULL
+(1 row)
+
+SELECT fill_gaps('2=>NULL, 3=>3'::istore, 3, 0);
+                fill_gaps                
+-----------------------------------------
+ "0"=>"0", "1"=>"0", "2"=>NULL, "3"=>"3"
+(1 row)
+
+SELECT fill_gaps(''::istore, 3, 0);
+               fill_gaps                
+----------------------------------------
+ "0"=>"0", "1"=>"0", "2"=>"0", "3"=>"0"
+(1 row)
+
+SELECT fill_gaps(NULL::istore, 3, 0);
+ fill_gaps 
+-----------
+ 
+(1 row)
+
+SELECT fill_gaps('2=>17, 4=>3'::istore, -5, 0);
+ERROR:  parameter upto must be >= 0
+ROLLBACK;
+BEGIN;
+-- functions_plain should fill accumulate;
+-- ./spec/functions_plain_spec.rb:249;
+CREATE EXTENSION istore;
+SELECT accumulate('2=>17, 4=>3'::istore);
+           accumulate            
+---------------------------------
+ "2"=>"17", "3"=>"17", "4"=>"20"
+(1 row)
+
+SELECT accumulate('2=>NULL, 4=>3'::istore);
+          accumulate          
+------------------------------
+ "2"=>"0", "3"=>"0", "4"=>"3"
+(1 row)
+
+SELECT accumulate('1=>3, 2=>NULL, 4=>3, 6=>2'::istore);
+                         accumulate                         
+------------------------------------------------------------
+ "1"=>"3", "2"=>"3", "3"=>"3", "4"=>"6", "5"=>"6", "6"=>"8"
+(1 row)
+
+SELECT accumulate(''::istore);
+ accumulate 
+------------
+ 
+(1 row)
+
+SELECT accumulate(NULL::istore);
+ accumulate 
+------------
+ 
+(1 row)
+
+SELECT accumulate('-20=> 5, -10=> 5'::istore);
+                                                             accumulate                                                              
+-------------------------------------------------------------------------------------------------------------------------------------
+ "-20"=>"5", "-19"=>"5", "-18"=>"5", "-17"=>"5", "-16"=>"5", "-15"=>"5", "-14"=>"5", "-13"=>"5", "-12"=>"5", "-11"=>"5", "-10"=>"10"
+(1 row)
+
+SELECT accumulate('-5=> 5, 3=> 5'::istore);;
+                                           accumulate                                           
+------------------------------------------------------------------------------------------------
+ "-5"=>"5", "-4"=>"5", "-3"=>"5", "-2"=>"5", "-1"=>"5", "0"=>"5", "1"=>"5", "2"=>"5", "3"=>"10"
 (1 row)
 
 ROLLBACK;
