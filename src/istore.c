@@ -1219,9 +1219,9 @@ istore_accumulate(PG_FUNCTION_ARGS)
     long    sum = 0;
     int     index1 = 0,
             index2 = 0;
-    int     size,
-            start_key,
-            end_key;
+    int     size = 0 ,
+            start_key = 0,
+            end_key = -1;
 
     if (PG_ARGISNULL(0))
         PG_RETURN_NULL();
@@ -1233,10 +1233,12 @@ istore_accumulate(PG_FUNCTION_ARGS)
     if (is->type != PLAIN_ISTORE)
         elog(ERROR, "only supports plain istore ");
 
-    start_key = pairs[0].key;
-    end_key = pairs[is->len -1 ].key;
-    size = end_key - start_key + 1;
-
+    if (is->len > 0)
+    {
+        start_key = pairs[0].key;
+        end_key = pairs[is->len - 1].key;
+        size = end_key - start_key + 1;
+    }
     is_pairs_init(creator, size , is->type);
 
     for(index1=start_key; index1 <= end_key; ++index1)

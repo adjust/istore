@@ -253,6 +253,8 @@ describe 'functions_plain' do
       '"2"=>"0", "3"=>"0", "4"=>"3"'
     query("SELECT accumulate('1=>3, 2=>NULL, 4=>3, 6=>2'::istore)").should match \
       '"1"=>"3", "2"=>"3", "3"=>"3", "4"=>"6", "5"=>"6", "6"=>"8"'
-
+    query("SELECT accumulate(''::istore)").should match \
+      ''
+    query("SELECT accumulate(NULL::istore)").should match nil
   end
 end
