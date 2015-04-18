@@ -135,7 +135,10 @@ CREATE FUNCTION accumulate(istore)
     AS '$libdir/istore.so', 'istore_accumulate'
     LANGUAGE C IMMUTABLE STRICT;
 
-
+CREATE FUNCTION accumulate(istore, integer)
+    RETURNS istore
+    AS '$libdir/istore.so', 'istore_accumulate_upto'
+    LANGUAGE C IMMUTABLE STRICT;
 
 CREATE AGGREGATE SUM (
     sfunc = array_agg_transfn,
