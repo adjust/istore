@@ -194,6 +194,7 @@ SELECT accumulate('2=>NULL, 4=>3'::istore, 8);
 SELECT accumulate('1=>3, 2=>NULL, 4=>3, 6=>2'::istore, 8);
 SELECT accumulate(''::istore, 8);
 SELECT accumulate('10=>5'::istore, 8);
+SELECT accumulate('1=>5'::istore, 0);
 SELECT accumulate(NULL::istore, 8);
 SELECT accumulate('-20=> 5, -10=> 5'::istore, -8);
 SELECT accumulate('-5=> 5, 3=> 5'::istore, 2);
