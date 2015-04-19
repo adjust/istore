@@ -1204,7 +1204,6 @@ istore_fill_gaps(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(result);
 }
 
-
 PG_FUNCTION_INFO_V1(istore_accumulate);
 Datum
 istore_accumulate(PG_FUNCTION_ARGS)
@@ -1227,18 +1226,20 @@ istore_accumulate(PG_FUNCTION_ARGS)
         PG_RETURN_NULL();
 
     is = PG_GETARG_IS(0);
-    pairs = FIRST_PAIR(is);
-    creator = palloc0(sizeof *creator);
 
     if (is->type != PLAIN_ISTORE)
         elog(ERROR, "only supports plain istore ");
 
+    pairs = FIRST_PAIR(is);
+    creator = palloc0(sizeof *creator);
+
     if (is->len > 0)
     {
         start_key = pairs[0].key;
-        end_key = pairs[is->len - 1].key;
-        size = end_key - start_key + 1;
+        end_key = PG_NARGS() == 1 ? pairs[is->len -1].key : PG_GETARG_INT32(1);
+        size = start_key > end_key ? 0 : (end_key - start_key + 1);
     }
+
     is_pairs_init(creator, size , is->type);
 
     for(index1=start_key; index1 <= end_key; ++index1)
