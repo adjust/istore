@@ -270,6 +270,7 @@ describe 'functions_plain' do
       '"1"=>"3", "2"=>"3", "3"=>"3", "4"=>"6", "5"=>"6", "6"=>"8", "7"=>"8", "8"=>"8"'
     query("SELECT accumulate(''::istore, 8)").should match ''
     query("SELECT accumulate('10=>5'::istore, 8)").should match ''
+    query("SELECT accumulate('1=>5'::istore, 0)").should match ''
     query("SELECT accumulate(NULL::istore, 8)").should match nil
     query("SELECT accumulate('-20=> 5, -10=> 5'::istore, -8)").should match \
       '"-20"=>"5", "-19"=>"5", "-18"=>"5", "-17"=>"5", "-16"=>"5", "-15"=>"5", "-14"=>"5", "-13"=>"5", "-12"=>"5", "-11"=>"5", "-10"=>"10", "-9"=>"10", "-8"=>"10"'

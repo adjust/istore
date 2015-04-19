@@ -723,6 +723,12 @@ SELECT accumulate('10=>5'::istore, 8);
  
 (1 row)
 
+SELECT accumulate('1=>5'::istore, 0);
+ accumulate 
+------------
+ 
+(1 row)
+
 SELECT accumulate(NULL::istore, 8);
  accumulate 
 ------------
