@@ -73,11 +73,9 @@ PG_FUNCTION_INFO_V1(is_exist);
 Datum
 is_exist(PG_FUNCTION_ARGS)
 {
-    IStore *in;
-    int32   key;
-    bool    found;
-    in  = PG_GETARG_IS(0);
-    key = PG_GETARG_INT32(1);
+    bool found;
+    IStore *in = PG_GETARG_IS(0);
+    int32 key = PG_GETARG_INT32(1);
     if (is_find(in, key))
         found = true;
     else
@@ -92,12 +90,9 @@ PG_FUNCTION_INFO_V1(is_fetchval);
 Datum
 is_fetchval(PG_FUNCTION_ARGS)
 {
-    IStore *in;
-    int32   key;
-    ISPair  *pair;
-    /* TODO: NULL handling */
-    in  = PG_GETARG_IS(0);
-    key = PG_GETARG_INT32(1);
+    ISPair *pair;
+    IStore *in = PG_GETARG_IS(0);
+    int32 key = PG_GETARG_INT32(1);
     if ((pair = is_find(in, key)) == NULL )
         PG_RETURN_NULL();
     else
