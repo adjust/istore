@@ -6,15 +6,13 @@
 #define WGT  3
 #define WDEL 4
 
-struct ISParser {
+typedef struct ISParser {
     char    *begin;
     char    *ptr;
     int      state;
     AvlNode *tree;
     uint8    type;
-};
-
-typedef struct ISParser ISParser;
+} ISParser;
 
 static Datum is_parse_istore(ISParser *parser);
 
