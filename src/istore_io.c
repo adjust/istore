@@ -136,34 +136,6 @@ is_serialize_istore(IStore *in)
     PG_RETURN_CSTRING(out);
 }
 
-/*
- * casts for istores
- */
-PG_FUNCTION_INFO_V1(type_istore_to_istore);
-Datum
-type_istore_to_istore(PG_FUNCTION_ARGS)
-{
-    IStore *in,
-           *result;
-    ISPair *pairs;
-    int i;
-
-    in = PG_GETARG_IS(0);
-    COPY_ISTORE(result, in);
-    result->type = PLAIN_ISTORE;
-    pairs = FIRST_PAIR(result);
-    result->buflen = 0;
-    for (i = 0; i < result->len; ++i)
-    {
-        int keylen,
-            vallen;
-        DIGIT_WIDTH(pairs[i].key, keylen);
-        DIGIT_WIDTH(pairs[i].val, vallen);
-        result->buflen += keylen + vallen + BUFLEN_OFFSET;
-    }
-    PG_RETURN_POINTER(result);
-}
-
 PG_FUNCTION_INFO_V1(istore_out);
 Datum
 istore_out(PG_FUNCTION_ARGS)
