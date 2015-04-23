@@ -34,10 +34,7 @@ istore_sum_up(PG_FUNCTION_ARGS)
     pairs = FIRST_PAIR(is);
 
     while (index < is->len)
-    {
-        result += pairs[index].val;
-        ++index;
-    }
+        result += pairs[index++].val;
     PG_RETURN_INT64(result);
 }
 
