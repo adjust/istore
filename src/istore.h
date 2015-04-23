@@ -200,6 +200,14 @@ uint8 null_type_for(uint8 type);
         is_pairs_deinit(_pairs);                                            \
     } while(0)
 
+#define EMPTY_ISTORE(_istore)          \
+    do {                               \
+        _istore = palloc0(ISHDRSZ);    \
+        _istore->buflen = 0;           \
+        _istore->len = 0;              \
+        _istore->type = PLAIN_ISTORE;  \
+        SET_VARSIZE(_istore, ISHDRSZ); \
+    } while(0)
 
 ISPair* is_find(IStore *is, int32 key);
 

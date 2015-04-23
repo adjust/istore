@@ -30,7 +30,10 @@ is_parse_istore(ISParser *parser)
     parser->ptr   = parser->begin;
     parser->tree  = NULL;
     if (parser->begin[0] == '\0')
-        goto end;
+    {
+        EMPTY_ISTORE(out);
+        PG_RETURN_POINTER(out);
+    }
 
     while(1)
     {
@@ -86,7 +89,7 @@ is_parse_istore(ISParser *parser)
             elog(ERROR, "unknown parser state");
         }
     }
-end:
+
     pairs = palloc0(sizeof(ISPairs));
     is_pairs_init(pairs, 200, parser->type);
     is_tree_to_pairs(parser->tree, pairs, 0);
