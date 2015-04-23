@@ -11,7 +11,6 @@ typedef struct ISParser {
     char    *ptr;
     int      state;
     AvlNode *tree;
-    uint8    type;
 } ISParser;
 
 static Datum is_parse_istore(ISParser *parser);
@@ -89,7 +88,7 @@ is_parse_istore(ISParser *parser)
     }
 
     pairs = palloc0(sizeof(ISPairs));
-    is_pairs_init(pairs, 200, parser->type);
+    is_pairs_init(pairs, 200, PLAIN_ISTORE);
     is_tree_to_pairs(parser->tree, pairs, 0);
     is_make_empty(parser->tree);
     FINALIZE_ISTORE(out, pairs);
@@ -140,7 +139,6 @@ istore_in(PG_FUNCTION_ARGS)
 {
     ISParser  parser;
     parser.begin = PG_GETARG_CSTRING(0);
-    parser.type  = PLAIN_ISTORE;
     return is_parse_istore(&parser);
 }
 
