@@ -11,7 +11,7 @@ null_type_for(uint8 type)
 {
     switch (type)
     {
-        case PLAIN_ISTORE:    return NULL_VAL_ISTORE;
+        case PLAIN_ISTORE: return NULL_VAL_ISTORE;
         default:
             elog(ERROR, "unknown istore type");
     }
