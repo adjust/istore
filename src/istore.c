@@ -559,8 +559,9 @@ is_divide_int8(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(result);
 }
 
-static Datum
-type_istore_from_int_array(ArrayType *input, uint8 type)
+PG_FUNCTION_INFO_V1(istore_from_array);
+Datum
+istore_from_array(PG_FUNCTION_ARGS)
 {
     IStore    *result;
     Datum     *i_data;
@@ -575,6 +576,10 @@ type_istore_from_int_array(ArrayType *input, uint8 type)
     Position position;
     int      key,
              i;
+
+    ArrayType *input = PG_GETARG_ARRAYTYPE_P(0);
+    if (input == NULL)
+        PG_RETURN_NULL();
 
     i_eltype = ARR_ELEMTYPE(input);
 
@@ -602,17 +607,7 @@ type_istore_from_int_array(ArrayType *input, uint8 type)
     {
         if (nulls[i])
             continue;
-        switch (type)
-        {
-            case PLAIN_ISTORE:
-                key = DatumGetInt32(i_data[i]);
-                break;
-            // DEVICE_ISTORE
-            // COUNTRY_ISTORE
-            // OS_NAME_ISTORE
-            default:
-                key = DatumGetUInt8(i_data[i]);
-        }
+        key = DatumGetInt32(i_data[i]);
         if (key < 0)
             elog(ERROR, "cannot count array that has negative integers");
         position = is_tree_find(key, tree);
@@ -624,26 +619,11 @@ type_istore_from_int_array(ArrayType *input, uint8 type)
 
     n = is_tree_length(tree);
     pairs = palloc0(sizeof *pairs);
-    is_pairs_init(pairs, 200, type);
+    is_pairs_init(pairs, 200, PLAIN_ISTORE);
     is_tree_to_pairs(tree, pairs, 0);
     is_make_empty(tree);
     FINALIZE_ISTORE(result, pairs);
     PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(istore_from_array);
-Datum
-istore_from_array(PG_FUNCTION_ARGS)
-{
-    ArrayType *input;
-    Datum result;
-    if (PG_ARGISNULL(0))
-        PG_RETURN_NULL();
-    input = PG_GETARG_ARRAYTYPE_P(0);
-    result = type_istore_from_int_array(input, PLAIN_ISTORE);
-    if (result == 0)
-        PG_RETURN_NULL();
-    return result;
 }
 
 Datum
