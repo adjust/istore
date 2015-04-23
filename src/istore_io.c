@@ -19,10 +19,10 @@ static Datum is_parse_istore(ISParser *parser);
 static Datum
 is_parse_istore(ISParser *parser)
 {
-    IStore   *out;
-    ISPairs  *pairs;
-    int  key;
-    long val;
+    IStore  *out;
+    ISPairs *pairs;
+    int32 key;
+    long  val;
 
     parser->state = WKEY;
     parser->ptr   = parser->begin;
@@ -96,14 +96,14 @@ is_parse_istore(ISParser *parser)
     PG_RETURN_POINTER(out);
 }
 
-static Datum is_serialize_istore(IStore *in);
-
-static Datum
-is_serialize_istore(IStore *in)
+PG_FUNCTION_INFO_V1(istore_out);
+Datum
+istore_out(PG_FUNCTION_ARGS)
 {
-    int   i,
-          ptr = 0;
-    char *out;
+    IStore *in = PG_GETARG_IS(0);
+    int     i,
+            ptr = 0;
+    char   *out;
     ISPair *pairs;
 
     if (in->len == 0)
@@ -132,14 +132,6 @@ is_serialize_istore(IStore *in)
     // replace trailing , with terminating null
     out[in->buflen - 2] = '\0';
     PG_RETURN_CSTRING(out);
-}
-
-PG_FUNCTION_INFO_V1(istore_out);
-Datum
-istore_out(PG_FUNCTION_ARGS)
-{
-    IStore *in = PG_GETARG_IS(0);
-    return is_serialize_istore(in);
 }
 
 PG_FUNCTION_INFO_V1(istore_in);
