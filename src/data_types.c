@@ -260,51 +260,6 @@ is_pairs_insert(ISPairs *pairs, int32 key, long val, uint8 type)
             pairs->pairs[pairs->used].null = true;
             pairs->buflen += keylen + NULL_BUFLEN_OFFSET;
             break;
-        case (DEVICE_ISTORE):
-            keylen = get_device_type_length(key);
-            DIGIT_WIDTH(val, vallen);
-            pairs->pairs[pairs->used].null = false;
-            pairs->buflen += keylen + vallen + BUFLEN_OFFSET;
-            break;
-        case (NULL_DEVICE_ISTORE):
-            keylen = get_device_type_length(key);
-            pairs->pairs[pairs->used].null = true;
-            pairs->buflen += keylen + NULL_BUFLEN_OFFSET;
-            break;
-        case (COUNTRY_ISTORE):
-            keylen = 2;
-            DIGIT_WIDTH(val, vallen);
-            pairs->pairs[pairs->used].null = false;
-            pairs->buflen += keylen + vallen + BUFLEN_OFFSET;
-            break;
-        case (NULL_COUNTRY_ISTORE):
-            keylen = 2;
-            pairs->pairs[pairs->used].null = true;
-            pairs->buflen += keylen + NULL_BUFLEN_OFFSET;
-            break;
-        case (OS_NAME_ISTORE):
-            keylen = get_os_name_length(key);
-            DIGIT_WIDTH(val, vallen);
-            pairs->pairs[pairs->used].null = false;
-            pairs->buflen += keylen + vallen + BUFLEN_OFFSET;
-            break;
-        case (NULL_OS_NAME_ISTORE):
-            keylen = get_os_name_length(key);
-            pairs->pairs[pairs->used].null = true;
-            pairs->buflen += keylen + NULL_BUFLEN_OFFSET;
-            break;
-        case (C_ISTORE):
-            C_ISTORE_KEY_LEN(key, keylen);
-            DIGIT_WIDTH(val, vallen);
-            pairs->pairs[pairs->used].null = false;
-            pairs->buflen += keylen + vallen + BUFLEN_OFFSET;
-            break;
-        case (C_ISTORE_COHORT):
-            C_ISTORE_COHORT_KEY_LEN(key, keylen);
-            DIGIT_WIDTH(val, vallen);
-            pairs->pairs[pairs->used].null = false;
-            pairs->buflen += keylen + vallen + BUFLEN_OFFSET;
-            break;
         default: elog(ERROR, "unknown pairs type");
     }
     pairs->used++;
