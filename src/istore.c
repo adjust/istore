@@ -29,7 +29,6 @@ istore_sum_up(PG_FUNCTION_ARGS)
     ISPair  *pairs;
     long    result = 0;
     int     index = 0;
-
     is     = PG_GETARG_IS(0);
     pairs = FIRST_PAIR(is);
 
@@ -77,7 +76,6 @@ is_exist(PG_FUNCTION_ARGS)
     IStore *in;
     int32   key;
     bool    found;
-    /*TODO: NULL handling*/
     in  = PG_GETARG_IS(0);
     key = PG_GETARG_INT32(1);
     if (is_find(in, key))
@@ -193,7 +191,6 @@ is_add_integer(PG_FUNCTION_ARGS)
 
     int     index = 0,
             int_arg;
-    /* TODO NULL handling */
     is     = PG_GETARG_IS(0);
     int_arg = PG_GETARG_INT32(1);
     pairs = FIRST_PAIR(is);
@@ -230,7 +227,6 @@ is_subtract(PG_FUNCTION_ARGS)
 
     int     index1 = 0,
             index2 = 0;
-    /* TODO NULL handling */
     is1 = PG_GETARG_IS(0);
     is2 = PG_GETARG_IS(1);
     pairs1 = FIRST_PAIR(is1);
@@ -304,7 +300,6 @@ is_subtract_integer(PG_FUNCTION_ARGS)
 
     int     index = 0,
             int_arg;
-    /* TODO NULL handling */
     is     = PG_GETARG_IS(0);
     int_arg = PG_GETARG_INT32(1);
     pairs = FIRST_PAIR(is);
@@ -342,7 +337,6 @@ is_multiply(PG_FUNCTION_ARGS)
     int     index1 = 0,
             index2 = 0;
     uint8   nulltype;
-    /* TODO NULL handling */
     is1 = PG_GETARG_IS(0);
     is2 = PG_GETARG_IS(1);
     pairs1 = FIRST_PAIR(is1);
@@ -411,7 +405,6 @@ is_multiply_integer(PG_FUNCTION_ARGS)
 
     int     index = 0,
             int_arg;
-    /* TODO NULL handling */
     is     = PG_GETARG_IS(0);
     int_arg = PG_GETARG_INT32(1);
     pairs = FIRST_PAIR(is);
@@ -451,7 +444,6 @@ is_divide(PG_FUNCTION_ARGS)
     int     index1 = 0,
             index2 = 0;
     uint8   nulltype;
-    /* TODO NULL handling */
     is1 = PG_GETARG_IS(0);
     is2 = PG_GETARG_IS(1);
     pairs1 = FIRST_PAIR(is1);
@@ -522,7 +514,6 @@ is_divide_integer(PG_FUNCTION_ARGS)
 
     int     index = 0,
             int_arg;
-    /* TODO NULL handling */
     is     = PG_GETARG_IS(0);
     int_arg = PG_GETARG_INT32(1);
     pairs = FIRST_PAIR(is);
@@ -556,7 +547,6 @@ is_divide_int8(PG_FUNCTION_ARGS)
 
     int     index = 0;
     int64   int_arg;
-    /* TODO NULL handling */
     is     = PG_GETARG_IS(0);
     int_arg = PG_GETARG_INT64(1);
     pairs = FIRST_PAIR(is);
