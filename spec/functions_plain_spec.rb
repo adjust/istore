@@ -219,6 +219,11 @@ describe 'functions_plain' do
       '"3"=>"2", "4"=>"4000000000", "5"=>"4000000004"'
   end
 
+  it 'should return istores from bigint arrays' do
+    query("SELECT istore_array_add(Array[5,3,4,5], Array[1,2,3,4000000000]::bigint[])").should match \
+      '"3"=>"2", "4"=>"3", "5"=>"4000000001"'
+  end
+
   it 'should fill gaps' do
     query("SELECT fill_gaps('2=>17, 4=>3'::istore, 5, 0)").should match \
       '"0"=>"0", "1"=>"0", "2"=>"17", "3"=>"0", "4"=>"3", "5"=>"0"'
