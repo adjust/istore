@@ -114,6 +114,11 @@ CREATE FUNCTION istore_array_add(integer[], integer[])
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION istore_array_add(integer[], bigint[])
+    RETURNS istore
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION istore(integer[], bigint[])
     RETURNS istore
     AS '$libdir/istore.so', 'istore_array_add'
