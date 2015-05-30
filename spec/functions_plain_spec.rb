@@ -246,6 +246,9 @@ describe 'functions_plain' do
     query("SELECT fill_gaps(''::istore, 3, 0)").should match \
       '"0"=>"0", "1"=>"0", "2"=>"0", "3"=>"0"'
 
+    query("SELECT fill_gaps(''::istore, 3, 4e9::bigint)").should match \
+      '"0"=>"4000000000", "1"=>"4000000000", "2"=>"4000000000", "3"=>"4000000000"'
+
     query("SELECT fill_gaps(NULL::istore, 3, 0)").should match nil
 
     expect{query("SELECT fill_gaps('2=>17, 4=>3'::istore, -5, 0)")}.to throw_error 'parameter upto must be >= 0'
@@ -293,6 +296,8 @@ describe 'functions_plain' do
       '"2"=>"0", "3"=>"0", "4"=>"0", "5"=>"0"'
     query("SELECT istore_seed(2,2,8)").should match \
       '"2"=>"8"'
+    query("SELECT istore_seed(2,2,4e9::bigint)").should match \
+      '"2"=>"4000000000"'
     expect{query("SELECT istore_seed(2,0,8)")}.to throw_error 'parameter upto must be >= from'
     end
 

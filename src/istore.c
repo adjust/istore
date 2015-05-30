@@ -1154,8 +1154,8 @@ istore_fill_gaps(PG_FUNCTION_ARGS)
 
     ISPairs *creator = NULL;
 
-    int     up_to,
-            fill_with;
+    int     up_to;
+    int64   fill_with;
     int     index1 = 0,
             index2 = 0;
     bool    fill_with_null;
@@ -1267,8 +1267,8 @@ istore_seed(PG_FUNCTION_ARGS)
     ISPairs *creator = NULL;
 
     int     from,
-            up_to,
-            fill_with;
+            up_to;
+    int64  fill_with;
     int     index1 = 0;
     bool    fill_with_null;
 
