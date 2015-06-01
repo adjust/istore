@@ -582,8 +582,19 @@ SELECT istore(Array[5,3,4,5], Array[4000000000,2,4000000000,4]::bigint[]);
 
 ROLLBACK;
 BEGIN;
--- functions_plain should fill gaps;
+-- functions_plain should return istores from bigint arrays;
 -- ./spec/functions_plain_spec.rb:222;
+CREATE EXTENSION istore;
+SELECT istore_array_add(Array[5,3,4,5], Array[1,2,3,4000000000]::bigint[]);
+           istore_array_add            
+---------------------------------------
+ "3"=>"2", "4"=>"3", "5"=>"4000000001"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- functions_plain should fill gaps;
+-- ./spec/functions_plain_spec.rb:227;
 CREATE EXTENSION istore;
 SELECT fill_gaps('2=>17, 4=>3'::istore, 5, 0);
                           fill_gaps                          
@@ -627,6 +638,12 @@ SELECT fill_gaps(''::istore, 3, 0);
  "0"=>"0", "1"=>"0", "2"=>"0", "3"=>"0"
 (1 row)
 
+SELECT fill_gaps(''::istore, 3, 4e9::bigint);
+                                 fill_gaps                                  
+----------------------------------------------------------------------------
+ "0"=>"4000000000", "1"=>"4000000000", "2"=>"4000000000", "3"=>"4000000000"
+(1 row)
+
 SELECT fill_gaps(NULL::istore, 3, 0);
  fill_gaps 
 -----------
@@ -638,7 +655,7 @@ ERROR:  parameter upto must be >= 0
 ROLLBACK;
 BEGIN;
 -- functions_plain should fill accumulate;
--- ./spec/functions_plain_spec.rb:249;
+-- ./spec/functions_plain_spec.rb:257;
 CREATE EXTENSION istore;
 SELECT accumulate('2=>17, 4=>3'::istore);
            accumulate            
@@ -691,7 +708,7 @@ SELECT accumulate('-5=> 5, 3=> 5'::istore);
 ROLLBACK;
 BEGIN;
 -- functions_plain should fill accumulate upto;
--- ./spec/functions_plain_spec.rb:264;
+-- ./spec/functions_plain_spec.rb:273;
 CREATE EXTENSION istore;
 SELECT accumulate('2=>17, 4=>3'::istore, 8);
                                  accumulate                                  
@@ -747,4 +764,48 @@ SELECT accumulate('-5=> 5, 3=> 5'::istore, 2);
  "-5"=>"5", "-4"=>"5", "-3"=>"5", "-2"=>"5", "-1"=>"5", "0"=>"5", "1"=>"5", "2"=>"5"
 (1 row)
 
+ROLLBACK;
+BEGIN;
+-- functions_plain should seed an istore from integer;
+-- ./spec/functions_plain_spec.rb:290;
+CREATE EXTENSION istore;
+SELECT istore_seed(2,5,8);
+              istore_seed               
+----------------------------------------
+ "2"=>"8", "3"=>"8", "4"=>"8", "5"=>"8"
+(1 row)
+
+SELECT istore_seed(2,5,NULL);
+                istore_seed                 
+--------------------------------------------
+ "2"=>NULL, "3"=>NULL, "4"=>NULL, "5"=>NULL
+(1 row)
+
+SELECT istore_seed(2,5,0);
+              istore_seed               
+----------------------------------------
+ "2"=>"0", "3"=>"0", "4"=>"0", "5"=>"0"
+(1 row)
+
+SELECT istore_seed(2,2,8);
+ istore_seed 
+-------------
+ "2"=>"8"
+(1 row)
+
+SELECT istore_seed(2,2,4e9::bigint);
+    istore_seed    
+-------------------
+ "2"=>"4000000000"
+(1 row)
+
+SELECT istore_seed(2,0,8);
+ERROR:  parameter upto must be >= from
+ROLLBACK;
+BEGIN;
+-- functions_plain should throw an error if negativ seed span;
+-- ./spec/functions_plain_spec.rb:304;
+CREATE EXTENSION istore;
+SELECT istore_seed(-2,0,8);
+ERROR:  parameter from must be >= 0
 ROLLBACK;
