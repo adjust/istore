@@ -55,6 +55,7 @@ Datum istore_sum_up(PG_FUNCTION_ARGS);
 Datum istore_each(PG_FUNCTION_ARGS);
 Datum istore_fill_gaps(PG_FUNCTION_ARGS);
 Datum istore_accumulate(PG_FUNCTION_ARGS);
+Datum istore_seed(PG_FUNCTION_ARGS);
 
 #define PLAIN_ISTORE         1
 #define NULL_VAL_ISTORE      2

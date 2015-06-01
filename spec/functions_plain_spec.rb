@@ -246,6 +246,9 @@ describe 'functions_plain' do
     query("SELECT fill_gaps(''::istore, 3, 0)").should match \
       '"0"=>"0", "1"=>"0", "2"=>"0", "3"=>"0"'
 
+    query("SELECT fill_gaps(''::istore, 3, 4e9::bigint)").should match \
+      '"0"=>"4000000000", "1"=>"4000000000", "2"=>"4000000000", "3"=>"4000000000"'
+
     query("SELECT fill_gaps(NULL::istore, 3, 0)").should match nil
 
     expect{query("SELECT fill_gaps('2=>17, 4=>3'::istore, -5, 0)")}.to throw_error 'parameter upto must be >= 0'
@@ -266,6 +269,7 @@ describe 'functions_plain' do
     query("SELECT accumulate('-5=> 5, 3=> 5'::istore)").should match \
       '"-5"=>"5", "-4"=>"5", "-3"=>"5", "-2"=>"5", "-1"=>"5", "0"=>"5", "1"=>"5", "2"=>"5", "3"=>"10"'
   end
+
   it 'should fill accumulate upto' do
     query("SELECT accumulate('2=>17, 4=>3'::istore, 8)").should match \
       '"2"=>"17", "3"=>"17", "4"=>"20", "5"=>"20", "6"=>"20", "7"=>"20", "8"=>"20"'
@@ -282,4 +286,24 @@ describe 'functions_plain' do
     query("SELECT accumulate('-5=> 5, 3=> 5'::istore, 2)").should match \
       '"-5"=>"5", "-4"=>"5", "-3"=>"5", "-2"=>"5", "-1"=>"5", "0"=>"5", "1"=>"5", "2"=>"5"'
   end
+
+  it 'should seed an istore from integer' do
+    query("SELECT istore_seed(2,5,8)").should match \
+      '"2"=>"8", "3"=>"8", "4"=>"8", "5"=>"8"'
+    query("SELECT istore_seed(2,5,NULL)").should match \
+      '"2"=>NULL, "3"=>NULL, "4"=>NULL, "5"=>NULL'
+    query("SELECT istore_seed(2,5,0)").should match \
+      '"2"=>"0", "3"=>"0", "4"=>"0", "5"=>"0"'
+    query("SELECT istore_seed(2,2,8)").should match \
+      '"2"=>"8"'
+    query("SELECT istore_seed(2,2,4e9::bigint)").should match \
+      '"2"=>"4000000000"'
+    expect{query("SELECT istore_seed(2,0,8)")}.to throw_error 'parameter upto must be >= from'
+    end
+
+  it 'should throw an error if negativ seed span' do
+    expect{query("SELECT istore_seed(-2,0,8)")}.to throw_error 'parameter from must be >= 0'
+  end
+
+
 end

@@ -1154,8 +1154,8 @@ istore_fill_gaps(PG_FUNCTION_ARGS)
 
     ISPairs *creator = NULL;
 
-    int     up_to,
-            fill_with;
+    int     up_to;
+    int64   fill_with;
     int     index1 = 0,
             index2 = 0;
     bool    fill_with_null;
@@ -1251,6 +1251,52 @@ istore_accumulate(PG_FUNCTION_ARGS)
             ++index2;
         }
         is_pairs_insert(creator, index1, sum, is->type);
+    }
+
+    FINALIZE_ISTORE(result, creator);
+    PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(istore_seed);
+Datum
+istore_seed(PG_FUNCTION_ARGS)
+{
+
+    IStore  *result;
+
+    ISPairs *creator = NULL;
+
+    int     from,
+            up_to;
+    int64  fill_with;
+    int     index1 = 0;
+    bool    fill_with_null;
+
+    if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
+        PG_RETURN_NULL();
+
+    fill_with_null = PG_ARGISNULL(2);
+
+    from = PG_GETARG_INT32(0);
+    up_to = PG_GETARG_INT32(1);
+    fill_with = PG_GETARG_INT64(2);
+    creator = palloc0(sizeof *creator);
+
+    if (up_to < from)
+        elog(ERROR, "parameter upto must be >= from");
+
+    if (from < 0 )
+        elog(ERROR, "parameter from must be >= 0");
+
+    is_pairs_init(creator, up_to - from + 1 , PLAIN_ISTORE);
+
+    for(index1=from; index1 <= up_to; ++index1)
+    {
+        if (fill_with_null)
+            is_pairs_insert(creator, index1, fill_with, null_type_for(PLAIN_ISTORE));
+        else
+            is_pairs_insert(creator, index1, fill_with, PLAIN_ISTORE);
+
     }
 
     FINALIZE_ISTORE(result, creator);
