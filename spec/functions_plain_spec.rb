@@ -302,7 +302,7 @@ describe 'functions_plain' do
     end
 
   it 'should throw an error if negativ seed span' do
-    expect{query("SELECT istore_seed(-2,0,8)")}.to throw_error 'parameter upto must be >= 0'
+    expect{query("SELECT istore_seed(-2,0,8)")}.to throw_error 'parameter from must be >= 0'
   end
 
 

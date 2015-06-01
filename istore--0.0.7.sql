@@ -222,7 +222,7 @@ CREATE OPERATOR / (
     rightarg  = bigint,
     procedure = divide
 );
-
+ 
 --source file sql/country.sql
 CREATE TYPE country;
 
@@ -539,7 +539,7 @@ CREATE OPERATOR / (
     rightarg  = bigint,
     procedure = divide
 );
-
+ 
 --source file sql/os_name.sql
 CREATE TYPE os_name;
 
@@ -858,7 +858,7 @@ CREATE OPERATOR / (
     rightarg  = bigint,
     procedure = divide
 );
-
+ 
 --source file sql/device_type.sql
 CREATE TYPE device_type;
 
@@ -1176,7 +1176,7 @@ CREATE OPERATOR / (
     rightarg  = bigint,
     procedure = divide
 );
-
+ 
 --source file sql/cistore.sql
 CREATE TYPE cistore;
 
@@ -1215,4 +1215,4 @@ CREATE OPERATOR + (
     rightarg  = cistore,
     procedure = add
 );
-
+ 

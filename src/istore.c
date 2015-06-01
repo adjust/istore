@@ -1272,7 +1272,7 @@ istore_seed(PG_FUNCTION_ARGS)
     int     index1 = 0;
     bool    fill_with_null;
 
-    if (PG_ARGISNULL(0) || PG_ARGISNULL(0))
+    if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
         PG_RETURN_NULL();
 
     fill_with_null = PG_ARGISNULL(2);
@@ -1286,7 +1286,7 @@ istore_seed(PG_FUNCTION_ARGS)
         elog(ERROR, "parameter upto must be >= from");
 
     if (from < 0 )
-        elog(ERROR, "parameter upto must be >= 0");
+        elog(ERROR, "parameter from must be >= 0");
 
     is_pairs_init(creator, up_to - from + 1 , PLAIN_ISTORE);
 
