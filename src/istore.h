@@ -56,6 +56,8 @@ Datum istore_each(PG_FUNCTION_ARGS);
 Datum istore_fill_gaps(PG_FUNCTION_ARGS);
 Datum istore_accumulate(PG_FUNCTION_ARGS);
 Datum istore_seed(PG_FUNCTION_ARGS);
+Datum is_val_larger(PG_FUNCTION_ARGS);
+Datum is_val_smaller(PG_FUNCTION_ARGS);
 
 /* Value types */
 #define PLAIN_ISTORE         1

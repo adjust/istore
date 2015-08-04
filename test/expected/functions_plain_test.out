@@ -809,3 +809,47 @@ CREATE EXTENSION istore;
 SELECT istore_seed(-2,0,8);
 ERROR:  parameter from must be >= 0
 ROLLBACK;
+BEGIN;
+-- functions_plain should merge istores by larger keys;
+-- ./spec/functions_plain_spec.rb:308;
+CREATE EXTENSION istore;
+SELECT is_val_larger('1=>1,2=>1,3=>3', '1=>2,3=>1,4=>1');
+             is_val_larger              
+----------------------------------------
+ "1"=>"2", "2"=>"1", "3"=>"3", "4"=>"1"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- functions_plain should merge istores by smaller keys;
+-- ./spec/functions_plain_spec.rb:313;
+CREATE EXTENSION istore;
+SELECT is_val_smaller('1=>1,2=>1,3=>3', '1=>2,3=>1,4=>1');
+             is_val_smaller             
+----------------------------------------
+ "1"=>"1", "2"=>"1", "3"=>"1", "4"=>"1"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- functions_plain should return istore with maxed values;
+-- ./spec/functions_plain_spec.rb:318;
+CREATE EXTENSION istore;
+SELECT MAX(s) FROM (VALUES('1=>5, 2=>2, 3=>3'::istore),('1=>1, 2=>5, 3=>3'),('1=>1, 2=>4, 3=>5'))t(s);
+             max              
+------------------------------
+ "1"=>"5", "2"=>"5", "3"=>"5"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- functions_plain should return istore with maxed values;
+-- ./spec/functions_plain_spec.rb:323;
+CREATE EXTENSION istore;
+SELECT MIN(s) FROM (VALUES('1=>5, 2=>2, 3=>3'::istore),('1=>1, 2=>5, 3=>3'),('1=>1, 2=>4, 3=>5'))t(s);
+             min              
+------------------------------
+ "1"=>"1", "2"=>"2", "3"=>"3"
+(1 row)
+
+ROLLBACK;
