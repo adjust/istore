@@ -1,5 +1,5 @@
 # istore extension
 comment = 'an integer based hstore'
-default_version = '0.0.7'
+default_version = '0.0.8'
 relocatable = true
 requires = ''

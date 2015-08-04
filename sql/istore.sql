@@ -221,3 +221,28 @@ CREATE OPERATOR / (
     rightarg  = bigint,
     procedure = divide
 );
+
+CREATE FUNCTION gin_extract_istore_key(internal, internal)
+RETURNS internal
+AS '$libdir/istore.so'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION gin_extract_istore_key_query(internal, internal, int2, internal, internal)
+RETURNS internal
+AS '$libdir/istore.so'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION gin_consistent_istore_key(internal, int2, internal, int4, internal, internal)
+RETURNS bool
+AS '$libdir/istore.so'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OPERATOR CLASS istore_key_ops
+DEFAULT FOR TYPE istore USING gin
+AS
+    OPERATOR 9 ?(istore, integer),
+    FUNCTION 1 btint4cmp(integer, integer),
+    FUNCTION 2 gin_extract_istore_key(internal, internal),
+    FUNCTION 3 gin_extract_istore_key_query(internal, internal, int2, internal, internal),
+    FUNCTION 4 gin_consistent_istore_key(internal, int2, internal, int4, internal, internal),
+    STORAGE  integer;
