@@ -54,7 +54,7 @@ PG_FUNCTION_INFO_V1(gin_extract_istore_key_query);
 Datum
 gin_extract_istore_key_query(PG_FUNCTION_ARGS)
 {
-    int32   query = PG_GETARG_INT32(0);
+    Datum   query = PG_GETARG_DATUM(0);
     int32  *nentries = (int32 *) PG_GETARG_POINTER(1);
     /* StrategyNumber strategy = PG_GETARG_UINT16(2); */
     /* int32  *searchMode = (int32 *) PG_GETARG_POINTER(6); */
@@ -62,7 +62,7 @@ gin_extract_istore_key_query(PG_FUNCTION_ARGS)
 
     *nentries = 1;
     entries = (Datum *) palloc(sizeof(Datum));
-    entries[0] = Int32GetDatum(query);
+    entries[0] = query;
 
     PG_RETURN_POINTER(entries);
 }
