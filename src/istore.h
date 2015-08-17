@@ -7,6 +7,7 @@
 #include "catalog/pg_type.h"
 #include "libpq/pqformat.h"
 #include "access/htup_details.h"
+#include "utils/lsyscache.h"
 
 Datum array_to_istore(Datum *data, int count, bool *nulls);
 Datum istore_out(PG_FUNCTION_ARGS);
@@ -38,8 +39,6 @@ Datum is_val_smaller(PG_FUNCTION_ARGS);
 
 #define BUFLEN_OFFSET        8
 #define NULL_BUFLEN_OFFSET   10
-
-extern void get_typlenbyvalalign(Oid eltype, int16 *i_typlen, bool *i_typbyval, char *i_typalign);
 
 struct ISPair {
     int32  key;
