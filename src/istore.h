@@ -9,8 +9,6 @@
 #include "access/htup_details.h"
 
 Datum array_to_istore(Datum *data, int count, bool *nulls);
-Datum type_istore_to_istore(PG_FUNCTION_ARGS);
-Datum istore_to_os_name_istore(PG_FUNCTION_ARGS);
 Datum istore_out(PG_FUNCTION_ARGS);
 Datum istore_in(PG_FUNCTION_ARGS);
 Datum istore_recv(PG_FUNCTION_ARGS);
@@ -38,24 +36,8 @@ Datum istore_seed(PG_FUNCTION_ARGS);
 Datum is_val_larger(PG_FUNCTION_ARGS);
 Datum is_val_smaller(PG_FUNCTION_ARGS);
 
-/* Value types */
-#define PLAIN_ISTORE         1
-#define NULL_VAL_ISTORE      2
-
 #define BUFLEN_OFFSET        8
 #define NULL_BUFLEN_OFFSET   10
-
-/*
- * macro to create a c string representation of a
- * varlena postgres text. allocates extra memory with palloc.
- * expects the datum to be NULL terminated
- */
-#define DATUM_TO_CSTRING(_datum, _str, _len) \
-    do {                                     \
-        _len = VARSIZE(_datum) - VARHDRSZ;   \
-        _str = palloc0(_len + 1);            \
-        memcpy(_str, VARDATA(_datum), _len); \
-    } while(0)
 
 extern void get_typlenbyvalalign(Oid eltype, int16 *i_typlen, bool *i_typbyval, char *i_typalign);
 
@@ -72,13 +54,12 @@ struct ISPairs {
     size_t  size;
     int     used;
     int     buflen;
-    uint8   type;
 };
 
 typedef struct ISPairs ISPairs;
 
-extern void is_pairs_init(ISPairs *pairs, size_t initial_size, uint8 type);
-extern void is_pairs_insert(ISPairs *pairs, int32 key, long val, uint8 type);
+extern void is_pairs_init(ISPairs *pairs, size_t initial_size);
+extern void is_pairs_insert(ISPairs *pairs, int32 key, long val, bool is_null);
 extern int  is_pairs_cmp(const void *a, const void *b);
 extern void is_pairs_sort(ISPairs *pairs);
 extern void is_pairs_deinit(ISPairs *pairs);
@@ -127,25 +108,6 @@ extern int is_tree_to_pairs(Position p, ISPairs *pairs, int n);
     if (*_ptr == '"')      \
             _ptr++;
 
-#define DELIM     ':'
-#define DELIM_NUM 2
-
-#define SKIP_COLON_DELIM(_parser, _moved)                    \
-    do {                                                     \
-        for (_moved = 0; _moved < DELIM_NUM; ++_moved)       \
-            if (*(_parser->ptr) != DELIM)                    \
-                break;                                       \
-            else                                             \
-                _parser->ptr++;                              \
-        switch (_moved)                                      \
-        {                                                    \
-            case 0:  _parser->type = C_ISTORE; break;        \
-            case 1:  elog(ERROR, "incomplete delimiter");    \
-            case 2:  _parser->type = C_ISTORE_COHORT; break; \
-            default: elog(ERROR, "too long delimiter");      \
-        }                                                    \
-    } while(0)
-
 #define GET_PLAIN_KEY(_parser, _key)                    \
     do {                                                \
         _key = strtol(_parser->ptr, &_parser->ptr, 10); \
@@ -172,10 +134,8 @@ typedef struct
     int32 __varlen;
     int32   buflen;
     int32   len;
-    uint8   type;
 } IStore;
 
-uint8 null_type_for(uint8 type);
 
 #define PG_GETARG_IS(x) (IStore *)PG_DETOAST_DATUM(PG_GETARG_DATUM(x))
 #define ISHDRSZ VARHDRSZ + sizeof(int32) + sizeof(int32) + sizeof(uint8)
@@ -194,7 +154,6 @@ uint8 null_type_for(uint8 type);
         _istore = palloc0(ISHDRSZ + PAYLOAD_SIZE(_pairs));                   \
         _istore->buflen = _pairs->buflen;                                   \
         _istore->len    = _pairs->used;                                     \
-        _istore->type   = _pairs->type;                                     \
         SET_VARSIZE(_istore, ISHDRSZ + PAYLOAD_SIZE(_pairs));               \
         memcpy(FIRST_PAIR(_istore), PAYLOAD(_pairs), PAYLOAD_SIZE(_pairs)); \
         is_pairs_deinit(_pairs);                                            \
@@ -205,7 +164,6 @@ uint8 null_type_for(uint8 type);
         _istore = palloc0(ISHDRSZ);    \
         _istore->buflen = 0;           \
         _istore->len = 0;              \
-        _istore->type = PLAIN_ISTORE;  \
         SET_VARSIZE(_istore, ISHDRSZ); \
     } while(0)
 
