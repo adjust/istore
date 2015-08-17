@@ -305,5 +305,23 @@ describe 'functions_plain' do
     expect{query("SELECT istore_seed(-2,0,8)")}.to throw_error 'parameter from must be >= 0'
   end
 
+  it 'should merge istores by larger keys' do
+    query("SELECT is_val_larger('1=>1,2=>1,3=>3', '1=>2,3=>1,4=>1')").should match \
+    '"1"=>"2", "2"=>"1", "3"=>"3", "4"=>"1"'
+  end
 
+  it 'should merge istores by smaller keys' do
+    query("SELECT is_val_smaller('1=>1,2=>1,3=>3', '1=>2,3=>1,4=>1')").should match \
+    '"1"=>"1", "2"=>"1", "3"=>"1", "4"=>"1"'
+  end
+
+  it 'should return istore with maxed values' do
+    query("SELECT MAX(s) FROM (VALUES('1=>5, 2=>2, 3=>3'::istore),('1=>1, 2=>5, 3=>3'),('1=>1, 2=>4, 3=>5'))t(s)").should match \
+    '"1"=>"5", "2"=>"5", "3"=>"5"'
+  end
+
+  it 'should return istore with maxed values' do
+    query("SELECT MIN(s) FROM (VALUES('1=>5, 2=>2, 3=>3'::istore),('1=>1, 2=>5, 3=>3'),('1=>1, 2=>4, 3=>5'))t(s)").should match \
+    '"1"=>"1", "2"=>"2", "3"=>"3"'
+  end
 end

@@ -149,11 +149,31 @@ CREATE FUNCTION istore_seed(integer, integer, bigint)
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE;
 
+CREATE FUNCTION is_val_larger(istore, istore)
+    RETURNS istore
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION is_val_smaller(istore, istore)
+    RETURNS istore
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE AGGREGATE SUM (
     sfunc = array_agg_transfn,
     basetype = istore,
     stype = internal,
     finalfunc = istore_agg_finalfn
+);
+
+CREATE AGGREGATE MIN(istore) (
+    sfunc = is_val_smaller,
+    stype = istore
+);
+
+CREATE AGGREGATE MAX(istore) (
+    sfunc = is_val_larger,
+    stype = istore
 );
 
 CREATE OPERATOR -> (
