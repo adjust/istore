@@ -149,11 +149,31 @@ CREATE FUNCTION istore_seed(integer, integer, bigint)
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE;
 
+CREATE FUNCTION is_val_larger(istore, istore)
+    RETURNS istore
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION is_val_smaller(istore, istore)
+    RETURNS istore
+    AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE AGGREGATE SUM (
     sfunc = array_agg_transfn,
     basetype = istore,
     stype = internal,
     finalfunc = istore_agg_finalfn
+);
+
+CREATE AGGREGATE MIN(istore) (
+    sfunc = is_val_smaller,
+    stype = istore
+);
+
+CREATE AGGREGATE MAX(istore) (
+    sfunc = is_val_larger,
+    stype = istore
 );
 
 CREATE OPERATOR -> (
@@ -221,3 +241,28 @@ CREATE OPERATOR / (
     rightarg  = bigint,
     procedure = divide
 );
+
+CREATE FUNCTION gin_extract_istore_key(internal, internal)
+RETURNS internal
+AS '$libdir/istore.so'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION gin_extract_istore_key_query(internal, internal, int2, internal, internal)
+RETURNS internal
+AS '$libdir/istore.so'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION gin_consistent_istore_key(internal, int2, internal, int4, internal, internal)
+RETURNS bool
+AS '$libdir/istore.so'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OPERATOR CLASS istore_key_ops
+DEFAULT FOR TYPE istore USING gin
+AS
+    OPERATOR 9 ?(istore, integer),
+    FUNCTION 1 btint4cmp(integer, integer),
+    FUNCTION 2 gin_extract_istore_key(internal, internal),
+    FUNCTION 3 gin_extract_istore_key_query(internal, internal, int2, internal, internal),
+    FUNCTION 4 gin_consistent_istore_key(internal, int2, internal, int4, internal, internal),
+    STORAGE  integer;

@@ -3,6 +3,9 @@
 
 PG_MODULE_MAGIC;
 
+/*
+ * Type of the NULL value
+ */
 uint8
 null_type_for(uint8 type)
 {
@@ -19,6 +22,10 @@ null_type_for(uint8 type)
     }
 }
 
+
+/*
+ * Sum the values of an istore
+ */
 PG_FUNCTION_INFO_V1(istore_sum_up);
 Datum
 istore_sum_up(PG_FUNCTION_ARGS)
@@ -27,9 +34,10 @@ istore_sum_up(PG_FUNCTION_ARGS)
     ISPair  *pairs;
     long    result = 0;
     int     index = 0;
-    /* TODO NULL handling */
+
     is     = PG_GETARG_IS(0);
     pairs = FIRST_PAIR(is);
+
     while (index < is->len)
     {
         result += pairs[index].val;
@@ -38,6 +46,11 @@ istore_sum_up(PG_FUNCTION_ARGS)
     PG_RETURN_INT64(result);
 }
 
+/*
+ * Find a key in an istore
+ *
+ * Binary search the key in the istore.
+ */
 ISPair*
 is_find(IStore *is, int32 key)
 {
@@ -62,6 +75,9 @@ is_find(IStore *is, int32 key)
     return result;
 }
 
+/*
+ * Implementation of operator ?(istore, int)
+ */
 PG_FUNCTION_INFO_V1(is_exist);
 Datum
 is_exist(PG_FUNCTION_ARGS)
@@ -79,6 +95,9 @@ is_exist(PG_FUNCTION_ARGS)
     PG_RETURN_BOOL(found);
 }
 
+/*
+ * Implementation of operator ->(istore, int)
+ */
 PG_FUNCTION_INFO_V1(is_fetchval);
 Datum
 is_fetchval(PG_FUNCTION_ARGS)
@@ -95,6 +114,9 @@ is_fetchval(PG_FUNCTION_ARGS)
         PG_RETURN_INT64(pair->val);
 }
 
+/*
+ * Merge two istores
+ */
 PG_FUNCTION_INFO_V1(is_add);
 Datum
 is_add(PG_FUNCTION_ARGS)
@@ -165,6 +187,9 @@ is_add(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(result);
 }
 
+/*
+ * Increment values of an istore
+ */
 PG_FUNCTION_INFO_V1(is_add_integer);
 Datum
 is_add_integer(PG_FUNCTION_ARGS)
@@ -194,6 +219,12 @@ is_add_integer(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(result);
 }
 
+/*
+ * Merge two istores by subtracting
+ *
+ * XXX Keys which doesn't exists on first istore is added to the results
+ * without changing the values on the second istore.
+ */
 PG_FUNCTION_INFO_V1(is_subtract);
 Datum
 is_subtract(PG_FUNCTION_ARGS)
@@ -267,6 +298,9 @@ is_subtract(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(result);
 }
 
+/*
+ * Decrement values of an istore
+ */
 PG_FUNCTION_INFO_V1(is_subtract_integer);
 Datum
 is_subtract_integer(PG_FUNCTION_ARGS)
@@ -296,6 +330,12 @@ is_subtract_integer(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(result);
 }
 
+/*
+ * Multiply values of two istores
+ *
+ * XXX The two istores should have the same keys.  The keys which exist on only
+ * one istore is added to the result with NULL values.
+ */
 PG_FUNCTION_INFO_V1(is_multiply);
 Datum
 is_multiply(PG_FUNCTION_ARGS)
@@ -365,6 +405,9 @@ is_multiply(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(result);
 }
 
+/*
+ * Multiply values of an istore
+ */
 PG_FUNCTION_INFO_V1(is_multiply_integer);
 Datum
 is_multiply_integer(PG_FUNCTION_ARGS)
@@ -394,6 +437,14 @@ is_multiply_integer(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(result);
 }
 
+/*
+ * Divide values of two istores
+ *
+ * XXX The values of the result are truncated.
+ *
+ * XXX The two istores should have the same keys.  The keys which exist on only
+ * one istore is added to the result with NULL values.
+ */
 PG_FUNCTION_INFO_V1(is_divide);
 Datum
 is_divide(PG_FUNCTION_ARGS)
@@ -463,6 +514,11 @@ is_divide(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(result);
 }
 
+/*
+ * Divide values of an istore
+ *
+ * XXX The values of the result are truncated.
+ */
 PG_FUNCTION_INFO_V1(is_divide_integer);
 Datum
 is_divide_integer(PG_FUNCTION_ARGS)
@@ -492,6 +548,11 @@ is_divide_integer(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(result);
 }
 
+/*
+ * Divide values of an istore
+ *
+ * XXX The values of the result are truncated.
+ */
 PG_FUNCTION_INFO_V1(is_divide_int8);
 Datum
 is_divide_int8(PG_FUNCTION_ARGS)
@@ -1299,6 +1360,152 @@ istore_seed(PG_FUNCTION_ARGS)
 
     }
 
+    FINALIZE_ISTORE(result, creator);
+    PG_RETURN_POINTER(result);
+}
+
+/*
+ * Merge two istores by extraccting the bigger values
+ */
+PG_FUNCTION_INFO_V1(is_val_larger);
+Datum
+is_val_larger(PG_FUNCTION_ARGS)
+{
+    IStore  *is1,
+            *is2,
+            *result;
+    ISPair  *pairs1,
+            *pairs2;
+    ISPairs *creator = NULL;
+
+    int     index1 = 0,
+            index2 = 0;
+
+    if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
+        PG_RETURN_NULL();
+
+    is1 = PG_GETARG_IS(0);
+    is2 = PG_GETARG_IS(1);
+
+    if (is1->type != is2->type)
+        elog(ERROR, "is_add istore types differ %d != %d", is1->type, is2->type );
+
+    pairs1 = FIRST_PAIR(is1);
+    pairs2 = FIRST_PAIR(is2);
+    creator = palloc0(sizeof *creator);
+    is_pairs_init(creator, 200, is1->type);
+    while (index1 < is1->len && index2 < is2->len)
+    {
+        if (pairs1[index1].key < pairs2[index2].key)
+        {
+            is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val, is1->type);
+            ++index1;
+        }
+        else if (pairs1[index1].key > pairs2[index2].key)
+        {
+            is_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val, is1->type);
+            ++index2;
+        }
+        else
+        {
+            if (pairs1[index1].null || pairs2[index2].null)
+                is_pairs_insert(creator, pairs1[index1].key, 0, null_type_for(is1->type));
+            else
+                is_pairs_insert(creator, pairs1[index1].key, ((pairs1[index1].val > pairs2[index2].val) ? pairs1[index1].val : pairs2[index2].val), is1->type);
+            ++index1;
+            ++index2;
+        }
+    }
+
+    while (index1 < is1->len)
+    {
+        if (pairs1[index1].null)
+            is_pairs_insert(creator, pairs1[index1].key, 0, null_type_for(is1->type));
+        else
+            is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val, is1->type);
+        ++index1;
+    }
+    while (index2 < is2->len)
+    {
+        if (pairs2[index2].null)
+            is_pairs_insert(creator, pairs2[index2].key, 0, null_type_for(is2->type));
+        else
+            is_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val, is2->type);
+        ++index2;
+    }
+    FINALIZE_ISTORE(result, creator);
+    PG_RETURN_POINTER(result);
+}
+
+/*
+ * Merge two istores by extraccting the smaller values
+ */
+PG_FUNCTION_INFO_V1(is_val_smaller);
+Datum
+is_val_smaller(PG_FUNCTION_ARGS)
+{
+    IStore  *is1,
+            *is2,
+            *result;
+    ISPair  *pairs1,
+            *pairs2;
+    ISPairs *creator = NULL;
+
+    int     index1 = 0,
+            index2 = 0;
+
+    if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
+        PG_RETURN_NULL();
+
+    is1 = PG_GETARG_IS(0);
+    is2 = PG_GETARG_IS(1);
+
+    if (is1->type != is2->type)
+        elog(ERROR, "is_add istore types differ %d != %d", is1->type, is2->type );
+
+    pairs1 = FIRST_PAIR(is1);
+    pairs2 = FIRST_PAIR(is2);
+    creator = palloc0(sizeof *creator);
+    is_pairs_init(creator, 200, is1->type);
+    while (index1 < is1->len && index2 < is2->len)
+    {
+        if (pairs1[index1].key < pairs2[index2].key)
+        {
+            is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val, is1->type);
+            ++index1;
+        }
+        else if (pairs1[index1].key > pairs2[index2].key)
+        {
+            is_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val, is1->type);
+            ++index2;
+        }
+        else
+        {
+            if (pairs1[index1].null || pairs2[index2].null)
+                is_pairs_insert(creator, pairs1[index1].key, 0, null_type_for(is1->type));
+            else
+                is_pairs_insert(creator, pairs1[index1].key, ((pairs1[index1].val < pairs2[index2].val) ? pairs1[index1].val : pairs2[index2].val), is1->type);
+            ++index1;
+            ++index2;
+        }
+    }
+
+    while (index1 < is1->len)
+    {
+        if (pairs1[index1].null)
+            is_pairs_insert(creator, pairs1[index1].key, 0, null_type_for(is1->type));
+        else
+            is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val, is1->type);
+        ++index1;
+    }
+    while (index2 < is2->len)
+    {
+        if (pairs2[index2].null)
+            is_pairs_insert(creator, pairs2[index2].key, 0, null_type_for(is2->type));
+        else
+            is_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val, is2->type);
+        ++index2;
+    }
     FINALIZE_ISTORE(result, creator);
     PG_RETURN_POINTER(result);
 }
