@@ -43,7 +43,7 @@ extern void get_typlenbyvalalign(Oid eltype, int16 *i_typlen, bool *i_typbyval, 
 
 struct ISPair {
     int32  key;
-    long   val;
+    int64   val;
     bool   null;
 };
 
@@ -59,7 +59,7 @@ struct ISPairs {
 typedef struct ISPairs ISPairs;
 
 extern void is_pairs_init(ISPairs *pairs, size_t initial_size);
-extern void is_pairs_insert(ISPairs *pairs, int32 key, long val, bool is_null);
+extern void is_pairs_insert(ISPairs *pairs, int32 key, int64 val, bool is_null);
 extern int  is_pairs_cmp(const void *a, const void *b);
 extern void is_pairs_sort(ISPairs *pairs);
 extern void is_pairs_deinit(ISPairs *pairs);
@@ -72,7 +72,7 @@ typedef struct AvlNode *AvlTree;
 struct AvlNode
 {
     int32    key;
-    long     value;
+    int64     value;
     bool     null;
     AvlTree  left;
     AvlTree  right;
@@ -82,13 +82,13 @@ struct AvlNode
 extern AvlTree is_make_empty(AvlTree t);
 extern int is_compare(int32 key, AvlTree node);
 extern Position is_tree_find(int32 key, AvlTree t);
-extern AvlTree is_insert(int32 key, long value, bool null, AvlTree t);
+extern AvlTree is_insert(int32 key, int64 value, bool null, AvlTree t);
 extern int is_tree_length(Position p);
 extern int is_tree_to_pairs(Position p, ISPairs *pairs, int n);
 
 #define DIGIT_WIDTH(_digit, _width)       \
     do {                                  \
-        long _local = _digit;             \
+        int64 _local = _digit;             \
         _width = 0;                       \
         if (_local <= 0)                  \
             ++_width;                     \

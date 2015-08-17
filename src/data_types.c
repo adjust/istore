@@ -1,7 +1,7 @@
 #include "istore.h"
 
 void is_pairs_init(ISPairs *pairs, size_t initial_size);
-void is_pairs_insert(ISPairs *pairs, int32 key, long val, bool is_null);
+void is_pairs_insert(ISPairs *pairs, int32 key, int64 val, bool is_null);
 int  is_pairs_cmp(const void *a, const void *b);
 void is_pairs_sort(ISPairs *pairs);
 void is_pairs_deinit(ISPairs *pairs);
@@ -9,7 +9,7 @@ void is_pairs_debug(ISPairs *pairs);
 
 int is_compare(int32 key, AvlTree node);
 Position is_tree_find(int32 key, AvlTree t);
-AvlTree is_insert(int32 key, long value, bool null, AvlTree t);
+AvlTree is_insert(int32 key, int64 value, bool null, AvlTree t);
 int is_tree_length(Position p);
 int is_tree_to_pairs(Position p, ISPairs *pairs, int n);
 
@@ -143,7 +143,7 @@ doubleRotateWithRight(Position k1)
 }
 
 AvlTree
-is_insert(int32 key, long value, bool null, AvlTree t)
+is_insert(int32 key, int64 value, bool null, AvlTree t)
 {
     if(t == NULL)
     {
@@ -232,7 +232,7 @@ is_pairs_init(ISPairs *pairs, size_t initial_size)
 }
 
 void
-is_pairs_insert(ISPairs *pairs, int32 key, long val, bool is_null)
+is_pairs_insert(ISPairs *pairs, int32 key, int64 val, bool is_null)
 {
     int keylen,
         vallen;
