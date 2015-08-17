@@ -138,7 +138,7 @@ typedef struct
 
 
 #define PG_GETARG_IS(x) (IStore *)PG_DETOAST_DATUM(PG_GETARG_DATUM(x))
-#define ISHDRSZ VARHDRSZ + sizeof(int32) + sizeof(int32) + sizeof(uint8)
+#define ISHDRSZ VARHDRSZ + sizeof(int32) + sizeof(int32)
 #define ISTORE_SIZE(x) (ISHDRSZ + x->len * sizeof(ISPair))
 #define FIRST_PAIR(x) ((ISPair*)((char *) x + ISHDRSZ))
 
