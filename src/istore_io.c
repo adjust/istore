@@ -20,8 +20,8 @@ is_parse_istore(ISParser *parser)
 {
     IStore  *out;
     ISPairs *pairs;
-    int32 key;
-    long  val;
+    int32    key;
+    int64    val;
 
     parser->state = WKEY;
     parser->ptr   = parser->begin;
@@ -155,7 +155,7 @@ istore_recv(PG_FUNCTION_ARGS)
     for (; i < len; ++i)
     {
         int32 key  = pq_getmsgint(buf, 4);
-        long  val  = pq_getmsgint64(buf);
+        int64  val  = pq_getmsgint64(buf);
         bool  null = pq_getmsgbyte(buf);
         is_pairs_insert(creator, key, val, null);
     }
@@ -176,7 +176,7 @@ istore_send(PG_FUNCTION_ARGS)
     for (; i < in->len; ++i)
     {
         int32 key = pairs[i].key;
-        long val = pairs[i].val;
+        int64 val = pairs[i].val;
         pq_sendint(&buf, key, 4);
         pq_sendint64(&buf, val);
         pq_sendbyte(&buf, pairs[i].null);

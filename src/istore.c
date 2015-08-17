@@ -12,7 +12,7 @@ istore_sum_up(PG_FUNCTION_ARGS)
 {
     IStore  *is;
     ISPair  *pairs;
-    long    result = 0;
+    int64    result = 0;
     int     index = 0;
     is     = PG_GETARG_IS(0);
     pairs = FIRST_PAIR(is);
@@ -716,7 +716,7 @@ istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
     AvlTree    tree;
     ISPairs   *pairs;
     Position   position;
-    long       key,
+    int64       key,
                value;
 
     i_eltype1 = ARR_ELEMTYPE(input1);
@@ -963,7 +963,7 @@ istore_accumulate(PG_FUNCTION_ARGS)
 
     ISPairs *creator = NULL;
 
-    long    sum = 0;
+    int64    sum = 0;
     int     index1 = 0,
             index2 = 0;
     size_t  size = 0 ;
