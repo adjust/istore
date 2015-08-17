@@ -38,12 +38,10 @@ Datum is_val_larger(PG_FUNCTION_ARGS);
 Datum is_val_smaller(PG_FUNCTION_ARGS);
 
 #define BUFLEN_OFFSET        8
-#define NULL_BUFLEN_OFFSET   10
 
 struct ISPair {
     int32  key;
     int64   val;
-    bool   null;
 };
 
 typedef struct ISPair ISPair;
@@ -58,7 +56,7 @@ struct ISPairs {
 typedef struct ISPairs ISPairs;
 
 extern void is_pairs_init(ISPairs *pairs, size_t initial_size);
-extern void is_pairs_insert(ISPairs *pairs, int32 key, int64 val, bool is_null);
+extern void is_pairs_insert(ISPairs *pairs, int32 key, int64 val);
 extern int  is_pairs_cmp(const void *a, const void *b);
 extern void is_pairs_sort(ISPairs *pairs);
 extern void is_pairs_deinit(ISPairs *pairs);
@@ -71,8 +69,7 @@ typedef struct AvlNode *AvlTree;
 struct AvlNode
 {
     int32    key;
-    int64     value;
-    bool     null;
+    int64    value;
     AvlTree  left;
     AvlTree  right;
     int      height;
@@ -81,7 +78,7 @@ struct AvlNode
 extern AvlTree is_make_empty(AvlTree t);
 extern int is_compare(int32 key, AvlTree node);
 extern Position is_tree_find(int32 key, AvlTree t);
-extern AvlTree is_insert(int32 key, int64 value, bool null, AvlTree t);
+extern AvlTree is_insert(int32 key, int64 value, AvlTree t);
 extern int is_tree_length(Position p);
 extern int is_tree_to_pairs(Position p, ISPairs *pairs, int n);
 
@@ -110,22 +107,6 @@ extern int is_tree_to_pairs(Position p, ISPairs *pairs, int n);
 #define GET_PLAIN_KEY(_parser, _key)                    \
     do {                                                \
         _key = strtol(_parser->ptr, &_parser->ptr, 10); \
-    } while (0)
-
-#define VALID_NULL(x)                                                 \
-        (  (x[0] == 'N' && x[1] == 'U' && x[2] == 'L' && x[3] == 'L') \
-        || (x[0] == 'n' && x[1] == 'u' && x[2] == 'l' && x[3] == 'l') \
-        )
-
-#define GET_VAL(_parser, _val, _null) \
-    do {\
-        _val = -1;\
-        GET_PLAIN_KEY(_parser, _val);\
-        if (_val == 0 && VALID_NULL(_parser->ptr))\
-        {\
-            _null = true; \
-            _parser->ptr = _parser->ptr + 4;\
-        }\
     } while (0)
 
 typedef struct
