@@ -1,7 +1,7 @@
 #include "istore.h"
 
-void is_pairs_init(ISPairs *pairs, size_t initial_size, uint8 type);
-void is_pairs_insert(ISPairs *pairs, int32 key, long val, uint8 type);
+void is_pairs_init(ISPairs *pairs, size_t initial_size);
+void is_pairs_insert(ISPairs *pairs, int32 key, long val, bool is_null);
 int  is_pairs_cmp(const void *a, const void *b);
 void is_pairs_sort(ISPairs *pairs);
 void is_pairs_deinit(ISPairs *pairs);
@@ -212,30 +212,27 @@ is_tree_length(Position p)
 int
 is_tree_to_pairs(Position p, ISPairs *pairs, int n)
 {
-    uint8 local_type = pairs->type;
     if(p == NULL)
         return n;
     n = is_tree_to_pairs(p->left, pairs, n);
-    if (p->null)
-        local_type = null_type_for(pairs->type);
-    is_pairs_insert(pairs, p->key, p->value, local_type);
+
+    is_pairs_insert(pairs, p->key, p->value, p->null);
     ++n;
     n = is_tree_to_pairs(p->right, pairs, n);
     return n;
 }
 
 void
-is_pairs_init(ISPairs *pairs, size_t initial_size, uint8 type)
+is_pairs_init(ISPairs *pairs, size_t initial_size)
 {
-    pairs->pairs  = palloc0(initial_size * sizeof(ISPair));
-    pairs->used   = 0;
-    pairs->size   = initial_size;
-    pairs->buflen = 0;
-    pairs->type   = type;
+    pairs->pairs   = palloc0(initial_size * sizeof(ISPair));
+    pairs->used    = 0;
+    pairs->size    = initial_size;
+    pairs->buflen  = 0;
 }
 
 void
-is_pairs_insert(ISPairs *pairs, int32 key, long val, uint8 type)
+is_pairs_insert(ISPairs *pairs, int32 key, long val, bool is_null)
 {
     int keylen,
         vallen;
@@ -247,20 +244,16 @@ is_pairs_insert(ISPairs *pairs, int32 key, long val, uint8 type)
 
     pairs->pairs[pairs->used].key  = key;
     pairs->pairs[pairs->used].val  = val;
-    switch (type)
-    {
-        case (PLAIN_ISTORE):
-            DIGIT_WIDTH(key, keylen);
-            DIGIT_WIDTH(val, vallen);
-            pairs->pairs[pairs->used].null = false;
-            pairs->buflen += keylen + vallen + BUFLEN_OFFSET;
-            break;
-        case (NULL_VAL_ISTORE):
+
+    if(is_null){
             DIGIT_WIDTH(key, keylen);
             pairs->pairs[pairs->used].null = true;
             pairs->buflen += keylen + NULL_BUFLEN_OFFSET;
-            break;
-        default: elog(ERROR, "unknown pairs type");
+    }else{
+        DIGIT_WIDTH(key, keylen);
+        DIGIT_WIDTH(val, vallen);
+        pairs->pairs[pairs->used].null = false;
+        pairs->buflen += keylen + vallen + BUFLEN_OFFSET;
     }
     pairs->used++;
 }

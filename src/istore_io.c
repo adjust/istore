@@ -88,7 +88,7 @@ is_parse_istore(ISParser *parser)
     }
 
     pairs = palloc0(sizeof(ISPairs));
-    is_pairs_init(pairs, 200, PLAIN_ISTORE);
+    is_pairs_init(pairs, 200);
     is_tree_to_pairs(parser->tree, pairs, 0);
     is_make_empty(parser->tree);
     FINALIZE_ISTORE(out, pairs);
@@ -151,17 +151,13 @@ istore_recv(PG_FUNCTION_ARGS)
     int i = 0;
     ISPairs *creator = palloc0(sizeof *creator);
     int32 len = pq_getmsgint(buf, 4);
-    uint8 type = pq_getmsgbyte(buf);
-    is_pairs_init(creator, len, type);
+    is_pairs_init(creator, len);
     for (; i < len; ++i)
     {
         int32 key  = pq_getmsgint(buf, 4);
         long  val  = pq_getmsgint64(buf);
         bool  null = pq_getmsgbyte(buf);
-        if (null)
-            is_pairs_insert(creator, key, val, null_type_for(type));
-        else
-            is_pairs_insert(creator, key, val, type);
+        is_pairs_insert(creator, key, val, null);
     }
     FINALIZE_ISTORE(result, creator);
     PG_RETURN_POINTER(result);
@@ -177,7 +173,6 @@ istore_send(PG_FUNCTION_ARGS)
     StringInfoData buf;
     pq_begintypsend(&buf);
     pq_sendint(&buf, in->len, 4);
-    pq_sendbyte(&buf, in->type);
     for (; i < in->len; ++i)
     {
         int32 key = pairs[i].key;
