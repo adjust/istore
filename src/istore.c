@@ -212,11 +212,7 @@ is_subtract(PG_FUNCTION_ARGS)
         }
         else
         {
-            is_pairs_insert(
-                creator,
-                pairs1[index1].key,
-                pairs1[index1].val - pairs2[index2].val
-            );
+            is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val - pairs2[index2].val );
             ++index1;
             ++index2;
         }
@@ -298,24 +294,12 @@ is_multiply(PG_FUNCTION_ARGS)
             ++index2;
         else
         {
-            is_pairs_insert(
-                creator,
-                pairs1[index1].key,
-                pairs1[index1].val * pairs2[index2].val
-            );
+            is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val * pairs2[index2].val );
             ++index1;
             ++index2;
         }
     }
 
-    while (index1 < is1->len)
-    {
-        ++index1;
-    }
-    while (index2 < is2->len)
-    {
-        ++index2;
-    }
     FINALIZE_ISTORE(result, creator);
     PG_RETURN_POINTER(result);
 }
@@ -542,7 +526,7 @@ istore_from_array(PG_FUNCTION_ARGS)
             elog(ERROR, "cannot count array that has negative integers");
         position = is_tree_find(key, tree);
         if (position == NULL)
-            tree = is_insert(key, 1, tree);
+            tree = is_insert(tree, key, 1);
         else
             position->value += 1;
     }
@@ -580,7 +564,7 @@ array_to_istore(Datum *data, int count, bool *nulls)
             payload = FIRST_PAIR(istore) + index;
             position = is_tree_find(payload->key, tree);
             if (position == NULL)
-                tree = is_insert(payload->key, payload->val, tree);
+                tree = is_insert(tree, payload->key, payload->val);
             else
                 position->value += payload->val;
         }
@@ -765,7 +749,7 @@ istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
 
         position = is_tree_find(key, tree);
         if (position == NULL)
-            tree = is_insert(key, value, tree);
+            tree = is_insert(tree, key, value);
         else
             position->value += value;
     }

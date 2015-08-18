@@ -39,28 +39,17 @@ Datum is_val_smaller(PG_FUNCTION_ARGS);
 
 #define BUFLEN_OFFSET        8
 
-struct ISPair {
+typedef struct {
     int32  key;
     int64   val;
-};
+} ISPair;
 
-typedef struct ISPair ISPair;
-
-struct ISPairs {
+typedef struct {
     ISPair *pairs;
     size_t  size;
     int     used;
     int     buflen;
-};
-
-typedef struct ISPairs ISPairs;
-
-extern void is_pairs_init(ISPairs *pairs, size_t initial_size);
-extern void is_pairs_insert(ISPairs *pairs, int32 key, int64 val);
-extern int  is_pairs_cmp(const void *a, const void *b);
-extern void is_pairs_sort(ISPairs *pairs);
-extern void is_pairs_deinit(ISPairs *pairs);
-extern void is_pairs_debug(ISPairs *pairs);
+} ISPairs;
 
 typedef struct AvlNode AvlNode;
 typedef struct AvlNode *Position;
@@ -75,12 +64,27 @@ struct AvlNode
     int      height;
 };
 
-extern AvlTree is_make_empty(AvlTree t);
-extern int is_compare(int32 key, AvlTree node);
-extern Position is_tree_find(int32 key, AvlTree t);
-extern AvlTree is_insert(int32 key, int64 value, AvlTree t);
-extern int is_tree_length(Position p);
-extern int is_tree_to_pairs(Position p, ISPairs *pairs, int n);
+typedef struct
+{
+    int32 __varlen;
+    int32   buflen;
+    int32   len;
+} IStore;
+
+void is_pairs_init(ISPairs *pairs, size_t initial_size);
+void is_pairs_insert(ISPairs *pairs, int32 key, int64 val);
+int  is_pairs_cmp(const void *a, const void *b);
+void is_pairs_sort(ISPairs *pairs);
+void is_pairs_deinit(ISPairs *pairs);
+void is_pairs_debug(ISPairs *pairs);
+
+AvlTree is_make_empty(AvlTree t);
+int is_compare(int32 key, AvlTree node);
+Position is_tree_find(int32 key, AvlTree t);
+AvlTree is_insert(AvlTree t, int32 key, int64 value);
+int is_tree_length(Position p);
+int is_tree_to_pairs(Position p, ISPairs *pairs, int n);
+ISPair* is_find(IStore *is, int32 key);
 
 #define DIGIT_WIDTH(_digit, _width)       \
     do {                                  \
@@ -108,14 +112,6 @@ extern int is_tree_to_pairs(Position p, ISPairs *pairs, int n);
     do {                                                \
         _key = strtol(_parser->ptr, &_parser->ptr, 10); \
     } while (0)
-
-typedef struct
-{
-    int32 __varlen;
-    int32   buflen;
-    int32   len;
-} IStore;
-
 
 #define PG_GETARG_IS(x) (IStore *)PG_DETOAST_DATUM(PG_GETARG_DATUM(x))
 #define ISHDRSZ VARHDRSZ + sizeof(int32) + sizeof(int32)
@@ -146,7 +142,5 @@ typedef struct
         _istore->len = 0;              \
         SET_VARSIZE(_istore, ISHDRSZ); \
     } while(0)
-
-ISPair* is_find(IStore *is, int32 key);
 
 #endif // ISTORE_H

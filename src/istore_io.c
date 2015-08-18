@@ -70,7 +70,7 @@ is_parse_istore(ISParser *parser)
             GET_PLAIN_KEY(parser, val);
             SKIP_ESCAPED(parser->ptr);
             parser->state = WDEL;
-            parser->tree = is_insert(key, val, parser->tree);
+            parser->tree = is_insert(parser->tree, key, val);
         }
         else if (parser->state == WDEL)
         {
