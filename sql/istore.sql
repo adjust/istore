@@ -21,10 +21,11 @@ CREATE FUNCTION istore_recv(internal)
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE TYPE istore (
-    INPUT = istore_in,
-    OUTPUT = istore_out,
-    receive = istore_recv,
-    send = istore_send
+    INPUT   = istore_in,
+    OUTPUT  = istore_out,
+    RECEIVE = istore_recv,
+    SEND    = istore_send,
+    STORAGE = EXTENDED
 );
 
 CREATE FUNCTION exist(istore, integer)
