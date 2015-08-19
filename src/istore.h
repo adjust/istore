@@ -143,4 +143,6 @@ ISPair* is_find(IStore *is, int32 key);
         SET_VARSIZE(_istore, ISHDRSZ); \
     } while(0)
 
+#define LARGER(_a, _b) (_a > _b) ? _a : _b
+#define SMALLER(_a ,_b) (_a < _b) ? _a : _b
 #endif // ISTORE_H

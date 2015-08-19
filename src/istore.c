@@ -110,7 +110,7 @@ is_add(PG_FUNCTION_ARGS)
     pairs1 = FIRST_PAIR(is1);
     pairs2 = FIRST_PAIR(is2);
     creator = palloc0(sizeof *creator);
-    is_pairs_init(creator, 200);
+    is_pairs_init(creator, SMALLER(is1->len + is2->len, 200));
     while (index1 < is1->len && index2 < is2->len)
     {
         if (pairs1[index1].key < pairs2[index2].key)
@@ -163,7 +163,7 @@ is_add_integer(PG_FUNCTION_ARGS)
     int_arg = PG_GETARG_INT32(1);
     pairs = FIRST_PAIR(is);
     creator = palloc0(sizeof *creator);
-    is_pairs_init(creator, 200);
+    is_pairs_init(creator, is->len);
     while (index < is->len)
     {
         is_pairs_insert(creator, pairs[index].key, pairs[index].val + int_arg);
@@ -197,7 +197,7 @@ is_subtract(PG_FUNCTION_ARGS)
     pairs1 = FIRST_PAIR(is1);
     pairs2 = FIRST_PAIR(is2);
     creator = palloc0(sizeof *creator);
-    is_pairs_init(creator, 200);
+    is_pairs_init(creator, SMALLER(is1->len + is2->len, 200));
     while (index1 < is1->len && index2 < is2->len)
     {
         if (pairs1[index1].key < pairs2[index2].key)
@@ -250,7 +250,7 @@ is_subtract_integer(PG_FUNCTION_ARGS)
     int_arg = PG_GETARG_INT32(1);
     pairs = FIRST_PAIR(is);
     creator = palloc0(sizeof *creator);
-    is_pairs_init(creator, 200);
+    is_pairs_init(creator, is->len);
     while (index < is->len)
     {
         is_pairs_insert(creator, pairs[index].key, pairs[index].val - int_arg);
@@ -284,7 +284,7 @@ is_multiply(PG_FUNCTION_ARGS)
     pairs1 = FIRST_PAIR(is1);
     pairs2 = FIRST_PAIR(is2);
     creator = palloc0(sizeof *creator);
-    is_pairs_init(creator, 200);
+    is_pairs_init(creator, SMALLER(is1->len, is2->len));
 
     while (index1 < is1->len && index2 < is2->len)
     {
@@ -322,7 +322,7 @@ is_multiply_integer(PG_FUNCTION_ARGS)
     int_arg = PG_GETARG_INT32(1);
     pairs = FIRST_PAIR(is);
     creator = palloc0(sizeof *creator);
-    is_pairs_init(creator, 200);
+    is_pairs_init(creator, is->len);
     while (index < is->len)
     {
         is_pairs_insert(creator, pairs[index].key, pairs[index].val * int_arg);
@@ -358,7 +358,7 @@ is_divide(PG_FUNCTION_ARGS)
     pairs1 = FIRST_PAIR(is1);
     pairs2 = FIRST_PAIR(is2);
     creator = palloc0(sizeof *creator);
-    is_pairs_init(creator, 200);
+    is_pairs_init(creator, SMALLER(is1->len, is2->len));
     while (index1 < is1->len && index2 < is2->len)
     {
         if (pairs2[index2].val == 0)
@@ -428,7 +428,7 @@ is_divide_integer(PG_FUNCTION_ARGS)
 
     pairs = FIRST_PAIR(is);
     creator = palloc0(sizeof *creator);
-    is_pairs_init(creator, 200);
+    is_pairs_init(creator, is->len);
     while (index < is->len)
     {
         is_pairs_insert(creator, pairs[index].key, pairs[index].val / int_arg);
@@ -463,7 +463,7 @@ is_divide_int8(PG_FUNCTION_ARGS)
         ));
     pairs = FIRST_PAIR(is);
     creator = palloc0(sizeof *creator);
-    is_pairs_init(creator, 200);
+    is_pairs_init(creator, is->len);
     while (index < is->len)
     {
         is_pairs_insert(creator, pairs[index].key, pairs[index].val / int_arg);
@@ -533,7 +533,7 @@ istore_from_array(PG_FUNCTION_ARGS)
 
     n = is_tree_length(tree);
     pairs = palloc0(sizeof *pairs);
-    is_pairs_init(pairs, 200);
+    is_pairs_init(pairs, n);
     is_tree_to_pairs(tree, pairs, 0);
     is_make_empty(tree);
     FINALIZE_ISTORE(result, pairs);
@@ -547,6 +547,7 @@ array_to_istore(Datum *data, int count, bool *nulls)
            *istore;
     AvlTree  tree;
     int i,
+        n,
         index;
     ISPair *payload;
     ISPairs   *pairs;
@@ -572,9 +573,9 @@ array_to_istore(Datum *data, int count, bool *nulls)
     i = is_tree_length(tree);
     if (i == 0)
         return 0;
-
+    n = is_tree_length(tree);
     pairs = palloc0(sizeof *pairs);
-    is_pairs_init(pairs, 200);
+    is_pairs_init(pairs, n);
     is_tree_to_pairs(tree, pairs, 0);
     is_make_empty(tree);
     FINALIZE_ISTORE(out, pairs);
@@ -669,6 +670,7 @@ istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
     bool      *nulls1,
               *nulls2;
     int        i,
+               n,
                n1,
                n2;
     int16      i_typlen1,
@@ -753,10 +755,9 @@ istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
         else
             position->value += value;
     }
-
+    n = is_tree_length(tree);
     pairs = palloc0(sizeof *pairs);
-
-    is_pairs_init(pairs, 200);
+    is_pairs_init(pairs, n);
     is_tree_to_pairs(tree, pairs, 0);
     is_make_empty(tree);
     FINALIZE_ISTORE(out, pairs);
@@ -1020,7 +1021,7 @@ is_val_larger(PG_FUNCTION_ARGS)
     pairs1 = FIRST_PAIR(is1);
     pairs2 = FIRST_PAIR(is2);
     creator = palloc0(sizeof *creator);
-    is_pairs_init(creator, 200);
+    is_pairs_init(creator, SMALLER(is1->len + is2->len, 200));
     while (index1 < is1->len && index2 < is2->len)
     {
         if (pairs1[index1].key < pairs2[index2].key)
@@ -1035,7 +1036,7 @@ is_val_larger(PG_FUNCTION_ARGS)
         }
         else
         {
-            is_pairs_insert(creator, pairs1[index1].key, ((pairs1[index1].val > pairs2[index2].val) ? pairs1[index1].val : pairs2[index2].val));
+            is_pairs_insert(creator, pairs1[index1].key, LARGER(pairs1[index1].val,pairs2[index2].val));
             ++index1;
             ++index2;
         }
@@ -1081,7 +1082,7 @@ is_val_smaller(PG_FUNCTION_ARGS)
     pairs1 = FIRST_PAIR(is1);
     pairs2 = FIRST_PAIR(is2);
     creator = palloc0(sizeof *creator);
-    is_pairs_init(creator, 200);
+    is_pairs_init(creator, SMALLER(is1->len + is2->len, 200));
     while (index1 < is1->len && index2 < is2->len)
     {
         if (pairs1[index1].key < pairs2[index2].key)
@@ -1096,7 +1097,7 @@ is_val_smaller(PG_FUNCTION_ARGS)
         }
         else
         {
-            is_pairs_insert(creator, pairs1[index1].key, ((pairs1[index1].val < pairs2[index2].val) ? pairs1[index1].val : pairs2[index2].val));
+            is_pairs_insert(creator, pairs1[index1].key, SMALLER(pairs1[index1].val, pairs2[index2].val));
             ++index1;
             ++index2;
         }
