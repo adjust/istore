@@ -127,13 +127,19 @@ ISPair* is_find(IStore *is, int32 key);
 #define FINALIZE_ISTORE(_istore, _pairs)                                    \
     do {                                                                    \
         is_pairs_sort(_pairs);                                              \
-        _istore = palloc0(ISHDRSZ + PAYLOAD_SIZE(_pairs));                   \
+        FINALIZE_ISTORE_NOSORT(_istore, _pairs);                            \
+    } while(0)
+
+#define FINALIZE_ISTORE_NOSORT(_istore, _pairs)                             \
+    do {                                                                    \
+        _istore = palloc0(ISHDRSZ + PAYLOAD_SIZE(_pairs));                  \
         _istore->buflen = _pairs->buflen;                                   \
         _istore->len    = _pairs->used;                                     \
         SET_VARSIZE(_istore, ISHDRSZ + PAYLOAD_SIZE(_pairs));               \
         memcpy(FIRST_PAIR(_istore), PAYLOAD(_pairs), PAYLOAD_SIZE(_pairs)); \
         is_pairs_deinit(_pairs);                                            \
     } while(0)
+
 
 #define EMPTY_ISTORE(_istore)          \
     do {                               \

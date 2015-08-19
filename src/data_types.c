@@ -242,12 +242,7 @@ is_pairs_cmp(const void *a, const void *b)
 {
     ISPair *_a = (ISPair *)a;
     ISPair *_b = (ISPair *)b;
-    if (_a->key < _b->key)
-        return -1;
-    else if (_a->key > _b->key)
-        return 1;
-    else
-        return 0;
+    return (int)(_a->key - _b->key);
 }
 
 void inline

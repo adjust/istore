@@ -150,7 +150,7 @@ istore_recv(PG_FUNCTION_ARGS)
         int64  val  = pq_getmsgint64(buf);
         is_pairs_insert(creator, key, val);
     }
-    FINALIZE_ISTORE(result, creator);
+    FINALIZE_ISTORE_NOSORT(result, creator);
     PG_RETURN_POINTER(result);
 }
 
