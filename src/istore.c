@@ -141,7 +141,7 @@ is_add(PG_FUNCTION_ARGS)
         is_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val);
         ++index2;
     }
-    FINALIZE_ISTORE(result, creator);
+    FINALIZE_ISTORE_NOSORT(result, creator);
     PG_RETURN_POINTER(result);
 }
 
@@ -169,7 +169,7 @@ is_add_integer(PG_FUNCTION_ARGS)
         is_pairs_insert(creator, pairs[index].key, pairs[index].val + int_arg);
         ++index;
     }
-    FINALIZE_ISTORE(result, creator);
+    FINALIZE_ISTORE_NOSORT(result, creator);
     PG_RETURN_POINTER(result);
 }
 
@@ -228,7 +228,7 @@ is_subtract(PG_FUNCTION_ARGS)
         is_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val);
         ++index2;
     }
-    FINALIZE_ISTORE(result, creator);
+    FINALIZE_ISTORE_NOSORT(result, creator);
     PG_RETURN_POINTER(result);
 }
 
@@ -328,7 +328,7 @@ is_multiply_integer(PG_FUNCTION_ARGS)
         is_pairs_insert(creator, pairs[index].key, pairs[index].val * int_arg);
         ++index;
     }
-    FINALIZE_ISTORE(result, creator);
+    FINALIZE_ISTORE_NOSORT(result, creator);
     PG_RETURN_POINTER(result);
 }
 
@@ -380,24 +380,7 @@ is_divide(PG_FUNCTION_ARGS)
         }
     }
 
-    while (index1 < is1->len)
-    {
-        is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val);
-        ++index1;
-    }
-    while (index2 < is2->len)
-    {
-        if (pairs2[index2].val == 0)
-            ereport(ERROR, (
-                errcode(ERRCODE_DIVISION_BY_ZERO),
-                errmsg("division by zero"),
-                errdetail("Key \"%d\" of right argument has value 0", pairs2[index2].key)
-            ));
-
-        is_pairs_insert(creator, pairs2[index2].key, 1 / pairs2[index2].val);
-        ++index2;
-    }
-    FINALIZE_ISTORE(result, creator);
+    FINALIZE_ISTORE_NOSORT(result, creator);
     PG_RETURN_POINTER(result);
 }
 
@@ -434,7 +417,7 @@ is_divide_integer(PG_FUNCTION_ARGS)
         is_pairs_insert(creator, pairs[index].key, pairs[index].val / int_arg);
         ++index;
     }
-    FINALIZE_ISTORE(result, creator);
+    FINALIZE_ISTORE_NOSORT(result, creator);
     PG_RETURN_POINTER(result);
 }
 
@@ -469,7 +452,7 @@ is_divide_int8(PG_FUNCTION_ARGS)
         is_pairs_insert(creator, pairs[index].key, pairs[index].val / int_arg);
         ++index;
     }
-    FINALIZE_ISTORE(result, creator);
+    FINALIZE_ISTORE_NOSORT(result, creator);
     PG_RETURN_POINTER(result);
 }
 
@@ -902,7 +885,7 @@ istore_fill_gaps(PG_FUNCTION_ARGS)
         }
     }
 
-    FINALIZE_ISTORE(result, creator);
+    FINALIZE_ISTORE_NOSORT(result, creator);
     PG_RETURN_POINTER(result);
 }
 
@@ -952,7 +935,7 @@ istore_accumulate(PG_FUNCTION_ARGS)
         is_pairs_insert(creator, index1, sum);
     }
 
-    FINALIZE_ISTORE(result, creator);
+    FINALIZE_ISTORE_NOSORT(result, creator);
     PG_RETURN_POINTER(result);
 }
 
@@ -991,7 +974,7 @@ istore_seed(PG_FUNCTION_ARGS)
         is_pairs_insert(creator, index1, fill_with);
     }
 
-    FINALIZE_ISTORE(result, creator);
+    FINALIZE_ISTORE_NOSORT(result, creator);
     PG_RETURN_POINTER(result);
 }
 
@@ -1052,7 +1035,7 @@ is_val_larger(PG_FUNCTION_ARGS)
         is_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val);
         ++index2;
     }
-    FINALIZE_ISTORE(result, creator);
+    FINALIZE_ISTORE_NOSORT(result, creator);
     PG_RETURN_POINTER(result);
 }
 
@@ -1113,6 +1096,6 @@ is_val_smaller(PG_FUNCTION_ARGS)
         is_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val);
         ++index2;
     }
-    FINALIZE_ISTORE(result, creator);
+    FINALIZE_ISTORE_NOSORT(result, creator);
     PG_RETURN_POINTER(result);
 }
