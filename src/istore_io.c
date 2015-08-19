@@ -38,7 +38,7 @@ is_parse_istore(ISParser *parser)
         {
             SKIP_SPACES(parser->ptr);
             SKIP_ESCAPED(parser->ptr);
-            GET_PLAIN_KEY(parser, key);
+            GET_NUM(parser, key);
             parser->state = WEQ;
             SKIP_ESCAPED(parser->ptr);
         }
@@ -67,7 +67,7 @@ is_parse_istore(ISParser *parser)
         {
             SKIP_SPACES(parser->ptr);
             SKIP_ESCAPED(parser->ptr);
-            GET_PLAIN_KEY(parser, val);
+            GET_NUM(parser, val);
             SKIP_ESCAPED(parser->ptr);
             parser->state = WDEL;
             parser->tree = is_insert(parser->tree, key, val);
