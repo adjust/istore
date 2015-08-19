@@ -108,7 +108,7 @@ ISPair* is_find(IStore *is, int32 key);
     if (*_ptr == '"')      \
             _ptr++;
 
-#define GET_PLAIN_KEY(_parser, _key)                    \
+#define GET_NUM(_parser, _key)                    \
     do {                                                \
         _key = strtol(_parser->ptr, &_parser->ptr, 10); \
     } while (0)
