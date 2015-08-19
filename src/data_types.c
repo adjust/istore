@@ -1,18 +1,5 @@
 #include "istore.h"
 
-void is_pairs_init(ISPairs *pairs, size_t initial_size);
-void is_pairs_insert(ISPairs *pairs, int32 key, int64 val, bool is_null);
-int  is_pairs_cmp(const void *a, const void *b);
-void is_pairs_sort(ISPairs *pairs);
-void is_pairs_deinit(ISPairs *pairs);
-void is_pairs_debug(ISPairs *pairs);
-
-int is_compare(int32 key, AvlTree node);
-Position is_tree_find(int32 key, AvlTree t);
-AvlTree is_insert(int32 key, int64 value, bool null, AvlTree t);
-int is_tree_length(Position p);
-int is_tree_to_pairs(Position p, ISPairs *pairs, int n);
-
 static inline int
 height(Position p)
 {
@@ -143,7 +130,7 @@ doubleRotateWithRight(Position k1)
 }
 
 AvlTree
-is_insert(int32 key, int64 value, bool null, AvlTree t)
+is_insert(AvlTree t, int32 key, int64 value)
 {
     if(t == NULL)
     {
@@ -158,7 +145,6 @@ is_insert(int32 key, int64 value, bool null, AvlTree t)
             t->height = 0;
             t->left = NULL;
             t->right = NULL;
-            t->null  = null;
         }
     }
     else
@@ -166,7 +152,7 @@ is_insert(int32 key, int64 value, bool null, AvlTree t)
         int cmp = is_compare(key, t);
         if (cmp < 0)
         {
-            t->left = is_insert(key, value, null, t->left);
+            t->left = is_insert(t->left, key, value);
             if (height(t->left) - height(t->right) == 2)
             {
                 if (is_compare( key, t->left))
@@ -177,7 +163,7 @@ is_insert(int32 key, int64 value, bool null, AvlTree t)
         }
         else if(cmp > 0)
         {
-            t->right = is_insert(key, value, null, t->right);
+            t->right = is_insert(t->right, key, value);
             if (height(t->right) - height(t->left) == 2)
             {
                 if (is_compare(key, t->right))
@@ -216,7 +202,7 @@ is_tree_to_pairs(Position p, ISPairs *pairs, int n)
         return n;
     n = is_tree_to_pairs(p->left, pairs, n);
 
-    is_pairs_insert(pairs, p->key, p->value, p->null);
+    is_pairs_insert(pairs, p->key, p->value);
     ++n;
     n = is_tree_to_pairs(p->right, pairs, n);
     return n;
@@ -232,7 +218,7 @@ is_pairs_init(ISPairs *pairs, size_t initial_size)
 }
 
 void
-is_pairs_insert(ISPairs *pairs, int32 key, int64 val, bool is_null)
+is_pairs_insert(ISPairs *pairs, int32 key, int64 val)
 {
     int keylen,
         vallen;
@@ -245,16 +231,9 @@ is_pairs_insert(ISPairs *pairs, int32 key, int64 val, bool is_null)
     pairs->pairs[pairs->used].key  = key;
     pairs->pairs[pairs->used].val  = val;
 
-    if(is_null){
-            DIGIT_WIDTH(key, keylen);
-            pairs->pairs[pairs->used].null = true;
-            pairs->buflen += keylen + NULL_BUFLEN_OFFSET;
-    }else{
-        DIGIT_WIDTH(key, keylen);
-        DIGIT_WIDTH(val, vallen);
-        pairs->pairs[pairs->used].null = false;
-        pairs->buflen += keylen + vallen + BUFLEN_OFFSET;
-    }
+    DIGIT_WIDTH(key, keylen);
+    DIGIT_WIDTH(val, vallen);
+    pairs->buflen += keylen + vallen + BUFLEN_OFFSET;
     pairs->used++;
 }
 

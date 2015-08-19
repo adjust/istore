@@ -115,17 +115,17 @@ is_add(PG_FUNCTION_ARGS)
     {
         if (pairs1[index1].key < pairs2[index2].key)
         {
-            is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val, pairs1[index1].null);
+            is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val);
             ++index1;
         }
         else if (pairs1[index1].key > pairs2[index2].key)
         {
-            is_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val, pairs2[index2].null);
+            is_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val);
             ++index2;
         }
         else
         {
-            is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val + pairs2[index2].val, pairs1[index1].null || pairs2[index2].null);
+            is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val + pairs2[index2].val);
             ++index1;
             ++index2;
         }
@@ -133,12 +133,12 @@ is_add(PG_FUNCTION_ARGS)
 
     while (index1 < is1->len)
     {
-        is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val, pairs1[index1].null);
+        is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val);
         ++index1;
     }
     while (index2 < is2->len)
     {
-        is_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val, pairs2[index2].null);
+        is_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val);
         ++index2;
     }
     FINALIZE_ISTORE(result, creator);
@@ -166,10 +166,7 @@ is_add_integer(PG_FUNCTION_ARGS)
     is_pairs_init(creator, 200);
     while (index < is->len)
     {
-        if (pairs[index].null)
-            is_pairs_insert(creator, pairs[index].key, 0, true);
-        else
-            is_pairs_insert(creator, pairs[index].key, pairs[index].val + int_arg, false);
+        is_pairs_insert(creator, pairs[index].key, pairs[index].val + int_arg);
         ++index;
     }
     FINALIZE_ISTORE(result, creator);
@@ -205,22 +202,17 @@ is_subtract(PG_FUNCTION_ARGS)
     {
         if (pairs1[index1].key < pairs2[index2].key)
         {
-            is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val, pairs1[index1].null);
+            is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val);
             ++index1;
         }
         else if (pairs1[index1].key > pairs2[index2].key)
         {
-            is_pairs_insert(creator, pairs2[index2].key, -pairs2[index2].val, pairs2[index2].null);
+            is_pairs_insert(creator, pairs2[index2].key, -pairs2[index2].val);
             ++index2;
         }
         else
         {
-            is_pairs_insert(
-                creator,
-                pairs1[index1].key,
-                pairs1[index1].val - pairs2[index2].val,
-                pairs1[index1].null || pairs2[index2].null
-            );
+            is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val - pairs2[index2].val );
             ++index1;
             ++index2;
         }
@@ -228,12 +220,12 @@ is_subtract(PG_FUNCTION_ARGS)
 
     while (index1 < is1->len)
     {
-        is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val, pairs1[index1].null);
+        is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val);
         ++index1;
     }
     while (index2 < is2->len)
     {
-        is_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val, pairs2[index2].null);
+        is_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val);
         ++index2;
     }
     FINALIZE_ISTORE(result, creator);
@@ -261,10 +253,7 @@ is_subtract_integer(PG_FUNCTION_ARGS)
     is_pairs_init(creator, 200);
     while (index < is->len)
     {
-        if (pairs[index].null)
-            is_pairs_insert(creator, pairs[index].key, 0, pairs[index].null);
-        else
-            is_pairs_insert(creator, pairs[index].key, pairs[index].val - int_arg, false);
+        is_pairs_insert(creator, pairs[index].key, pairs[index].val - int_arg);
         ++index;
     }
     FINALIZE_ISTORE(result, creator);
@@ -300,38 +289,17 @@ is_multiply(PG_FUNCTION_ARGS)
     while (index1 < is1->len && index2 < is2->len)
     {
         if (pairs1[index1].key < pairs2[index2].key)
-        {
-            is_pairs_insert(creator, pairs1[index1].key, 0, true);
             ++index1;
-        }
         else if (pairs1[index1].key > pairs2[index2].key)
-        {
-            is_pairs_insert(creator, pairs2[index2].key, 0, true);
             ++index2;
-        }
         else
         {
-            is_pairs_insert(
-                creator,
-                pairs1[index1].key,
-                pairs1[index1].val * pairs2[index2].val,
-                pairs1[index1].null || pairs2[index2].null
-            );
+            is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val * pairs2[index2].val );
             ++index1;
             ++index2;
         }
     }
 
-    while (index1 < is1->len)
-    {
-        is_pairs_insert(creator, pairs1[index1].key, 0, true);
-        ++index1;
-    }
-    while (index2 < is2->len)
-    {
-        is_pairs_insert(creator, pairs2[index2].key, 0, true);
-        ++index2;
-    }
     FINALIZE_ISTORE(result, creator);
     PG_RETURN_POINTER(result);
 }
@@ -357,10 +325,7 @@ is_multiply_integer(PG_FUNCTION_ARGS)
     is_pairs_init(creator, 200);
     while (index < is->len)
     {
-        if (pairs[index].null)
-            is_pairs_insert(creator, pairs[index].key, 0, true);
-        else
-            is_pairs_insert(creator, pairs[index].key, pairs[index].val * int_arg, false);
+        is_pairs_insert(creator, pairs[index].key, pairs[index].val * int_arg);
         ++index;
     }
     FINALIZE_ISTORE(result, creator);
@@ -396,32 +361,20 @@ is_divide(PG_FUNCTION_ARGS)
     is_pairs_init(creator, 200);
     while (index1 < is1->len && index2 < is2->len)
     {
+        if (pairs2[index2].val == 0)
+            ereport(ERROR, (
+                errcode(ERRCODE_DIVISION_BY_ZERO),
+                errmsg("division by zero"),
+                errdetail("Key \"%d\" of right argument has value 0", pairs2[index2].key)
+            ));
+
         if (pairs1[index1].key < pairs2[index2].key)
-        {
-            is_pairs_insert(creator, pairs1[index1].key, 0, true);
             ++index1;
-        }
         else if (pairs1[index1].key > pairs2[index2].key)
-        {
-            is_pairs_insert(creator, pairs2[index2].key, 0, true);
             ++index2;
-        }
         else
         {
-            if (pairs1[index1].null || pairs2[index2].null || pairs2[index2].val == 0)
-                is_pairs_insert(
-                    creator,
-                    pairs1[index1].key,
-                    0,
-                    true
-                );
-            else
-                is_pairs_insert(
-                    creator,
-                    pairs1[index1].key,
-                    pairs1[index1].val / pairs2[index2].val,
-                    false
-                );
+            is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val / pairs2[index2].val);
             ++index1;
             ++index2;
         }
@@ -429,12 +382,19 @@ is_divide(PG_FUNCTION_ARGS)
 
     while (index1 < is1->len)
     {
-        is_pairs_insert(creator, pairs1[index1].key, 0, true);
+        is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val);
         ++index1;
     }
     while (index2 < is2->len)
     {
-        is_pairs_insert(creator, pairs2[index2].key, 0, true);
+        if (pairs2[index2].val == 0)
+            ereport(ERROR, (
+                errcode(ERRCODE_DIVISION_BY_ZERO),
+                errmsg("division by zero"),
+                errdetail("Key \"%d\" of right argument has value 0", pairs2[index2].key)
+            ));
+
+        is_pairs_insert(creator, pairs2[index2].key, 1 / pairs2[index2].val);
         ++index2;
     }
     FINALIZE_ISTORE(result, creator);
@@ -459,15 +419,19 @@ is_divide_integer(PG_FUNCTION_ARGS)
             int_arg;
     is     = PG_GETARG_IS(0);
     int_arg = PG_GETARG_INT32(1);
+
+    if (int_arg == 0)
+        ereport(ERROR, (
+            errcode(ERRCODE_DIVISION_BY_ZERO),
+            errmsg("division by zero")
+        ));
+
     pairs = FIRST_PAIR(is);
     creator = palloc0(sizeof *creator);
     is_pairs_init(creator, 200);
     while (index < is->len)
     {
-        if (pairs[index].null || int_arg == 0)
-            is_pairs_insert(creator, pairs[index].key, 0, true);
-        else
-            is_pairs_insert(creator, pairs[index].key, pairs[index].val / int_arg, false);
+        is_pairs_insert(creator, pairs[index].key, pairs[index].val / int_arg);
         ++index;
     }
     FINALIZE_ISTORE(result, creator);
@@ -492,15 +456,17 @@ is_divide_int8(PG_FUNCTION_ARGS)
     int64   int_arg;
     is     = PG_GETARG_IS(0);
     int_arg = PG_GETARG_INT64(1);
+    if (int_arg == 0)
+        ereport(ERROR, (
+            errcode(ERRCODE_DIVISION_BY_ZERO),
+            errmsg("division by zero")
+        ));
     pairs = FIRST_PAIR(is);
     creator = palloc0(sizeof *creator);
     is_pairs_init(creator, 200);
     while (index < is->len)
     {
-        if (pairs[index].null || int_arg == 0)
-            is_pairs_insert(creator, pairs[index].key, 0, true);
-        else
-            is_pairs_insert(creator, pairs[index].key, pairs[index].val / int_arg, false);
+        is_pairs_insert(creator, pairs[index].key, pairs[index].val / int_arg);
         ++index;
     }
     FINALIZE_ISTORE(result, creator);
@@ -560,7 +526,7 @@ istore_from_array(PG_FUNCTION_ARGS)
             elog(ERROR, "cannot count array that has negative integers");
         position = is_tree_find(key, tree);
         if (position == NULL)
-            tree = is_insert(key, 1, false, tree);
+            tree = is_insert(tree, key, 1);
         else
             position->value += 1;
     }
@@ -598,7 +564,7 @@ array_to_istore(Datum *data, int count, bool *nulls)
             payload = FIRST_PAIR(istore) + index;
             position = is_tree_find(payload->key, tree);
             if (position == NULL)
-                tree = is_insert(payload->key, payload->val, false, tree);
+                tree = is_insert(tree, payload->key, payload->val);
             else
                 position->value += payload->val;
         }
@@ -783,7 +749,7 @@ istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
 
         position = is_tree_find(key, tree);
         if (position == NULL)
-            tree = is_insert(key, value, false, tree);
+            tree = is_insert(tree, key, value);
         else
             position->value += value;
     }
@@ -881,17 +847,7 @@ istore_each(PG_FUNCTION_ARGS)
         HeapTuple   tuple;
 
         dvalues[0] = UInt32GetDatum(pairs[i].key);
-
-        if (pairs[i].null)
-        {
-            dvalues[1] = Int64GetDatum(0);
-            nulls[1] = true;
-        }
-        else
-        {
-            dvalues[1] = Int64GetDatum(pairs[i].val);
-        }
-
+        dvalues[1] = Int64GetDatum(pairs[i].val);
         tuple = heap_form_tuple(funcctx->tuple_desc, dvalues, nulls);
         res = HeapTupleGetDatum(tuple);
 
@@ -916,12 +872,9 @@ istore_fill_gaps(PG_FUNCTION_ARGS)
     int64   fill_with;
     int     index1 = 0,
             index2 = 0;
-    bool    fill_with_null;
 
     if (PG_ARGISNULL(0))
         PG_RETURN_NULL();
-
-    fill_with_null = PG_ARGISNULL(2);
 
     is = PG_GETARG_IS(0);
     up_to = PG_GETARG_INT32(1);
@@ -939,12 +892,12 @@ istore_fill_gaps(PG_FUNCTION_ARGS)
     {
         if (index2 < is->len && index1 == pairs[index2].key)
         {
-            is_pairs_insert(creator, pairs[index2].key, pairs[index2].val, pairs[index2].null);
+            is_pairs_insert(creator, pairs[index2].key, pairs[index2].val);
             ++index2;
         }
         else
         {
-            is_pairs_insert(creator, index1, fill_with, fill_with_null);
+            is_pairs_insert(creator, index1, fill_with);
         }
     }
 
@@ -991,11 +944,11 @@ istore_accumulate(PG_FUNCTION_ARGS)
     {
         if (index2 < is->len && index1 == pairs[index2].key)
         {
-            if (!pairs[index2].null)
-                sum += pairs[index2].val;
+
+            sum += pairs[index2].val;
             ++index2;
         }
-        is_pairs_insert(creator, index1, sum, false);
+        is_pairs_insert(creator, index1, sum);
     }
 
     FINALIZE_ISTORE(result, creator);
@@ -1015,12 +968,9 @@ istore_seed(PG_FUNCTION_ARGS)
             up_to;
     int64  fill_with;
     int     index1 = 0;
-    bool    fill_with_null;
 
     if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
         PG_RETURN_NULL();
-
-    fill_with_null = PG_ARGISNULL(2);
 
     from = PG_GETARG_INT32(0);
     up_to = PG_GETARG_INT32(1);
@@ -1037,7 +987,7 @@ istore_seed(PG_FUNCTION_ARGS)
 
     for(index1=from; index1 <= up_to; ++index1)
     {
-        is_pairs_insert(creator, index1, fill_with, fill_with_null);
+        is_pairs_insert(creator, index1, fill_with);
     }
 
     FINALIZE_ISTORE(result, creator);
@@ -1075,20 +1025,17 @@ is_val_larger(PG_FUNCTION_ARGS)
     {
         if (pairs1[index1].key < pairs2[index2].key)
         {
-            is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val, pairs1[index1].null);
+            is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val);
             ++index1;
         }
         else if (pairs1[index1].key > pairs2[index2].key)
         {
-            is_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val, pairs2[index2].null);
+            is_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val);
             ++index2;
         }
         else
         {
-            if (pairs1[index1].null || pairs2[index2].null)
-                is_pairs_insert(creator, pairs1[index1].key, 0, true);
-            else
-                is_pairs_insert(creator, pairs1[index1].key, ((pairs1[index1].val > pairs2[index2].val) ? pairs1[index1].val : pairs2[index2].val), false);
+            is_pairs_insert(creator, pairs1[index1].key, ((pairs1[index1].val > pairs2[index2].val) ? pairs1[index1].val : pairs2[index2].val));
             ++index1;
             ++index2;
         }
@@ -1096,12 +1043,12 @@ is_val_larger(PG_FUNCTION_ARGS)
 
     while (index1 < is1->len)
     {
-        is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val, pairs1[index1].null);
+        is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val);
         ++index1;
     }
     while (index2 < is2->len)
     {
-        is_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val, pairs2[index2].null);
+        is_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val);
         ++index2;
     }
     FINALIZE_ISTORE(result, creator);
@@ -1139,20 +1086,17 @@ is_val_smaller(PG_FUNCTION_ARGS)
     {
         if (pairs1[index1].key < pairs2[index2].key)
         {
-            is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val, pairs1[index1].null);
+            is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val);
             ++index1;
         }
         else if (pairs1[index1].key > pairs2[index2].key)
         {
-            is_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val, pairs2[index2].null);
+            is_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val);
             ++index2;
         }
         else
         {
-            if (pairs1[index1].null || pairs2[index2].null)
-                is_pairs_insert(creator, pairs1[index1].key, 0, true);
-            else
-                is_pairs_insert(creator, pairs1[index1].key, ((pairs1[index1].val < pairs2[index2].val) ? pairs1[index1].val : pairs2[index2].val), false);
+            is_pairs_insert(creator, pairs1[index1].key, ((pairs1[index1].val < pairs2[index2].val) ? pairs1[index1].val : pairs2[index2].val));
             ++index1;
             ++index2;
         }
@@ -1160,12 +1104,12 @@ is_val_smaller(PG_FUNCTION_ARGS)
 
     while (index1 < is1->len)
     {
-        is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val, pairs1[index1].null);
+        is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val);
         ++index1;
     }
     while (index2 < is2->len)
     {
-        is_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val, pairs2[index2].null);
+        is_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val);
         ++index2;
     }
     FINALIZE_ISTORE(result, creator);

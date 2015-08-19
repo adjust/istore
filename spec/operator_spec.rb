@@ -24,9 +24,9 @@ describe 'operator' do
       query("SELECT '1=>1, -1=>3'::istore + '1=>-1'::istore").should match \
       '"-1"=>"3", "1"=>"0"'
       query("SELECT '1=>NULL, -1=>3'::istore + '1=>-1'::istore").should match \
-      '"-1"=>"3", "1"=>NULL'
+      '"-1"=>"3", "1"=>"-1"'
       query("SELECT '1=>1, -1=>NULL'::istore + '-1=>-1'::istore").should match \
-      '"-1"=>NULL, "1"=>"1"'
+      '"-1"=>"-1", "1"=>"1"'
    end
 
     it 'should add an integer to istore' do
@@ -57,8 +57,8 @@ describe 'operator' do
       '"-1"=>"4", "1"=>"1"'
       query("SELECT '1=>1, -1=>3'::istore - '1=>-1'::istore").should match \
       '"-1"=>"3", "1"=>"2"'
-      query("SELECT '1=>NULL, -1=>3'::istore - '1=>-1'::istore").should match \
-      '"-1"=>"3", "1"=>NULL'
+      query("SELECT '1=>0, -1=>3'::istore - '1=>-1'::istore").should match \
+      '"-1"=>"3", "1"=>"1"'
    end
 
     it 'should substract integer from istore'do
@@ -84,13 +84,13 @@ describe 'operator' do
 
     it 'should multiply two istores' do
       query("SELECT '1=>3, 2=>2'::istore * '1=>2, 3=>5'::istore").should match \
-      '"1"=>"6", "2"=>NULL, "3"=>NULL'
+      '"1"=>"6"'
       query("SELECT '-1=>3, 2=>2'::istore * '-1=>2, 3=>5'::istore").should match \
-      '"-1"=>"6", "2"=>NULL, "3"=>NULL'
+      '"-1"=>"6"'
       query("SELECT '-1=>3, 2=>2'::istore * '-1=>-2, 3=>5'::istore").should match \
-      '"-1"=>"-6", "2"=>NULL, "3"=>NULL'
+      '"-1"=>"-6"'
       query("SELECT '-1=>3, 2=>NULL'::istore * '-1=>-2, 3=>5'::istore").should match \
-      '"-1"=>"-6", "2"=>NULL, "3"=>NULL'
+      '"-1"=>"-6"'
    end
 
     it 'should multiply istore with integer' do

@@ -65,13 +65,12 @@ is_parse_istore(ISParser *parser)
         }
         else if (parser->state == WVAL)
         {
-            bool null = false;
             SKIP_SPACES(parser->ptr);
             SKIP_ESCAPED(parser->ptr);
-            GET_VAL(parser, val, null);
+            GET_PLAIN_KEY(parser, val);
             SKIP_ESCAPED(parser->ptr);
             parser->state = WDEL;
-            parser->tree = is_insert(key, val, null, parser->tree);
+            parser->tree = is_insert(parser->tree, key, val);
         }
         else if (parser->state == WDEL)
         {
@@ -114,19 +113,12 @@ istore_out(PG_FUNCTION_ARGS)
     pairs = FIRST_PAIR(in);
     for (i = 0; i<in->len; ++i)
     {
-        if (pairs[i].null)
-            ptr += sprintf(
-                out+ptr,
-                "\"%d\"=>NULL, ",
-                pairs[i].key
-            );
-        else
-            ptr += sprintf(
-                out+ptr,
-                "\"%d\"=>\"%ld\", ",
-                pairs[i].key,
-                pairs[i].val
-            );
+        ptr += sprintf(
+            out+ptr,
+            "\"%d\"=>\"%ld\", ",
+            pairs[i].key,
+            pairs[i].val
+        );
     }
     // replace trailing , with terminating null
     out[in->buflen - 2] = '\0';
@@ -154,10 +146,9 @@ istore_recv(PG_FUNCTION_ARGS)
     is_pairs_init(creator, len);
     for (; i < len; ++i)
     {
-        int32 key  = pq_getmsgint(buf, 4);
+        int32  key  = pq_getmsgint(buf, 4);
         int64  val  = pq_getmsgint64(buf);
-        bool  null = pq_getmsgbyte(buf);
-        is_pairs_insert(creator, key, val, null);
+        is_pairs_insert(creator, key, val);
     }
     FINALIZE_ISTORE(result, creator);
     PG_RETURN_POINTER(result);
@@ -179,7 +170,6 @@ istore_send(PG_FUNCTION_ARGS)
         int64 val = pairs[i].val;
         pq_sendint(&buf, key, 4);
         pq_sendint64(&buf, val);
-        pq_sendbyte(&buf, pairs[i].null);
     }
     PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }
