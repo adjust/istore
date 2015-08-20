@@ -41,7 +41,7 @@ Datum is_val_smaller(PG_FUNCTION_ARGS);
 
 typedef struct {
     int32  key;
-    int64   val;
+    int64  val;
 } ISPair;
 
 typedef struct {
