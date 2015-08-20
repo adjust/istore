@@ -23,9 +23,9 @@ describe 'operator' do
       '"-1"=>"2", "1"=>"1"'
       query("SELECT '1=>1, -1=>3'::istore + '1=>-1'::istore").should match \
       '"-1"=>"3", "1"=>"0"'
-      query("SELECT '1=>NULL, -1=>3'::istore + '1=>-1'::istore").should match \
+      query("SELECT '1=>0, -1=>3'::istore + '1=>-1'::istore").should match \
       '"-1"=>"3", "1"=>"-1"'
-      query("SELECT '1=>1, -1=>NULL'::istore + '-1=>-1'::istore").should match \
+      query("SELECT '1=>1, -1=>0'::istore + '-1=>-1'::istore").should match \
       '"-1"=>"-1", "1"=>"1"'
    end
 
@@ -89,7 +89,7 @@ describe 'operator' do
       '"-1"=>"6"'
       query("SELECT '-1=>3, 2=>2'::istore * '-1=>-2, 3=>5'::istore").should match \
       '"-1"=>"-6"'
-      query("SELECT '-1=>3, 2=>NULL'::istore * '-1=>-2, 3=>5'::istore").should match \
+      query("SELECT '-1=>3, 2=>0'::istore * '-1=>-2, 3=>5'::istore").should match \
       '"-1"=>"-6"'
    end
 
