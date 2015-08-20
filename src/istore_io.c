@@ -96,10 +96,15 @@ is_parse_istore(ISParser *parser)
         }
         else if (parser->state == WDEL)
         {
+            SKIP_SPACES(parser->ptr);
+
             if (*(parser->ptr) == '\0')
                 break;
             else if (*(parser->ptr) == ',')
                 parser->state = WKEY;
+            else
+                elog(ERROR, "unexpected sign %c", *(parser->ptr));
+
             parser->ptr++;
         }
         else
