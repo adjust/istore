@@ -73,7 +73,12 @@ is_parse_istore(ISParser *parser)
                 parser->ptr++;
             }
             else
-                elog(ERROR, "unexpected sign %c, expected eq", *(parser->ptr));
+                ereport(ERROR,
+                    (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+                     errmsg("invalid input syntax for istore: \"%s\"",
+                            parser->begin),
+                     errdetail("unexpected sign %c, in istore key", *(parser->ptr))
+                     ));
         }
         else if (parser->state == WGT)
         {
@@ -83,7 +88,12 @@ is_parse_istore(ISParser *parser)
                 parser->ptr++;
             }
             else
-                elog(ERROR, "unexpected sign %c", *(parser->ptr));
+                ereport(ERROR,
+                    (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+                     errmsg("invalid input syntax for istore: \"%s\"",
+                            parser->begin),
+                     errdetail("unexpected sign %c, expected '>'", *(parser->ptr))
+                     ));
         }
         else if (parser->state == WVAL)
         {
@@ -103,7 +113,12 @@ is_parse_istore(ISParser *parser)
             else if (*(parser->ptr) == ',')
                 parser->state = WKEY;
             else
-                elog(ERROR, "unexpected sign %c", *(parser->ptr));
+                ereport(ERROR,
+                    (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+                     errmsg("invalid input syntax for istore: \"%s\"",
+                            parser->begin),
+                     errdetail("unexpected sign %c, in istore value", *(parser->ptr))
+                     ));
 
             parser->ptr++;
         }

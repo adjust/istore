@@ -34,7 +34,7 @@ describe 'functions_plain' do
       ['-311'],
       ['108']
 
-    query("SELECT * FROM each('1=>1, 5=>NULL'::istore)").should match \
+    query("SELECT * FROM each('1=>1, 5=>0'::istore)").should match \
       ['1','1'],
       ['5','0']
 
@@ -58,7 +58,7 @@ describe 'functions_plain' do
     '"-1"=>"-2", "2"=>"0"'
     query("SELECT add('-1=>-1, 2=>1'::istore, 0)").should match \
     '"-1"=>"-1", "2"=>"1"'
-    query("SELECT add(istore(Array[]::integer[], Array[]::integer[]), '1=>NULL'::istore);").should match \
+    query("SELECT add(istore(Array[]::integer[], Array[]::integer[]), '1=>0'::istore);").should match \
     '"1"=>"0"'
   end
 
@@ -79,7 +79,7 @@ describe 'functions_plain' do
     '"-1"=>"0", "2"=>"2"'
     query("SELECT subtract('-1=>-1, 2=>1'::istore, 0)").should match \
     '"-1"=>"-1", "2"=>"1"'
-    query("SELECT subtract(istore(Array[]::integer[], Array[]::integer[]), '1=>NULL'::istore);").should match \
+    query("SELECT subtract(istore(Array[]::integer[], Array[]::integer[]), '1=>0'::istore);").should match \
     '"1"=>"0"'
   end
 
@@ -193,7 +193,7 @@ describe 'functions_plain' do
 
   it 'should sum istores from table' do
     query("CREATE TABLE test (a istore)")
-    query("INSERT INTO test VALUES('1=>1'),('2=>1'),('3=>1'),(NULL),('3=>NULL')")
+    query("INSERT INTO test VALUES('1=>1'),('2=>1'),('3=>1'),(NULL),('3=>0')")
     query("SELECT SUM(a) FROM test").should match \
     '"1"=>"1", "2"=>"1", "3"=>"1"'
   end
@@ -232,7 +232,7 @@ describe 'functions_plain' do
 
     query("SELECT fill_gaps('2=>17'::istore, 3, NULL)").should match nil
 
-    query("SELECT fill_gaps('2=>NULL, 3=>3'::istore, 3, 0)").should match \
+    query("SELECT fill_gaps('2=>0, 3=>3'::istore, 3, 0)").should match \
       '"0"=>"0", "1"=>"0", "2"=>"0", "3"=>"3"'
 
     query("SELECT fill_gaps(''::istore, 3, 0)").should match \
@@ -249,9 +249,9 @@ describe 'functions_plain' do
   it 'should fill accumulate' do
     query("SELECT accumulate('2=>17, 4=>3'::istore)").should match \
       '"2"=>"17", "3"=>"17", "4"=>"20"'
-    query("SELECT accumulate('2=>NULL, 4=>3'::istore)").should match \
+    query("SELECT accumulate('2=>0, 4=>3'::istore)").should match \
       '"2"=>"0", "3"=>"0", "4"=>"3"'
-    query("SELECT accumulate('1=>3, 2=>NULL, 4=>3, 6=>2'::istore)").should match \
+    query("SELECT accumulate('1=>3, 2=>0, 4=>3, 6=>2'::istore)").should match \
       '"1"=>"3", "2"=>"3", "3"=>"3", "4"=>"6", "5"=>"6", "6"=>"8"'
     query("SELECT accumulate(''::istore)").should match ''
     query("SELECT accumulate('10=>5'::istore)").should match '"10"=>"5"'
@@ -265,9 +265,9 @@ describe 'functions_plain' do
   it 'should fill accumulate upto' do
     query("SELECT accumulate('2=>17, 4=>3'::istore, 8)").should match \
       '"2"=>"17", "3"=>"17", "4"=>"20", "5"=>"20", "6"=>"20", "7"=>"20", "8"=>"20"'
-    query("SELECT accumulate('2=>NULL, 4=>3'::istore, 8)").should match \
+    query("SELECT accumulate('2=>0, 4=>3'::istore, 8)").should match \
       '"2"=>"0", "3"=>"0", "4"=>"3", "5"=>"3", "6"=>"3", "7"=>"3", "8"=>"3"'
-    query("SELECT accumulate('1=>3, 2=>NULL, 4=>3, 6=>2'::istore, 8)").should match \
+    query("SELECT accumulate('1=>3, 2=>0, 4=>3, 6=>2'::istore, 8)").should match \
       '"1"=>"3", "2"=>"3", "3"=>"3", "4"=>"6", "5"=>"6", "6"=>"8", "7"=>"8", "8"=>"8"'
     query("SELECT accumulate(''::istore, 8)").should match ''
     query("SELECT accumulate('10=>5'::istore, 8)").should match ''
