@@ -3,6 +3,13 @@
 
 PG_MODULE_MAGIC;
 
+#define COPY_ISTORE(_dst, _src)                \
+    do {                                       \
+        _dst = palloc0(ISTORE_SIZE(_src));      \
+        memcpy(_dst, _src, ISTORE_SIZE(_src)); \
+    } while(0)
+
+
 /*
  * Sum the values of an istore
  */

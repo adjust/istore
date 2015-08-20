@@ -37,8 +37,6 @@ Datum istore_seed(PG_FUNCTION_ARGS);
 Datum is_val_larger(PG_FUNCTION_ARGS);
 Datum is_val_smaller(PG_FUNCTION_ARGS);
 
-#define BUFLEN_OFFSET        8
-
 typedef struct {
     int32  key;
     int64  val;
@@ -86,43 +84,13 @@ int is_tree_length(Position p);
 int is_tree_to_pairs(Position p, ISPairs *pairs, int n);
 ISPair* is_find(IStore *is, int32 key);
 
-#define DIGIT_WIDTH(_digit, _width)       \
-    do {                                  \
-        int64 _local = _digit;             \
-        _width = 0;                       \
-        if (_local <= 0)                  \
-            ++_width;                     \
-        for (; _local != 0; _local /= 10) \
-            ++_width;                     \
-    } while (0)
-
+#define BUFLEN_OFFSET 8
 #define PAYLOAD(_pairs) _pairs->pairs
 #define PAYLOAD_SIZE(_pairs) (_pairs->used * sizeof(ISPair))
-
-#define SKIP_SPACES(_ptr)  \
-    while (isspace(*_ptr)) \
-        _ptr++;
-
-/* TODO really respect quotes and dont just skip them */
-#define SKIP_ESCAPED(_ptr) \
-    if (*_ptr == '"')      \
-            _ptr++;
-
-#define GET_NUM(_parser, _key)                    \
-    do {                                                \
-        _key = strtol(_parser->ptr, &_parser->ptr, 10); \
-    } while (0)
-
 #define PG_GETARG_IS(x) (IStore *)PG_DETOAST_DATUM(PG_GETARG_DATUM(x))
 #define ISHDRSZ VARHDRSZ + sizeof(int32) + sizeof(int32)
 #define ISTORE_SIZE(x) (ISHDRSZ + x->len * sizeof(ISPair))
 #define FIRST_PAIR(x) ((ISPair*)((char *) x + ISHDRSZ))
-
-#define COPY_ISTORE(_dst, _src)                \
-    do {                                       \
-        _dst = palloc0(ISTORE_SIZE(_src));      \
-        memcpy(_dst, _src, ISTORE_SIZE(_src)); \
-    } while(0)
 
 #define FINALIZE_ISTORE(_istore, _pairs)                                    \
     do {                                                                    \
@@ -138,15 +106,6 @@ ISPair* is_find(IStore *is, int32 key);
         SET_VARSIZE(_istore, ISHDRSZ + PAYLOAD_SIZE(_pairs));               \
         memcpy(FIRST_PAIR(_istore), PAYLOAD(_pairs), PAYLOAD_SIZE(_pairs)); \
         is_pairs_deinit(_pairs);                                            \
-    } while(0)
-
-
-#define EMPTY_ISTORE(_istore)          \
-    do {                               \
-        _istore = palloc0(ISHDRSZ);    \
-        _istore->buflen = 0;           \
-        _istore->len = 0;              \
-        SET_VARSIZE(_istore, ISHDRSZ); \
     } while(0)
 
 #define LARGER(_a, _b) (_a > _b) ? _a : _b
