@@ -13,9 +13,9 @@ istore_sum_up(PG_FUNCTION_ARGS)
     IStore  *is;
     ISPair  *pairs;
     int64    result = 0;
-    int     index = 0;
-    is     = PG_GETARG_IS(0);
-    pairs = FIRST_PAIR(is);
+    int      index  = 0;
+    is              = PG_GETARG_IS(0);
+    pairs           = FIRST_PAIR(is);
 
     while (index < is->len)
         result += pairs[index++].val;
@@ -32,9 +32,9 @@ is_find(IStore *is, int32 key)
 {
     ISPair *pairs  = FIRST_PAIR(is);
     ISPair *result = NULL;
-    int low = 0;
-    int max = is->len;
-    int mid = 0;
+    int low        = 0;
+    int max        = is->len;
+    int mid        = 0;
     while (low < max)
     {
         mid = low + (max - low) / 2;
@@ -60,7 +60,7 @@ is_exist(PG_FUNCTION_ARGS)
 {
     bool found;
     IStore *in = PG_GETARG_IS(0);
-    int32 key = PG_GETARG_INT32(1);
+    int32 key  = PG_GETARG_INT32(1);
     if (is_find(in, key))
         found = true;
     else
@@ -77,7 +77,7 @@ is_fetchval(PG_FUNCTION_ARGS)
 {
     ISPair *pair;
     IStore *in = PG_GETARG_IS(0);
-    int32 key = PG_GETARG_INT32(1);
+    int32 key  = PG_GETARG_INT32(1);
     if ((pair = is_find(in, key)) == NULL )
         PG_RETURN_NULL();
     else
@@ -97,20 +97,20 @@ is_add(PG_FUNCTION_ARGS)
     ISPair  *pairs1,
             *pairs2;
     ISPairs *creator = NULL;
-
-    int     index1 = 0,
-            index2 = 0;
+    int     index1   = 0,
+            index2   = 0;
 
     if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
         PG_RETURN_NULL();
 
-    is1 = PG_GETARG_IS(0);
-    is2 = PG_GETARG_IS(1);
-
-    pairs1 = FIRST_PAIR(is1);
-    pairs2 = FIRST_PAIR(is2);
+    is1     = PG_GETARG_IS(0);
+    is2     = PG_GETARG_IS(1);
+    pairs1  = FIRST_PAIR(is1);
+    pairs2  = FIRST_PAIR(is2);
     creator = palloc0(sizeof *creator);
+
     is_pairs_init(creator, SMALLER(is1->len + is2->len, 200));
+
     while (index1 < is1->len && index2 < is2->len)
     {
         if (pairs1[index1].key < pairs2[index2].key)
@@ -156,13 +156,14 @@ is_add_integer(PG_FUNCTION_ARGS)
             *result;
     ISPair  *pairs;
     ISPairs *creator = NULL;
-
-    int     index = 0,
+    int     index    = 0,
             int_arg;
-    is     = PG_GETARG_IS(0);
+
+    is      = PG_GETARG_IS(0);
     int_arg = PG_GETARG_INT32(1);
-    pairs = FIRST_PAIR(is);
+    pairs   = FIRST_PAIR(is);
     creator = palloc0(sizeof *creator);
+
     is_pairs_init(creator, is->len);
     while (index < is->len)
     {
@@ -189,15 +190,17 @@ is_subtract(PG_FUNCTION_ARGS)
     ISPair  *pairs1,
             *pairs2;
     ISPairs *creator = NULL;
+    int     index1   = 0,
+            index2   = 0;
 
-    int     index1 = 0,
-            index2 = 0;
-    is1 = PG_GETARG_IS(0);
-    is2 = PG_GETARG_IS(1);
-    pairs1 = FIRST_PAIR(is1);
-    pairs2 = FIRST_PAIR(is2);
+    is1     = PG_GETARG_IS(0);
+    is2     = PG_GETARG_IS(1);
+    pairs1  = FIRST_PAIR(is1);
+    pairs2  = FIRST_PAIR(is2);
     creator = palloc0(sizeof *creator);
+
     is_pairs_init(creator, SMALLER(is1->len + is2->len, 200));
+
     while (index1 < is1->len && index2 < is2->len)
     {
         if (pairs1[index1].key < pairs2[index2].key)
@@ -246,11 +249,14 @@ is_subtract_integer(PG_FUNCTION_ARGS)
 
     int     index = 0,
             int_arg;
-    is     = PG_GETARG_IS(0);
+
+    is      = PG_GETARG_IS(0);
     int_arg = PG_GETARG_INT32(1);
-    pairs = FIRST_PAIR(is);
+    pairs   = FIRST_PAIR(is);
     creator = palloc0(sizeof *creator);
+
     is_pairs_init(creator, is->len);
+
     while (index < is->len)
     {
         is_pairs_insert(creator, pairs[index].key, pairs[index].val - int_arg);
@@ -276,13 +282,13 @@ is_multiply(PG_FUNCTION_ARGS)
     ISPair  *pairs1,
             *pairs2;
     ISPairs *creator = NULL;
+    int     index1   = 0,
+            index2   = 0;
 
-    int     index1 = 0,
-            index2 = 0;
-    is1 = PG_GETARG_IS(0);
-    is2 = PG_GETARG_IS(1);
-    pairs1 = FIRST_PAIR(is1);
-    pairs2 = FIRST_PAIR(is2);
+    is1     = PG_GETARG_IS(0);
+    is2     = PG_GETARG_IS(1);
+    pairs1  = FIRST_PAIR(is1);
+    pairs2  = FIRST_PAIR(is2);
     creator = palloc0(sizeof *creator);
     is_pairs_init(creator, SMALLER(is1->len, is2->len));
 
@@ -315,14 +321,15 @@ is_multiply_integer(PG_FUNCTION_ARGS)
             *result;
     ISPair  *pairs;
     ISPairs *creator = NULL;
-
-    int     index = 0,
+    int     index    = 0,
             int_arg;
-    is     = PG_GETARG_IS(0);
+
+    is      = PG_GETARG_IS(0);
     int_arg = PG_GETARG_INT32(1);
-    pairs = FIRST_PAIR(is);
+    pairs   = FIRST_PAIR(is);
     creator = palloc0(sizeof *creator);
     is_pairs_init(creator, is->len);
+
     while (index < is->len)
     {
         is_pairs_insert(creator, pairs[index].key, pairs[index].val * int_arg);
@@ -353,12 +360,15 @@ is_divide(PG_FUNCTION_ARGS)
 
     int     index1 = 0,
             index2 = 0;
-    is1 = PG_GETARG_IS(0);
-    is2 = PG_GETARG_IS(1);
-    pairs1 = FIRST_PAIR(is1);
-    pairs2 = FIRST_PAIR(is2);
+
+    is1     = PG_GETARG_IS(0);
+    is2     = PG_GETARG_IS(1);
+    pairs1  = FIRST_PAIR(is1);
+    pairs2  = FIRST_PAIR(is2);
     creator = palloc0(sizeof *creator);
+
     is_pairs_init(creator, SMALLER(is1->len, is2->len));
+
     while (index1 < is1->len && index2 < is2->len)
     {
         if (pairs2[index2].val == 0)
@@ -397,10 +407,10 @@ is_divide_integer(PG_FUNCTION_ARGS)
             *result;
     ISPair  *pairs;
     ISPairs *creator = NULL;
+    int     int_arg,
+            index    = 0;
 
-    int     index = 0,
-            int_arg;
-    is     = PG_GETARG_IS(0);
+    is      = PG_GETARG_IS(0);
     int_arg = PG_GETARG_INT32(1);
 
     if (int_arg == 0)
@@ -409,8 +419,9 @@ is_divide_integer(PG_FUNCTION_ARGS)
             errmsg("division by zero")
         ));
 
-    pairs = FIRST_PAIR(is);
+    pairs   = FIRST_PAIR(is);
     creator = palloc0(sizeof *creator);
+
     is_pairs_init(creator, is->len);
     while (index < is->len)
     {
@@ -437,21 +448,27 @@ is_divide_int8(PG_FUNCTION_ARGS)
 
     int     index = 0;
     int64   int_arg;
-    is     = PG_GETARG_IS(0);
+
+    is      = PG_GETARG_IS(0);
     int_arg = PG_GETARG_INT64(1);
+
     if (int_arg == 0)
         ereport(ERROR, (
             errcode(ERRCODE_DIVISION_BY_ZERO),
             errmsg("division by zero")
         ));
-    pairs = FIRST_PAIR(is);
+
+    pairs   = FIRST_PAIR(is);
     creator = palloc0(sizeof *creator);
+
     is_pairs_init(creator, is->len);
+
     while (index < is->len)
     {
         is_pairs_insert(creator, pairs[index].key, pairs[index].val / int_arg);
         ++index;
     }
+
     FINALIZE_ISTORE_NOSORT(result, creator);
     PG_RETURN_POINTER(result);
 }
@@ -514,11 +531,12 @@ istore_from_array(PG_FUNCTION_ARGS)
             position->value += 1;
     }
 
-    n = is_tree_length(tree);
+    n     = is_tree_length(tree);
     pairs = palloc0(sizeof *pairs);
     is_pairs_init(pairs, n);
     is_tree_to_pairs(tree, pairs, 0);
     is_make_empty(tree);
+
     FINALIZE_ISTORE(result, pairs);
     PG_RETURN_POINTER(result);
 }
@@ -526,15 +544,15 @@ istore_from_array(PG_FUNCTION_ARGS)
 Datum
 array_to_istore(Datum *data, int count, bool *nulls)
 {
-    IStore *out,
-           *istore;
-    AvlTree  tree;
-    int i,
-        n,
-        index;
-    ISPair *payload;
-    ISPairs   *pairs;
-    Position position;
+    IStore   *out,
+             *istore;
+    AvlTree   tree;
+    int       i,
+              n,
+              index;
+    ISPair   *payload;
+    ISPairs  *pairs;
+    Position  position;
 
     tree = is_make_empty(NULL);
 
@@ -553,14 +571,14 @@ array_to_istore(Datum *data, int count, bool *nulls)
                 position->value += payload->val;
         }
     }
-    i = is_tree_length(tree);
-    if (i == 0)
-        return 0;
     n = is_tree_length(tree);
+    if (n == 0)
+        return 0;
     pairs = palloc0(sizeof *pairs);
     is_pairs_init(pairs, n);
     is_tree_to_pairs(tree, pairs, 0);
     is_make_empty(tree);
+
     FINALIZE_ISTORE(out, pairs);
     PG_RETURN_POINTER(out);
 }
@@ -743,6 +761,7 @@ istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
     is_pairs_init(pairs, n);
     is_tree_to_pairs(tree, pairs, 0);
     is_make_empty(tree);
+
     FINALIZE_ISTORE(out, pairs);
     PG_RETURN_POINTER(out);
 }
@@ -762,6 +781,7 @@ istore_array_add(PG_FUNCTION_ARGS)
     result = istore_add_from_int_arrays(input1, input2);
     if (result == 0)
         PG_RETURN_NULL();
+
     return result;
 }
 
@@ -807,21 +827,21 @@ Datum
 istore_each(PG_FUNCTION_ARGS)
 {
     FuncCallContext *funcctx;
-    IStore     *is;
-    int         i;
+    IStore          *is;
+    int              i;
     ISPair          *pairs;
 
     if (SRF_IS_FIRSTCALL())
     {
-        is = PG_GETARG_IS(0);
+        is      = PG_GETARG_IS(0);
         funcctx = SRF_FIRSTCALL_INIT();
         setup_firstcall(funcctx, is, fcinfo);
     }
 
     funcctx = SRF_PERCALL_SETUP();
-    is = (IStore *) funcctx->user_fctx;
-    i = funcctx->call_cntr;
-    pairs = FIRST_PAIR(is);
+    is      = (IStore *) funcctx->user_fctx;
+    i       = funcctx->call_cntr;
+    pairs   = FIRST_PAIR(is);
 
     if (i < is->len)
     {
@@ -830,10 +850,10 @@ istore_each(PG_FUNCTION_ARGS)
         bool        nulls[2] = {false, false};
         HeapTuple   tuple;
 
-        dvalues[0] = UInt32GetDatum(pairs[i].key);
+        dvalues[0] = Int32GetDatum(pairs[i].key);
         dvalues[1] = Int64GetDatum(pairs[i].val);
-        tuple = heap_form_tuple(funcctx->tuple_desc, dvalues, nulls);
-        res = HeapTupleGetDatum(tuple);
+        tuple      = heap_form_tuple(funcctx->tuple_desc, dvalues, nulls);
+        res        = HeapTupleGetDatum(tuple);
 
         SRF_RETURN_NEXT(funcctx, PointerGetDatum(res));
     }
@@ -860,7 +880,7 @@ istore_fill_gaps(PG_FUNCTION_ARGS)
     if (PG_ARGISNULL(0))
         PG_RETURN_NULL();
 
-    is = PG_GETARG_IS(0);
+    is    = PG_GETARG_IS(0);
     up_to = PG_GETARG_INT32(1);
 
     fill_with = PG_GETARG_INT64(2);
@@ -900,19 +920,19 @@ istore_accumulate(PG_FUNCTION_ARGS)
 
     ISPairs *creator = NULL;
 
-    int64    sum = 0;
-    int     index1 = 0,
-            index2 = 0;
-    size_t  size = 0 ;
+    int64    sum      = 0;
+    int     index1    = 0,
+            index2    = 0;
+    size_t  size      = 0 ;
     int32   start_key = 0,
-            end_key = -1;
+    end_key           = -1;
 
     if (PG_ARGISNULL(0))
         PG_RETURN_NULL();
 
     is = PG_GETARG_IS(0);
 
-    pairs = FIRST_PAIR(is);
+    pairs   = FIRST_PAIR(is);
     creator = palloc0(sizeof *creator);
 
     if (is->len > 0)
@@ -949,17 +969,17 @@ istore_seed(PG_FUNCTION_ARGS)
     ISPairs *creator = NULL;
 
     int     from,
-            up_to;
+            up_to,
+            index1 = 0;
     int64  fill_with;
-    int     index1 = 0;
 
     if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
         PG_RETURN_NULL();
 
-    from = PG_GETARG_INT32(0);
-    up_to = PG_GETARG_INT32(1);
+    from      = PG_GETARG_INT32(0);
+    up_to     = PG_GETARG_INT32(1);
     fill_with = PG_GETARG_INT64(2);
-    creator = palloc0(sizeof *creator);
+    creator   = palloc0(sizeof *creator);
 
     if (up_to < from)
         elog(ERROR, "parameter upto must be >= from");
@@ -991,19 +1011,19 @@ is_val_larger(PG_FUNCTION_ARGS)
     ISPair  *pairs1,
             *pairs2;
     ISPairs *creator = NULL;
-
-    int     index1 = 0,
-            index2 = 0;
+    int     index1   = 0,
+            index2   = 0;
 
     if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
         PG_RETURN_NULL();
 
-    is1 = PG_GETARG_IS(0);
-    is2 = PG_GETARG_IS(1);
+    is1     = PG_GETARG_IS(0);
+    is2     = PG_GETARG_IS(1);
 
-    pairs1 = FIRST_PAIR(is1);
-    pairs2 = FIRST_PAIR(is2);
+    pairs1  = FIRST_PAIR(is1);
+    pairs2  = FIRST_PAIR(is2);
     creator = palloc0(sizeof *creator);
+
     is_pairs_init(creator, SMALLER(is1->len + is2->len, 200));
     while (index1 < is1->len && index2 < is2->len)
     {
@@ -1059,12 +1079,13 @@ is_val_smaller(PG_FUNCTION_ARGS)
     if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
         PG_RETURN_NULL();
 
-    is1 = PG_GETARG_IS(0);
-    is2 = PG_GETARG_IS(1);
+    is1     = PG_GETARG_IS(0);
+    is2     = PG_GETARG_IS(1);
 
-    pairs1 = FIRST_PAIR(is1);
-    pairs2 = FIRST_PAIR(is2);
+    pairs1  = FIRST_PAIR(is1);
+    pairs2  = FIRST_PAIR(is2);
     creator = palloc0(sizeof *creator);
+
     is_pairs_init(creator, SMALLER(is1->len + is2->len, 200));
     while (index1 < is1->len && index2 < is2->len)
     {
