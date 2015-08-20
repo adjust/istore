@@ -6,6 +6,28 @@
 #define WGT  3
 #define WDEL 4
 
+#define SKIP_SPACES(_ptr)  \
+    while (isspace(*_ptr)) \
+        _ptr++;
+
+/* TODO really respect quotes and dont just skip them */
+#define SKIP_ESCAPED(_ptr) \
+    if (*_ptr == '"')      \
+            _ptr++;
+
+#define GET_NUM(_parser, _key)                    \
+    do {                                                \
+        _key = strtol(_parser->ptr, &_parser->ptr, 10); \
+    } while (0)
+
+#define EMPTY_ISTORE(_istore)          \
+    do {                               \
+        _istore = palloc0(ISHDRSZ);    \
+        _istore->buflen = 0;           \
+        _istore->len = 0;              \
+        SET_VARSIZE(_istore, ISHDRSZ); \
+    } while(0)
+
 typedef struct ISParser {
     char    *begin;
     char    *ptr;

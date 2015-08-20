@@ -1,5 +1,15 @@
 #include "istore.h"
 
+#define DIGIT_WIDTH(_digit, _width)       \
+    do {                                  \
+        int64 _local = _digit;             \
+        _width = 0;                       \
+        if (_local <= 0)                  \
+            ++_width;                     \
+        for (; _local != 0; _local /= 10) \
+            ++_width;                     \
+    } while (0)
+
 static inline int
 height(Position p)
 {
