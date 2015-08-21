@@ -18,7 +18,7 @@ Datum
 istore_sum_up(PG_FUNCTION_ARGS)
 {
     IStore  *is;
-    ISPair  *pairs;
+    IStorePair  *pairs;
     int64    result = 0;
     int      index  = 0;
     is              = PG_GETARG_IS(0);
@@ -34,11 +34,11 @@ istore_sum_up(PG_FUNCTION_ARGS)
  *
  * Binary search the key in the istore.
  */
-ISPair*
-is_find(IStore *is, int32 key)
+IStorePair*
+istore_find(IStore *is, int32 key)
 {
-    ISPair *pairs  = FIRST_PAIR(is);
-    ISPair *result = NULL;
+    IStorePair *pairs  = FIRST_PAIR(is);
+    IStorePair *result = NULL;
     int low        = 0;
     int max        = is->len;
     int mid        = 0;
@@ -61,14 +61,14 @@ is_find(IStore *is, int32 key)
 /*
  * Implementation of operator ?(istore, int)
  */
-PG_FUNCTION_INFO_V1(is_exist);
+PG_FUNCTION_INFO_V1(istore_exist);
 Datum
-is_exist(PG_FUNCTION_ARGS)
+istore_exist(PG_FUNCTION_ARGS)
 {
     bool found;
     IStore *in = PG_GETARG_IS(0);
     int32 key  = PG_GETARG_INT32(1);
-    if (is_find(in, key))
+    if (istore_find(in, key))
         found = true;
     else
         found = false;
@@ -78,14 +78,14 @@ is_exist(PG_FUNCTION_ARGS)
 /*
  * Implementation of operator ->(istore, int)
  */
-PG_FUNCTION_INFO_V1(is_fetchval);
+PG_FUNCTION_INFO_V1(istore_fetchval);
 Datum
-is_fetchval(PG_FUNCTION_ARGS)
+istore_fetchval(PG_FUNCTION_ARGS)
 {
-    ISPair *pair;
+    IStorePair *pair;
     IStore *in = PG_GETARG_IS(0);
     int32 key  = PG_GETARG_INT32(1);
-    if ((pair = is_find(in, key)) == NULL )
+    if ((pair = istore_find(in, key)) == NULL )
         PG_RETURN_NULL();
     else
         PG_RETURN_INT64(pair->val);
@@ -94,16 +94,16 @@ is_fetchval(PG_FUNCTION_ARGS)
 /*
  * Merge two istores
  */
-PG_FUNCTION_INFO_V1(is_add);
+PG_FUNCTION_INFO_V1(istore_add);
 Datum
-is_add(PG_FUNCTION_ARGS)
+istore_add(PG_FUNCTION_ARGS)
 {
     IStore  *is1,
             *is2,
             *result;
-    ISPair  *pairs1,
+    IStorePair  *pairs1,
             *pairs2;
-    ISPairs *creator = NULL;
+    IStorePairs *creator = NULL;
     int     index1   = 0,
             index2   = 0;
 
@@ -116,23 +116,23 @@ is_add(PG_FUNCTION_ARGS)
     pairs2  = FIRST_PAIR(is2);
     creator = palloc0(sizeof *creator);
 
-    is_pairs_init(creator, SMALLER(is1->len + is2->len, 200));
+    istore_pairs_init(creator, SMALLER(is1->len + is2->len, 200));
 
     while (index1 < is1->len && index2 < is2->len)
     {
         if (pairs1[index1].key < pairs2[index2].key)
         {
-            is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val);
+            istore_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val);
             ++index1;
         }
         else if (pairs1[index1].key > pairs2[index2].key)
         {
-            is_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val);
+            istore_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val);
             ++index2;
         }
         else
         {
-            is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val + pairs2[index2].val);
+            istore_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val + pairs2[index2].val);
             ++index1;
             ++index2;
         }
@@ -140,12 +140,12 @@ is_add(PG_FUNCTION_ARGS)
 
     while (index1 < is1->len)
     {
-        is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val);
+        istore_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val);
         ++index1;
     }
     while (index2 < is2->len)
     {
-        is_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val);
+        istore_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val);
         ++index2;
     }
     FINALIZE_ISTORE_NOSORT(result, creator);
@@ -155,14 +155,14 @@ is_add(PG_FUNCTION_ARGS)
 /*
  * Increment values of an istore
  */
-PG_FUNCTION_INFO_V1(is_add_integer);
+PG_FUNCTION_INFO_V1(istore_add_integer);
 Datum
-is_add_integer(PG_FUNCTION_ARGS)
+istore_add_integer(PG_FUNCTION_ARGS)
 {
     IStore  *is,
             *result;
-    ISPair  *pairs;
-    ISPairs *creator = NULL;
+    IStorePair  *pairs;
+    IStorePairs *creator = NULL;
     int     index    = 0,
             int_arg;
 
@@ -171,10 +171,10 @@ is_add_integer(PG_FUNCTION_ARGS)
     pairs   = FIRST_PAIR(is);
     creator = palloc0(sizeof *creator);
 
-    is_pairs_init(creator, is->len);
+    istore_pairs_init(creator, is->len);
     while (index < is->len)
     {
-        is_pairs_insert(creator, pairs[index].key, pairs[index].val + int_arg);
+        istore_pairs_insert(creator, pairs[index].key, pairs[index].val + int_arg);
         ++index;
     }
     FINALIZE_ISTORE_NOSORT(result, creator);
@@ -187,16 +187,16 @@ is_add_integer(PG_FUNCTION_ARGS)
  * XXX Keys which doesn't exists on first istore is added to the results
  * without changing the values on the second istore.
  */
-PG_FUNCTION_INFO_V1(is_subtract);
+PG_FUNCTION_INFO_V1(istore_subtract);
 Datum
-is_subtract(PG_FUNCTION_ARGS)
+istore_subtract(PG_FUNCTION_ARGS)
 {
     IStore  *is1,
             *is2,
             *result;
-    ISPair  *pairs1,
+    IStorePair  *pairs1,
             *pairs2;
-    ISPairs *creator = NULL;
+    IStorePairs *creator = NULL;
     int     index1   = 0,
             index2   = 0;
 
@@ -206,23 +206,23 @@ is_subtract(PG_FUNCTION_ARGS)
     pairs2  = FIRST_PAIR(is2);
     creator = palloc0(sizeof *creator);
 
-    is_pairs_init(creator, SMALLER(is1->len + is2->len, 200));
+    istore_pairs_init(creator, SMALLER(is1->len + is2->len, 200));
 
     while (index1 < is1->len && index2 < is2->len)
     {
         if (pairs1[index1].key < pairs2[index2].key)
         {
-            is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val);
+            istore_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val);
             ++index1;
         }
         else if (pairs1[index1].key > pairs2[index2].key)
         {
-            is_pairs_insert(creator, pairs2[index2].key, -pairs2[index2].val);
+            istore_pairs_insert(creator, pairs2[index2].key, -pairs2[index2].val);
             ++index2;
         }
         else
         {
-            is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val - pairs2[index2].val );
+            istore_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val - pairs2[index2].val );
             ++index1;
             ++index2;
         }
@@ -230,12 +230,12 @@ is_subtract(PG_FUNCTION_ARGS)
 
     while (index1 < is1->len)
     {
-        is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val);
+        istore_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val);
         ++index1;
     }
     while (index2 < is2->len)
     {
-        is_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val);
+        istore_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val);
         ++index2;
     }
     FINALIZE_ISTORE_NOSORT(result, creator);
@@ -245,14 +245,14 @@ is_subtract(PG_FUNCTION_ARGS)
 /*
  * Decrement values of an istore
  */
-PG_FUNCTION_INFO_V1(is_subtract_integer);
+PG_FUNCTION_INFO_V1(istore_subtract_integer);
 Datum
-is_subtract_integer(PG_FUNCTION_ARGS)
+istore_subtract_integer(PG_FUNCTION_ARGS)
 {
     IStore  *is,
             *result;
-    ISPair  *pairs;
-    ISPairs *creator = NULL;
+    IStorePair  *pairs;
+    IStorePairs *creator = NULL;
 
     int     index = 0,
             int_arg;
@@ -262,11 +262,11 @@ is_subtract_integer(PG_FUNCTION_ARGS)
     pairs   = FIRST_PAIR(is);
     creator = palloc0(sizeof *creator);
 
-    is_pairs_init(creator, is->len);
+    istore_pairs_init(creator, is->len);
 
     while (index < is->len)
     {
-        is_pairs_insert(creator, pairs[index].key, pairs[index].val - int_arg);
+        istore_pairs_insert(creator, pairs[index].key, pairs[index].val - int_arg);
         ++index;
     }
     FINALIZE_ISTORE(result, creator);
@@ -279,16 +279,16 @@ is_subtract_integer(PG_FUNCTION_ARGS)
  * XXX The two istores should have the same keys.  The keys which exist on only
  * one istore is added to the result with NULL values.
  */
-PG_FUNCTION_INFO_V1(is_multiply);
+PG_FUNCTION_INFO_V1(istore_multiply);
 Datum
-is_multiply(PG_FUNCTION_ARGS)
+istore_multiply(PG_FUNCTION_ARGS)
 {
     IStore  *is1,
             *is2,
             *result;
-    ISPair  *pairs1,
+    IStorePair  *pairs1,
             *pairs2;
-    ISPairs *creator = NULL;
+    IStorePairs *creator = NULL;
     int     index1   = 0,
             index2   = 0;
 
@@ -297,7 +297,7 @@ is_multiply(PG_FUNCTION_ARGS)
     pairs1  = FIRST_PAIR(is1);
     pairs2  = FIRST_PAIR(is2);
     creator = palloc0(sizeof *creator);
-    is_pairs_init(creator, SMALLER(is1->len, is2->len));
+    istore_pairs_init(creator, SMALLER(is1->len, is2->len));
 
     while (index1 < is1->len && index2 < is2->len)
     {
@@ -307,7 +307,7 @@ is_multiply(PG_FUNCTION_ARGS)
             ++index2;
         else
         {
-            is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val * pairs2[index2].val );
+            istore_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val * pairs2[index2].val );
             ++index1;
             ++index2;
         }
@@ -320,14 +320,14 @@ is_multiply(PG_FUNCTION_ARGS)
 /*
  * Multiply values of an istore
  */
-PG_FUNCTION_INFO_V1(is_multiply_integer);
+PG_FUNCTION_INFO_V1(istore_multiply_integer);
 Datum
-is_multiply_integer(PG_FUNCTION_ARGS)
+istore_multiply_integer(PG_FUNCTION_ARGS)
 {
     IStore  *is,
             *result;
-    ISPair  *pairs;
-    ISPairs *creator = NULL;
+    IStorePair  *pairs;
+    IStorePairs *creator = NULL;
     int     index    = 0,
             int_arg;
 
@@ -335,11 +335,11 @@ is_multiply_integer(PG_FUNCTION_ARGS)
     int_arg = PG_GETARG_INT32(1);
     pairs   = FIRST_PAIR(is);
     creator = palloc0(sizeof *creator);
-    is_pairs_init(creator, is->len);
+    istore_pairs_init(creator, is->len);
 
     while (index < is->len)
     {
-        is_pairs_insert(creator, pairs[index].key, pairs[index].val * int_arg);
+        istore_pairs_insert(creator, pairs[index].key, pairs[index].val * int_arg);
         ++index;
     }
     FINALIZE_ISTORE_NOSORT(result, creator);
@@ -354,16 +354,16 @@ is_multiply_integer(PG_FUNCTION_ARGS)
  * XXX The two istores should have the same keys.  The keys which exist on only
  * one istore is added to the result with NULL values.
  */
-PG_FUNCTION_INFO_V1(is_divide);
+PG_FUNCTION_INFO_V1(istore_divide);
 Datum
-is_divide(PG_FUNCTION_ARGS)
+istore_divide(PG_FUNCTION_ARGS)
 {
     IStore  *is1,
             *is2,
             *result;
-    ISPair  *pairs1,
+    IStorePair  *pairs1,
             *pairs2;
-    ISPairs *creator = NULL;
+    IStorePairs *creator = NULL;
 
     int     index1 = 0,
             index2 = 0;
@@ -374,7 +374,7 @@ is_divide(PG_FUNCTION_ARGS)
     pairs2  = FIRST_PAIR(is2);
     creator = palloc0(sizeof *creator);
 
-    is_pairs_init(creator, SMALLER(is1->len, is2->len));
+    istore_pairs_init(creator, SMALLER(is1->len, is2->len));
 
     while (index1 < is1->len && index2 < is2->len)
     {
@@ -391,7 +391,7 @@ is_divide(PG_FUNCTION_ARGS)
             ++index2;
         else
         {
-            is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val / pairs2[index2].val);
+            istore_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val / pairs2[index2].val);
             ++index1;
             ++index2;
         }
@@ -406,14 +406,14 @@ is_divide(PG_FUNCTION_ARGS)
  *
  * XXX The values of the result are truncated.
  */
-PG_FUNCTION_INFO_V1(is_divide_integer);
+PG_FUNCTION_INFO_V1(istore_divide_integer);
 Datum
-is_divide_integer(PG_FUNCTION_ARGS)
+istore_divide_integer(PG_FUNCTION_ARGS)
 {
     IStore  *is,
             *result;
-    ISPair  *pairs;
-    ISPairs *creator = NULL;
+    IStorePair  *pairs;
+    IStorePairs *creator = NULL;
     int     int_arg,
             index    = 0;
 
@@ -429,10 +429,10 @@ is_divide_integer(PG_FUNCTION_ARGS)
     pairs   = FIRST_PAIR(is);
     creator = palloc0(sizeof *creator);
 
-    is_pairs_init(creator, is->len);
+    istore_pairs_init(creator, is->len);
     while (index < is->len)
     {
-        is_pairs_insert(creator, pairs[index].key, pairs[index].val / int_arg);
+        istore_pairs_insert(creator, pairs[index].key, pairs[index].val / int_arg);
         ++index;
     }
     FINALIZE_ISTORE_NOSORT(result, creator);
@@ -444,14 +444,14 @@ is_divide_integer(PG_FUNCTION_ARGS)
  *
  * XXX The values of the result are truncated.
  */
-PG_FUNCTION_INFO_V1(is_divide_int8);
+PG_FUNCTION_INFO_V1(istore_divide_int8);
 Datum
-is_divide_int8(PG_FUNCTION_ARGS)
+istore_divide_int8(PG_FUNCTION_ARGS)
 {
     IStore  *is,
             *result;
-    ISPair  *pairs;
-    ISPairs *creator = NULL;
+    IStorePair  *pairs;
+    IStorePairs *creator = NULL;
 
     int     index = 0;
     int64   int_arg;
@@ -468,11 +468,11 @@ is_divide_int8(PG_FUNCTION_ARGS)
     pairs   = FIRST_PAIR(is);
     creator = palloc0(sizeof *creator);
 
-    is_pairs_init(creator, is->len);
+    istore_pairs_init(creator, is->len);
 
     while (index < is->len)
     {
-        is_pairs_insert(creator, pairs[index].key, pairs[index].val / int_arg);
+        istore_pairs_insert(creator, pairs[index].key, pairs[index].val / int_arg);
         ++index;
     }
 
@@ -493,7 +493,7 @@ istore_from_array(PG_FUNCTION_ARGS)
     char       i_typalign;
     Oid        i_eltype;
     AvlTree  tree;
-    ISPairs   *pairs;
+    IStorePairs   *pairs;
     Position position;
     int      key,
              i;
@@ -522,7 +522,7 @@ istore_from_array(PG_FUNCTION_ARGS)
             &n
             );
 
-    tree = is_make_empty(NULL);
+    tree = istore_make_empty(NULL);
 
     for (i = 0; i < n; ++i)
     {
@@ -531,18 +531,18 @@ istore_from_array(PG_FUNCTION_ARGS)
         key = DatumGetInt32(i_data[i]);
         if (key < 0)
             elog(ERROR, "cannot count array that has negative integers");
-        position = is_tree_find(key, tree);
+        position = istore_tree_find(key, tree);
         if (position == NULL)
-            tree = is_insert(tree, key, 1);
+            tree = istore_insert(tree, key, 1);
         else
             position->value += 1;
     }
 
-    n     = is_tree_length(tree);
+    n     = istore_tree_length(tree);
     pairs = palloc0(sizeof *pairs);
-    is_pairs_init(pairs, n);
-    is_tree_to_pairs(tree, pairs, 0);
-    is_make_empty(tree);
+    istore_pairs_init(pairs, n);
+    istore_tree_to_pairs(tree, pairs, 0);
+    istore_make_empty(tree);
 
     FINALIZE_ISTORE(result, pairs);
     PG_RETURN_POINTER(result);
@@ -557,11 +557,11 @@ array_to_istore(Datum *data, int count, bool *nulls)
     int       i,
               n,
               index;
-    ISPair   *payload;
-    ISPairs  *pairs;
+    IStorePair   *payload;
+    IStorePairs  *pairs;
     Position  position;
 
-    tree = is_make_empty(NULL);
+    tree = istore_make_empty(NULL);
 
     for (i = 0; i < count; ++i)
     {
@@ -571,20 +571,20 @@ array_to_istore(Datum *data, int count, bool *nulls)
         for (index = 0; index < istore->len; ++index)
         {
             payload = FIRST_PAIR(istore) + index;
-            position = is_tree_find(payload->key, tree);
+            position = istore_tree_find(payload->key, tree);
             if (position == NULL)
-                tree = is_insert(tree, payload->key, payload->val);
+                tree = istore_insert(tree, payload->key, payload->val);
             else
                 position->value += payload->val;
         }
     }
-    n = is_tree_length(tree);
+    n = istore_tree_length(tree);
     if (n == 0)
         return 0;
     pairs = palloc0(sizeof *pairs);
-    is_pairs_init(pairs, n);
-    is_tree_to_pairs(tree, pairs, 0);
-    is_make_empty(tree);
+    istore_pairs_init(pairs, n);
+    istore_tree_to_pairs(tree, pairs, 0);
+    istore_make_empty(tree);
 
     FINALIZE_ISTORE(out, pairs);
     PG_RETURN_POINTER(out);
@@ -690,7 +690,7 @@ istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
     Oid        i_eltype1,
                i_eltype2;
     AvlTree    tree;
-    ISPairs   *pairs;
+    IStorePairs   *pairs;
     Position   position;
     int64       key,
                value;
@@ -737,7 +737,7 @@ istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
     if (n1 != n2)
         elog(ERROR, "array dont have the same length");
 
-    tree = is_make_empty(NULL);
+    tree = istore_make_empty(NULL);
 
     for (i = 0; i < n1; ++i)
     {
@@ -757,17 +757,17 @@ istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
                 elog(ERROR, "istore_add_from_int_arrays unsupported array type %d", i_eltype2);
         }
 
-        position = is_tree_find(key, tree);
+        position = istore_tree_find(key, tree);
         if (position == NULL)
-            tree = is_insert(tree, key, value);
+            tree = istore_insert(tree, key, value);
         else
             position->value += value;
     }
-    n = is_tree_length(tree);
+    n = istore_tree_length(tree);
     pairs = palloc0(sizeof *pairs);
-    is_pairs_init(pairs, n);
-    is_tree_to_pairs(tree, pairs, 0);
-    is_make_empty(tree);
+    istore_pairs_init(pairs, n);
+    istore_tree_to_pairs(tree, pairs, 0);
+    istore_make_empty(tree);
 
     FINALIZE_ISTORE(out, pairs);
     PG_RETURN_POINTER(out);
@@ -836,7 +836,7 @@ istore_each(PG_FUNCTION_ARGS)
     FuncCallContext *funcctx;
     IStore          *is;
     int              i;
-    ISPair          *pairs;
+    IStorePair          *pairs;
 
     if (SRF_IS_FIRSTCALL())
     {
@@ -875,9 +875,9 @@ istore_fill_gaps(PG_FUNCTION_ARGS)
 
     IStore  *is,
             *result;
-    ISPair  *pairs;
+    IStorePair  *pairs;
 
-    ISPairs *creator = NULL;
+    IStorePairs *creator = NULL;
 
     int     up_to;
     int64   fill_with;
@@ -897,18 +897,18 @@ istore_fill_gaps(PG_FUNCTION_ARGS)
     if (up_to < 0)
         elog(ERROR, "parameter upto must be >= 0");
 
-    is_pairs_init(creator, up_to + 1);
+    istore_pairs_init(creator, up_to + 1);
 
     for(index1=0; index1 <= up_to; ++index1)
     {
         if (index2 < is->len && index1 == pairs[index2].key)
         {
-            is_pairs_insert(creator, pairs[index2].key, pairs[index2].val);
+            istore_pairs_insert(creator, pairs[index2].key, pairs[index2].val);
             ++index2;
         }
         else
         {
-            is_pairs_insert(creator, index1, fill_with);
+            istore_pairs_insert(creator, index1, fill_with);
         }
     }
 
@@ -923,9 +923,9 @@ istore_accumulate(PG_FUNCTION_ARGS)
 
     IStore  *is,
             *result;
-    ISPair  *pairs;
+    IStorePair  *pairs;
 
-    ISPairs *creator = NULL;
+    IStorePairs *creator = NULL;
 
     int64    sum      = 0;
     int     index1    = 0,
@@ -949,7 +949,7 @@ istore_accumulate(PG_FUNCTION_ARGS)
         size = start_key > end_key ? 0 : (end_key - start_key + 1);
     }
 
-    is_pairs_init(creator, size);
+    istore_pairs_init(creator, size);
 
     for(index1=start_key; index1 <= end_key; ++index1)
     {
@@ -959,7 +959,7 @@ istore_accumulate(PG_FUNCTION_ARGS)
             sum += pairs[index2].val;
             ++index2;
         }
-        is_pairs_insert(creator, index1, sum);
+        istore_pairs_insert(creator, index1, sum);
     }
 
     FINALIZE_ISTORE_NOSORT(result, creator);
@@ -973,7 +973,7 @@ istore_seed(PG_FUNCTION_ARGS)
 
     IStore  *result;
 
-    ISPairs *creator = NULL;
+    IStorePairs *creator = NULL;
 
     int     from,
             up_to,
@@ -994,11 +994,11 @@ istore_seed(PG_FUNCTION_ARGS)
     if (from < 0 )
         elog(ERROR, "parameter from must be >= 0");
 
-    is_pairs_init(creator, up_to - from + 1);
+    istore_pairs_init(creator, up_to - from + 1);
 
     for(index1=from; index1 <= up_to; ++index1)
     {
-        is_pairs_insert(creator, index1, fill_with);
+        istore_pairs_insert(creator, index1, fill_with);
     }
 
     FINALIZE_ISTORE_NOSORT(result, creator);
@@ -1008,16 +1008,16 @@ istore_seed(PG_FUNCTION_ARGS)
 /*
  * Merge two istores by extraccting the bigger values
  */
-PG_FUNCTION_INFO_V1(is_val_larger);
+PG_FUNCTION_INFO_V1(istore_val_larger);
 Datum
-is_val_larger(PG_FUNCTION_ARGS)
+istore_val_larger(PG_FUNCTION_ARGS)
 {
     IStore  *is1,
             *is2,
             *result;
-    ISPair  *pairs1,
+    IStorePair  *pairs1,
             *pairs2;
-    ISPairs *creator = NULL;
+    IStorePairs *creator = NULL;
     int     index1   = 0,
             index2   = 0;
 
@@ -1031,22 +1031,22 @@ is_val_larger(PG_FUNCTION_ARGS)
     pairs2  = FIRST_PAIR(is2);
     creator = palloc0(sizeof *creator);
 
-    is_pairs_init(creator, SMALLER(is1->len + is2->len, 200));
+    istore_pairs_init(creator, SMALLER(is1->len + is2->len, 200));
     while (index1 < is1->len && index2 < is2->len)
     {
         if (pairs1[index1].key < pairs2[index2].key)
         {
-            is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val);
+            istore_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val);
             ++index1;
         }
         else if (pairs1[index1].key > pairs2[index2].key)
         {
-            is_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val);
+            istore_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val);
             ++index2;
         }
         else
         {
-            is_pairs_insert(creator, pairs1[index1].key, LARGER(pairs1[index1].val,pairs2[index2].val));
+            istore_pairs_insert(creator, pairs1[index1].key, LARGER(pairs1[index1].val,pairs2[index2].val));
             ++index1;
             ++index2;
         }
@@ -1054,12 +1054,12 @@ is_val_larger(PG_FUNCTION_ARGS)
 
     while (index1 < is1->len)
     {
-        is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val);
+        istore_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val);
         ++index1;
     }
     while (index2 < is2->len)
     {
-        is_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val);
+        istore_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val);
         ++index2;
     }
     FINALIZE_ISTORE_NOSORT(result, creator);
@@ -1069,16 +1069,16 @@ is_val_larger(PG_FUNCTION_ARGS)
 /*
  * Merge two istores by extraccting the smaller values
  */
-PG_FUNCTION_INFO_V1(is_val_smaller);
+PG_FUNCTION_INFO_V1(istore_val_smaller);
 Datum
-is_val_smaller(PG_FUNCTION_ARGS)
+istore_val_smaller(PG_FUNCTION_ARGS)
 {
     IStore  *is1,
             *is2,
             *result;
-    ISPair  *pairs1,
+    IStorePair  *pairs1,
             *pairs2;
-    ISPairs *creator = NULL;
+    IStorePairs *creator = NULL;
 
     int     index1 = 0,
             index2 = 0;
@@ -1093,22 +1093,22 @@ is_val_smaller(PG_FUNCTION_ARGS)
     pairs2  = FIRST_PAIR(is2);
     creator = palloc0(sizeof *creator);
 
-    is_pairs_init(creator, SMALLER(is1->len + is2->len, 200));
+    istore_pairs_init(creator, SMALLER(is1->len + is2->len, 200));
     while (index1 < is1->len && index2 < is2->len)
     {
         if (pairs1[index1].key < pairs2[index2].key)
         {
-            is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val);
+            istore_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val);
             ++index1;
         }
         else if (pairs1[index1].key > pairs2[index2].key)
         {
-            is_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val);
+            istore_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val);
             ++index2;
         }
         else
         {
-            is_pairs_insert(creator, pairs1[index1].key, SMALLER(pairs1[index1].val, pairs2[index2].val));
+            istore_pairs_insert(creator, pairs1[index1].key, SMALLER(pairs1[index1].val, pairs2[index2].val));
             ++index1;
             ++index2;
         }
@@ -1116,12 +1116,12 @@ is_val_smaller(PG_FUNCTION_ARGS)
 
     while (index1 < is1->len)
     {
-        is_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val);
+        istore_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val);
         ++index1;
     }
     while (index2 < is2->len)
     {
-        is_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val);
+        istore_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val);
         ++index2;
     }
     FINALIZE_ISTORE_NOSORT(result, creator);

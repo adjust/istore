@@ -35,13 +35,13 @@ typedef struct ISParser {
     AvlNode *tree;
 } ISParser;
 
-static Datum is_parse_istore(ISParser *parser);
+static Datum istore_parse_istore(ISParser *parser);
 
 static Datum
-is_parse_istore(ISParser *parser)
+istore_parse_istore(ISParser *parser)
 {
     IStore  *out;
-    ISPairs *pairs;
+    IStorePairs *pairs;
     int32    key;
     int64    val;
 
@@ -102,7 +102,7 @@ is_parse_istore(ISParser *parser)
             GET_NUM(parser, val);
             SKIP_ESCAPED(parser->ptr);
             parser->state = WDEL;
-            parser->tree = is_insert(parser->tree, key, val);
+            parser->tree = istore_insert(parser->tree, key, val);
         }
         else if (parser->state == WDEL)
         {
@@ -128,10 +128,10 @@ is_parse_istore(ISParser *parser)
         }
     }
 
-    pairs = palloc0(sizeof(ISPairs));
-    is_pairs_init(pairs, 200);
-    is_tree_to_pairs(parser->tree, pairs, 0);
-    is_make_empty(parser->tree);
+    pairs = palloc0(sizeof(IStorePairs));
+    istore_pairs_init(pairs, 200);
+    istore_tree_to_pairs(parser->tree, pairs, 0);
+    istore_make_empty(parser->tree);
     FINALIZE_ISTORE(out, pairs);
     PG_RETURN_POINTER(out);
 }
@@ -144,7 +144,7 @@ istore_out(PG_FUNCTION_ARGS)
     int     i,
             ptr = 0;
     char   *out;
-    ISPair *pairs;
+    IStorePair *pairs;
 
     if (in->len == 0)
     {
@@ -173,7 +173,7 @@ istore_in(PG_FUNCTION_ARGS)
 {
     ISParser  parser;
     parser.begin = PG_GETARG_CSTRING(0);
-    return is_parse_istore(&parser);
+    return istore_parse_istore(&parser);
 }
 
 PG_FUNCTION_INFO_V1(istore_recv);
@@ -183,14 +183,14 @@ istore_recv(PG_FUNCTION_ARGS)
     IStore *result;
     StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
     int i = 0;
-    ISPairs *creator = palloc0(sizeof *creator);
+    IStorePairs *creator = palloc0(sizeof *creator);
     int32 len = pq_getmsgint(buf, 4);
-    is_pairs_init(creator, len);
+    istore_pairs_init(creator, len);
     for (; i < len; ++i)
     {
         int32  key  = pq_getmsgint(buf, 4);
         int64  val  = pq_getmsgint64(buf);
-        is_pairs_insert(creator, key, val);
+        istore_pairs_insert(creator, key, val);
     }
     FINALIZE_ISTORE_NOSORT(result, creator);
     PG_RETURN_POINTER(result);
@@ -201,7 +201,7 @@ Datum
 istore_send(PG_FUNCTION_ARGS)
 {
     IStore *in = PG_GETARG_IS(0);
-    ISPair *pairs= FIRST_PAIR(in);
+    IStorePair *pairs= FIRST_PAIR(in);
     int i = 0;
     StringInfoData buf;
     pq_begintypsend(&buf);

@@ -297,12 +297,12 @@ describe 'functions_plain' do
   end
 
   it 'should merge istores by larger keys' do
-    query("SELECT is_val_larger('1=>1,2=>1,3=>3', '1=>2,3=>1,4=>1')").should match \
+    query("SELECT istore_val_larger('1=>1,2=>1,3=>3', '1=>2,3=>1,4=>1')").should match \
     '"1"=>"2", "2"=>"1", "3"=>"3", "4"=>"1"'
   end
 
   it 'should merge istores by smaller keys' do
-    query("SELECT is_val_smaller('1=>1,2=>1,3=>3', '1=>2,3=>1,4=>1')").should match \
+    query("SELECT istore_val_smaller('1=>1,2=>1,3=>3', '1=>2,3=>1,4=>1')").should match \
     '"1"=>"1", "2"=>"1", "3"=>"1", "4"=>"1"'
   end
 

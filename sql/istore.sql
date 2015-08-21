@@ -30,12 +30,12 @@ CREATE TYPE istore (
 
 CREATE FUNCTION exist(istore, integer)
     RETURNS boolean
-    AS '$libdir/istore.so', 'is_exist'
+    AS '$libdir/istore.so', 'istore_exist'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION fetchval(istore, integer)
     RETURNS bigint
-    AS '$libdir/istore.so', 'is_fetchval'
+    AS '$libdir/istore.so', 'istore_fetchval'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION each(IN is istore,
@@ -47,47 +47,47 @@ LANGUAGE C STRICT IMMUTABLE;
 
 CREATE FUNCTION add(istore, istore)
     RETURNS istore
-    AS '$libdir/istore.so', 'is_add'
+    AS '$libdir/istore.so', 'istore_add'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION add(istore, integer)
     RETURNS istore
-    AS '$libdir/istore.so', 'is_add_integer'
+    AS '$libdir/istore.so', 'istore_add_integer'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION subtract(istore, istore)
     RETURNS istore
-    AS '$libdir/istore.so', 'is_subtract'
+    AS '$libdir/istore.so', 'istore_subtract'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION subtract(istore, integer)
     RETURNS istore
-    AS '$libdir/istore.so', 'is_subtract_integer'
+    AS '$libdir/istore.so', 'istore_subtract_integer'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION multiply(istore, istore)
     RETURNS istore
-    AS '$libdir/istore.so', 'is_multiply'
+    AS '$libdir/istore.so', 'istore_multiply'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION multiply(istore, integer)
     RETURNS istore
-    AS '$libdir/istore.so', 'is_multiply_integer'
+    AS '$libdir/istore.so', 'istore_multiply_integer'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION divide(istore, istore)
     RETURNS istore
-    AS '$libdir/istore.so', 'is_divide'
+    AS '$libdir/istore.so', 'istore_divide'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION divide(istore, integer)
     RETURNS istore
-    AS '$libdir/istore.so', 'is_divide_integer'
+    AS '$libdir/istore.so', 'istore_divide_integer'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION divide(istore, bigint)
     RETURNS istore
-    AS '$libdir/istore.so', 'is_divide_int8'
+    AS '$libdir/istore.so', 'istore_divide_int8'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION istore_from_array(integer[])
@@ -150,12 +150,12 @@ CREATE FUNCTION istore_seed(integer, integer, bigint)
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION is_val_larger(istore, istore)
+CREATE FUNCTION istore_val_larger(istore, istore)
     RETURNS istore
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION is_val_smaller(istore, istore)
+CREATE FUNCTION istore_val_smaller(istore, istore)
     RETURNS istore
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
@@ -168,12 +168,12 @@ CREATE AGGREGATE SUM (
 );
 
 CREATE AGGREGATE MIN(istore) (
-    sfunc = is_val_smaller,
+    sfunc = istore_val_smaller,
     stype = istore
 );
 
 CREATE AGGREGATE MAX(istore) (
-    sfunc = is_val_larger,
+    sfunc = istore_val_larger,
     stype = istore
 );
 

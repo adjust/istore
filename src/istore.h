@@ -17,37 +17,37 @@ Datum istore_send(PG_FUNCTION_ARGS);
 Datum istore_array_add(PG_FUNCTION_ARGS);
 Datum istore_agg_finalfn(PG_FUNCTION_ARGS);
 Datum istore_from_array(PG_FUNCTION_ARGS);
-Datum is_multiply_integer(PG_FUNCTION_ARGS);
-Datum is_multiply(PG_FUNCTION_ARGS);
-Datum is_divide_integer(PG_FUNCTION_ARGS);
-Datum is_divide_int8(PG_FUNCTION_ARGS);
-Datum is_divide(PG_FUNCTION_ARGS);
-Datum is_subtract_integer(PG_FUNCTION_ARGS);
-Datum is_subtract(PG_FUNCTION_ARGS);
+Datum istore_multiply_integer(PG_FUNCTION_ARGS);
+Datum istore_multiply(PG_FUNCTION_ARGS);
+Datum istore_divide_integer(PG_FUNCTION_ARGS);
+Datum istore_divide_int8(PG_FUNCTION_ARGS);
+Datum istore_divide(PG_FUNCTION_ARGS);
+Datum istore_subtract_integer(PG_FUNCTION_ARGS);
+Datum istore_subtract(PG_FUNCTION_ARGS);
 Datum istore_agg(PG_FUNCTION_ARGS);
-Datum is_add_integer(PG_FUNCTION_ARGS);
-Datum is_add(PG_FUNCTION_ARGS);
-Datum is_fetchval(PG_FUNCTION_ARGS);
-Datum is_exist(PG_FUNCTION_ARGS);
+Datum istore_add_integer(PG_FUNCTION_ARGS);
+Datum istore_add(PG_FUNCTION_ARGS);
+Datum istore_fetchval(PG_FUNCTION_ARGS);
+Datum istore_exist(PG_FUNCTION_ARGS);
 Datum istore_sum_up(PG_FUNCTION_ARGS);
 Datum istore_each(PG_FUNCTION_ARGS);
 Datum istore_fill_gaps(PG_FUNCTION_ARGS);
 Datum istore_accumulate(PG_FUNCTION_ARGS);
 Datum istore_seed(PG_FUNCTION_ARGS);
-Datum is_val_larger(PG_FUNCTION_ARGS);
-Datum is_val_smaller(PG_FUNCTION_ARGS);
+Datum istore_val_larger(PG_FUNCTION_ARGS);
+Datum istore_val_smaller(PG_FUNCTION_ARGS);
 
 typedef struct {
     int32  key;
     int64  val;
-} ISPair;
+} IStorePair;
 
 typedef struct {
-    ISPair *pairs;
+    IStorePair *pairs;
     size_t  size;
     int     used;
     int     buflen;
-} ISPairs;
+} IStorePairs;
 
 typedef struct AvlNode AvlNode;
 typedef struct AvlNode *Position;
@@ -69,32 +69,32 @@ typedef struct
     int32   len;
 } IStore;
 
-void is_pairs_init(ISPairs *pairs, size_t initial_size);
-void is_pairs_insert(ISPairs *pairs, int32 key, int64 val);
-int  is_pairs_cmp(const void *a, const void *b);
-void is_pairs_sort(ISPairs *pairs);
-void is_pairs_deinit(ISPairs *pairs);
-void is_pairs_debug(ISPairs *pairs);
+void istore_pairs_init(IStorePairs *pairs, size_t initial_size);
+void istore_pairs_insert(IStorePairs *pairs, int32 key, int64 val);
+int  istore_pairs_cmp(const void *a, const void *b);
+void istore_pairs_sort(IStorePairs *pairs);
+void istore_pairs_deinit(IStorePairs *pairs);
+void istore_pairs_debug(IStorePairs *pairs);
 
-AvlTree is_make_empty(AvlTree t);
-int is_compare(int32 key, AvlTree node);
-Position is_tree_find(int32 key, AvlTree t);
-AvlTree is_insert(AvlTree t, int32 key, int64 value);
-int is_tree_length(Position p);
-int is_tree_to_pairs(Position p, ISPairs *pairs, int n);
-ISPair* is_find(IStore *is, int32 key);
+AvlTree istore_make_empty(AvlTree t);
+int istore_compare(int32 key, AvlTree node);
+Position istore_tree_find(int32 key, AvlTree t);
+AvlTree istore_insert(AvlTree t, int32 key, int64 value);
+int istore_tree_length(Position p);
+int istore_tree_to_pairs(Position p, IStorePairs *pairs, int n);
+IStorePair* istore_find(IStore *is, int32 key);
 
 #define BUFLEN_OFFSET 8
 #define PAYLOAD(_pairs) _pairs->pairs
-#define PAYLOAD_SIZE(_pairs) (_pairs->used * sizeof(ISPair))
+#define PAYLOAD_SIZE(_pairs) (_pairs->used * sizeof(IStorePair))
 #define PG_GETARG_IS(x) (IStore *)PG_DETOAST_DATUM(PG_GETARG_DATUM(x))
 #define ISHDRSZ VARHDRSZ + sizeof(int32) + sizeof(int32)
-#define ISTORE_SIZE(x) (ISHDRSZ + x->len * sizeof(ISPair))
-#define FIRST_PAIR(x) ((ISPair*)((char *) x + ISHDRSZ))
+#define ISTORE_SIZE(x) (ISHDRSZ + x->len * sizeof(IStorePair))
+#define FIRST_PAIR(x) ((IStorePair*)((char *) x + ISHDRSZ))
 
 #define FINALIZE_ISTORE(_istore, _pairs)                                    \
     do {                                                                    \
-        is_pairs_sort(_pairs);                                              \
+        istore_pairs_sort(_pairs);                                              \
         FINALIZE_ISTORE_NOSORT(_istore, _pairs);                            \
     } while(0)
 
@@ -105,7 +105,7 @@ ISPair* is_find(IStore *is, int32 key);
         _istore->len    = _pairs->used;                                     \
         SET_VARSIZE(_istore, ISHDRSZ + PAYLOAD_SIZE(_pairs));               \
         memcpy(FIRST_PAIR(_istore), PAYLOAD(_pairs), PAYLOAD_SIZE(_pairs)); \
-        is_pairs_deinit(_pairs);                                            \
+        istore_pairs_deinit(_pairs);                                            \
     } while(0)
 
 #define LARGER(_a, _b) (_a > _b) ? _a : _b

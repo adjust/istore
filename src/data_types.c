@@ -33,12 +33,12 @@ min(int lhs, int rhs)
 */
 
 AvlTree
-is_make_empty(AvlTree t)
+istore_make_empty(AvlTree t)
 {
     if (t != NULL)
     {
-        is_make_empty(t->left);
-        is_make_empty(t->right);
+        istore_make_empty(t->left);
+        istore_make_empty(t->right);
         pfree(t);
         t = NULL;
     }
@@ -46,7 +46,7 @@ is_make_empty(AvlTree t)
 }
 
 int
-is_compare(int32 key, AvlTree node)
+istore_compare(int32 key, AvlTree node)
 {
     if (key == node->key)
         return 0;
@@ -57,18 +57,18 @@ is_compare(int32 key, AvlTree node)
 }
 
 Position
-is_tree_find(int32 key, AvlTree t)
+istore_tree_find(int32 key, AvlTree t)
 {
     int cmp;
 
     if (t == NULL)
         return NULL;
 
-    cmp = is_compare(key, t);
+    cmp = istore_compare(key, t);
     if (cmp < 0)
-        return is_tree_find(key, t->left);
+        return istore_tree_find(key, t->left);
     else if (cmp > 0)
-        return is_tree_find(key, t->right);
+        return istore_tree_find(key, t->right);
     else
         return t;
 }
@@ -140,14 +140,14 @@ doubleRotateWithRight(Position k1)
 }
 
 AvlTree
-is_insert(AvlTree t, int32 key, int64 value)
+istore_insert(AvlTree t, int32 key, int64 value)
 {
     if(t == NULL)
     {
         /* Create and return a one-node tree */
         t = palloc0(sizeof(struct AvlNode));
         if (t == NULL)
-            elog(ERROR, "AvlTree is_insert: could not allocate memory");
+            elog(ERROR, "AvlTree istore_insert: could not allocate memory");
         else
         {
             t->key = key;
@@ -159,13 +159,13 @@ is_insert(AvlTree t, int32 key, int64 value)
     }
     else
     {
-        int cmp = is_compare(key, t);
+        int cmp = istore_compare(key, t);
         if (cmp < 0)
         {
-            t->left = is_insert(t->left, key, value);
+            t->left = istore_insert(t->left, key, value);
             if (height(t->left) - height(t->right) == 2)
             {
-                if (is_compare( key, t->left))
+                if (istore_compare( key, t->left))
                     t = singleRotateWithLeft(t);
                 else
                     t = doubleRotateWithLeft(t);
@@ -173,10 +173,10 @@ is_insert(AvlTree t, int32 key, int64 value)
         }
         else if(cmp > 0)
         {
-            t->right = is_insert(t->right, key, value);
+            t->right = istore_insert(t->right, key, value);
             if (height(t->right) - height(t->left) == 2)
             {
-                if (is_compare(key, t->right))
+                if (istore_compare(key, t->right))
                     t = singleRotateWithRight(t);
                 else
                     t = doubleRotateWithRight(t);
@@ -194,48 +194,48 @@ is_insert(AvlTree t, int32 key, int64 value)
 
 // return number of nodes
 int
-is_tree_length(Position p)
+istore_tree_length(Position p)
 {
     int n;
     if(p == NULL)
         return 0;
-    n = is_tree_length(p->left);
+    n = istore_tree_length(p->left);
     ++n;
-    n += is_tree_length(p->right);
+    n += istore_tree_length(p->right);
     return n;
 }
 
 int
-is_tree_to_pairs(Position p, ISPairs *pairs, int n)
+istore_tree_to_pairs(Position p, IStorePairs *pairs, int n)
 {
     if(p == NULL)
         return n;
-    n = is_tree_to_pairs(p->left, pairs, n);
+    n = istore_tree_to_pairs(p->left, pairs, n);
 
-    is_pairs_insert(pairs, p->key, p->value);
+    istore_pairs_insert(pairs, p->key, p->value);
     ++n;
-    n = is_tree_to_pairs(p->right, pairs, n);
+    n = istore_tree_to_pairs(p->right, pairs, n);
     return n;
 }
 
 void
-is_pairs_init(ISPairs *pairs, size_t initial_size)
+istore_pairs_init(IStorePairs *pairs, size_t initial_size)
 {
-    pairs->pairs   = palloc0(initial_size * sizeof(ISPair));
+    pairs->pairs   = palloc0(initial_size * sizeof(IStorePair));
     pairs->used    = 0;
     pairs->size    = initial_size;
     pairs->buflen  = 0;
 }
 
 void
-is_pairs_insert(ISPairs *pairs, int32 key, int64 val)
+istore_pairs_insert(IStorePairs *pairs, int32 key, int64 val)
 {
     int keylen,
         vallen;
 
     if (pairs->size == pairs->used) {
         pairs->size *= 2;
-        pairs->pairs = repalloc(pairs->pairs, pairs->size * sizeof(ISPair));
+        pairs->pairs = repalloc(pairs->pairs, pairs->size * sizeof(IStorePair));
     }
 
     pairs->pairs[pairs->used].key  = key;
@@ -248,27 +248,27 @@ is_pairs_insert(ISPairs *pairs, int32 key, int64 val)
 }
 
 int
-is_pairs_cmp(const void *a, const void *b)
+istore_pairs_cmp(const void *a, const void *b)
 {
-    ISPair *_a = (ISPair *)a;
-    ISPair *_b = (ISPair *)b;
+    IStorePair *_a = (IStorePair *)a;
+    IStorePair *_b = (IStorePair *)b;
     return (int)(_a->key - _b->key);
 }
 
 void inline
-is_pairs_sort(ISPairs *pairs)
+istore_pairs_sort(IStorePairs *pairs)
 {
-    qsort(pairs->pairs, pairs->used, sizeof(ISPair), is_pairs_cmp);
+    qsort(pairs->pairs, pairs->used, sizeof(IStorePair), istore_pairs_cmp);
 }
 
 void
-is_pairs_deinit(ISPairs *pairs)
+istore_pairs_deinit(IStorePairs *pairs)
 {
     pfree(pairs->pairs);
 }
 
 void
-is_pairs_debug(ISPairs *pairs)
+istore_pairs_debug(IStorePairs *pairs)
 {
     int i;
     for (i = 0; i < pairs->used; ++i)
