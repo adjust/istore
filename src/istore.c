@@ -496,7 +496,8 @@ istore_from_array(PG_FUNCTION_ARGS)
         if (position == NULL)
             tree = istore_insert(tree, key, 1);
         else
-            position->value = int32add(position->value, 1);
+            // overflow is unlikely as you'd hit the 1GB limit before
+            position->value += 1;
     }
 
     n     = istore_tree_length(tree);
