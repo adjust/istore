@@ -35,13 +35,13 @@ CREATE FUNCTION exist(istore, integer)
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION fetchval(istore, integer)
-    RETURNS bigint
+    RETURNS integer
     AS '$libdir/istore.so', 'istore_fetchval'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION each(IN is istore,
-    OUT key int,
-    OUT value bigint)
+    OUT key integer,
+    OUT value integer)
 RETURNS SETOF record
 AS '$libdir/istore.so','istore_each'
 LANGUAGE C STRICT IMMUTABLE;
@@ -86,11 +86,6 @@ CREATE FUNCTION divide(istore, integer)
     AS '$libdir/istore.so', 'istore_divide_integer'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION divide(istore, bigint)
-    RETURNS istore
-    AS '$libdir/istore.so', 'istore_divide_int8'
-    LANGUAGE C IMMUTABLE STRICT;
-
 CREATE FUNCTION istore_from_array(integer[])
     RETURNS istore
     AS '$libdir/istore.so'
@@ -116,22 +111,12 @@ CREATE FUNCTION istore_array_add(integer[], integer[])
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION istore_array_add(integer[], bigint[])
-    RETURNS istore
-    AS '$libdir/istore.so'
-    LANGUAGE C IMMUTABLE STRICT;
-
-CREATE FUNCTION istore(integer[], bigint[])
-    RETURNS istore
-    AS '$libdir/istore.so', 'istore_array_add'
-    LANGUAGE C IMMUTABLE STRICT;
-
 CREATE FUNCTION istore(integer[], integer[])
     RETURNS istore
     AS '$libdir/istore.so', 'istore_array_add'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION fill_gaps(istore, integer, bigint DEFAULT 0)
+CREATE FUNCTION fill_gaps(istore, integer, integer DEFAULT 0)
     RETURNS istore
     AS '$libdir/istore.so', 'istore_fill_gaps'
     LANGUAGE C IMMUTABLE STRICT;
@@ -146,7 +131,7 @@ CREATE FUNCTION accumulate(istore, integer)
     AS '$libdir/istore.so', 'istore_accumulate'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION istore_seed(integer, integer, bigint)
+CREATE FUNCTION istore_seed(integer, integer, integer)
     RETURNS istore
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
@@ -238,11 +223,6 @@ CREATE OPERATOR / (
     procedure = divide
 );
 
-CREATE OPERATOR / (
-    leftarg   = istore,
-    rightarg  = bigint,
-    procedure = divide
-);
 
 CREATE FUNCTION gin_extract_istore_key(internal, internal)
 RETURNS internal

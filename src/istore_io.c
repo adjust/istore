@@ -43,7 +43,7 @@ istore_parse_istore(ISParser *parser)
     IStore  *out;
     IStorePairs *pairs;
     int32    key;
-    int64    val;
+    int32    val;
 
     parser->state = WKEY;
     parser->ptr   = parser->begin;
@@ -157,7 +157,7 @@ istore_out(PG_FUNCTION_ARGS)
     {
         ptr += sprintf(
             out+ptr,
-            "\"%d\"=>\"%ld\", ",
+            "\"%d\"=>\"%d\", ",
             pairs[i].key,
             pairs[i].val
         );
@@ -189,7 +189,7 @@ istore_recv(PG_FUNCTION_ARGS)
     for (; i < len; ++i)
     {
         int32  key  = pq_getmsgint(buf, 4);
-        int64  val  = pq_getmsgint64(buf);
+        int32  val  = pq_getmsgint(buf, 4);
         istore_pairs_insert(creator, key, val);
     }
     FINALIZE_ISTORE_NOSORT(result, creator);
@@ -209,9 +209,9 @@ istore_send(PG_FUNCTION_ARGS)
     for (; i < in->len; ++i)
     {
         int32 key = pairs[i].key;
-        int64 val = pairs[i].val;
+        int32 val = pairs[i].val;
         pq_sendint(&buf, key, 4);
-        pq_sendint64(&buf, val);
+        pq_sendint(&buf, val, 4);
     }
     PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }

@@ -1,14 +1,17 @@
 #include "istore.h"
-
+#include "intutils.h"
+#include "utils/memutils.h"
 #define DIGIT_WIDTH(_digit, _width)       \
     do {                                  \
-        int64 _local = _digit;             \
+        int32 _local = _digit;            \
         _width = 0;                       \
         if (_local <= 0)                  \
             ++_width;                     \
         for (; _local != 0; _local /= 10) \
             ++_width;                     \
     } while (0)
+
+#define PAIRS_MAX (MaxAllocSize / sizeof(IStorePair))
 
 static inline int
 height(Position p)
@@ -140,7 +143,7 @@ doubleRotateWithRight(Position k1)
 }
 
 AvlTree
-istore_insert(AvlTree t, int32 key, int64 value)
+istore_insert(AvlTree t, int32 key, int32 value)
 {
     if(t == NULL)
     {
@@ -184,7 +187,7 @@ istore_insert(AvlTree t, int32 key, int64 value)
         }
         else
         {
-            t->value += value;
+            t->value = int32add(t->value, value);
         }
     }
 
@@ -228,13 +231,20 @@ istore_pairs_init(IStorePairs *pairs, size_t initial_size)
 }
 
 void
-istore_pairs_insert(IStorePairs *pairs, int32 key, int64 val)
+istore_pairs_insert(IStorePairs *pairs, int32 key, int32 val)
 {
     int keylen,
         vallen;
 
     if (pairs->size == pairs->used) {
+        if (pairs->used == PAIRS_MAX)
+            elog(ERROR, "istore can't have more than %lu keys", PAIRS_MAX);
+
         pairs->size *= 2;
+        // overflow check pairs->size should have been grown but not exceed PAIRS_MAX
+        if (pairs->size < pairs->used || pairs->size > PAIRS_MAX)
+            pairs->size = PAIRS_MAX;
+
         pairs->pairs = repalloc(pairs->pairs, pairs->size * sizeof(IStorePair));
     }
 
@@ -244,6 +254,8 @@ istore_pairs_insert(IStorePairs *pairs, int32 key, int64 val)
     DIGIT_WIDTH(key, keylen);
     DIGIT_WIDTH(val, vallen);
     pairs->buflen += keylen + vallen + BUFLEN_OFFSET;
+    if pairs->buflen < 0
+        elog(ERROR, "buffer overflow")
     pairs->used++;
 }
 
@@ -273,6 +285,6 @@ istore_pairs_debug(IStorePairs *pairs)
     int i;
     for (i = 0; i < pairs->used; ++i)
     {
-        elog(INFO, "key: %d, val: %ld", pairs->pairs[i].key, pairs->pairs[i].val);
+        elog(INFO, "key: %d, val: %d", pairs->pairs[i].key, pairs->pairs[i].val);
     }
 }

@@ -39,7 +39,7 @@ Datum istore_val_smaller(PG_FUNCTION_ARGS);
 
 typedef struct {
     int32  key;
-    int64  val;
+    int32  val;
 } IStorePair;
 
 typedef struct {
@@ -56,7 +56,7 @@ typedef struct AvlNode *AvlTree;
 struct AvlNode
 {
     int32    key;
-    int64    value;
+    int32    value;
     AvlTree  left;
     AvlTree  right;
     int      height;
@@ -70,7 +70,7 @@ typedef struct
 } IStore;
 
 void istore_pairs_init(IStorePairs *pairs, size_t initial_size);
-void istore_pairs_insert(IStorePairs *pairs, int32 key, int64 val);
+void istore_pairs_insert(IStorePairs *pairs, int32 key, int32 val);
 int  istore_pairs_cmp(const void *a, const void *b);
 void istore_pairs_sort(IStorePairs *pairs);
 void istore_pairs_deinit(IStorePairs *pairs);
@@ -79,7 +79,7 @@ void istore_pairs_debug(IStorePairs *pairs);
 AvlTree istore_make_empty(AvlTree t);
 int istore_compare(int32 key, AvlTree node);
 Position istore_tree_find(int32 key, AvlTree t);
-AvlTree istore_insert(AvlTree t, int32 key, int64 value);
+AvlTree istore_insert(AvlTree t, int32 key, int32 value);
 int istore_tree_length(Position p);
 int istore_tree_to_pairs(Position p, IStorePairs *pairs, int n);
 IStorePair* istore_find(IStore *is, int32 key);
@@ -110,4 +110,5 @@ IStorePair* istore_find(IStore *is, int32 key);
 
 #define LARGER(_a, _b) (_a > _b) ? _a : _b
 #define SMALLER(_a ,_b) (_a < _b) ? _a : _b
+#define SAMESIGN(a,b)   (((a) < 0) == ((b) < 0))
 #endif // ISTORE_H

@@ -117,20 +117,10 @@ describe 'functions_plain' do
       '"-1"=>"-1", "2"=>"1"'
     query("SELECT divide('-1=>-1, 2=>1'::istore, -1)").should match \
       '"-1"=>"1", "2"=>"-1"'
-
-    query("SELECT divide('-1=>-1, 2=>1'::istore, 1::bigint)").should match \
-      '"-1"=>"-1", "2"=>"1"'
-    query("SELECT divide('-1=>-1, 2=>1'::istore, -1::bigint)").should match \
-      '"-1"=>"1", "2"=>"-1"'
-    query("SELECT divide('-1=>-8000000000, 2=>8000000000'::istore, 4000000000)").should match \
-      '"-1"=>"-2", "2"=>"2"'
   end
 
   it 'should raise division by zero error' do
     expect{query("SELECT divide('-1=>-1, 2=>1'::istore, 0)")}.to throw_error 'division by zero'
-  end
-  it 'should raise division by zero error' do
-    expect{query("SELECT divide('-1=>-1, 2=>1'::istore, 0::bigint)")}.to throw_error 'division by zero'
   end
 
   it 'should generate istore from array' do
@@ -205,16 +195,11 @@ describe 'functions_plain' do
     query("SELECT istore(Array[5,3,4,5], Array[1,2,3,4])").should match \
       '"3"=>"2", "4"=>"3", "5"=>"5"'
 
-    query("SELECT istore(Array[5,3,4,5], Array[1,2,3,4]::bigint[])").should match \
+    query("SELECT istore(Array[5,3,4,5], Array[1,2,3,4])").should match \
       '"3"=>"2", "4"=>"3", "5"=>"5"'
 
-    query("SELECT istore(Array[5,3,4,5], Array[4000000000,2,4000000000,4]::bigint[])").should match \
-      '"3"=>"2", "4"=>"4000000000", "5"=>"4000000004"'
-  end
-
-  it 'should return istores from bigint arrays' do
-    query("SELECT istore_array_add(Array[5,3,4,5], Array[1,2,3,4000000000]::bigint[])").should match \
-      '"3"=>"2", "4"=>"3", "5"=>"4000000001"'
+    query("SELECT istore(Array[5,3,4,5], Array[4000,2,4000,4])").should match \
+      '"3"=>"2", "4"=>"4000", "5"=>"4004"'
   end
 
   it 'should fill gaps' do
@@ -238,8 +223,8 @@ describe 'functions_plain' do
     query("SELECT fill_gaps(''::istore, 3, 0)").should match \
       '"0"=>"0", "1"=>"0", "2"=>"0", "3"=>"0"'
 
-    query("SELECT fill_gaps(''::istore, 3, 4e9::bigint)").should match \
-      '"0"=>"4000000000", "1"=>"4000000000", "2"=>"4000000000", "3"=>"4000000000"'
+    query("SELECT fill_gaps(''::istore, 3, 400)").should match \
+      '"0"=>"400", "1"=>"400", "2"=>"400", "3"=>"400"'
 
     query("SELECT fill_gaps(NULL::istore, 3, 0)").should match nil
 
@@ -287,8 +272,6 @@ describe 'functions_plain' do
       '"2"=>"0", "3"=>"0", "4"=>"0", "5"=>"0"'
     query("SELECT istore_seed(2,2,8)").should match \
       '"2"=>"8"'
-    query("SELECT istore_seed(2,2,4e9::bigint)").should match \
-      '"2"=>"4000000000"'
     expect{query("SELECT istore_seed(2,0,8)")}.to throw_error 'parameter upto must be >= from'
     end
 
