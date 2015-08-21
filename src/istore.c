@@ -380,19 +380,18 @@ istore_divide(PG_FUNCTION_ARGS)
 
     while (index1 < is1->len && index2 < is2->len)
     {
-        if (pairs2[index2].val == 0)
-            ereport(ERROR, (
-                errcode(ERRCODE_DIVISION_BY_ZERO),
-                errmsg("division by zero"),
-                errdetail("Key \"%d\" of right argument has value 0", pairs2[index2].key)
-            ));
-
         if (pairs1[index1].key < pairs2[index2].key)
             ++index1;
         else if (pairs1[index1].key > pairs2[index2].key)
             ++index2;
         else
         {
+            if (pairs2[index2].val == 0)
+                ereport(ERROR, (
+                    errcode(ERRCODE_DIVISION_BY_ZERO),
+                    errmsg("division by zero"),
+                    errdetail("Key \"%d\" of right argument has value 0", pairs2[index2].key)
+                ));
             istore_pairs_insert(creator, pairs1[index1].key, int32div(pairs1[index1].val, pairs2[index2].val));
             ++index1;
             ++index2;

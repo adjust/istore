@@ -113,14 +113,23 @@ describe 'functions_plain' do
       '"-1"=>"-1", "2"=>"1"'
     query("SELECT divide('-1=>-1, 2=>1'::istore, '-1=>-1, 2=>1'::istore)").should match \
       '"-1"=>"1", "2"=>"1"'
-    query("SELECT divide('-1=>-1, 2=>1'::istore, 1)").should match \
-      '"-1"=>"-1", "2"=>"1"'
+    query("SELECT divide('-1=>-1, 2=>1'::istore, '-1=>-1, 2=>1'::istore)").should match \
+      '"-1"=>"1", "2"=>"1"'
+    query("SELECT divide('1=>0, 2=>1'::istore, '1=>-1, 2=>1'::istore)").should match \
+      '"1"=>"0", "2"=>"1"'
+    query("SELECT divide('1=>1, 2=>1'::istore, '1=>-1, 2=>1, 3=>0'::istore)").should match \
+      '"1"=>"-1", "2"=>"1"'
+    query("SELECT divide('1=>1, 2=>1'::istore, '3=>0'::istore)").should match ''
     query("SELECT divide('-1=>-1, 2=>1'::istore, -1)").should match \
       '"-1"=>"1", "2"=>"-1"'
   end
 
   it 'should raise division by zero error' do
     expect{query("SELECT divide('-1=>-1, 2=>1'::istore, 0)")}.to throw_error 'division by zero'
+  end
+
+  it 'should raise division by zero error' do
+    expect{query("SELECT divide('-1=>-1, 2=>1'::istore, '2=>0')")}.to throw_error 'division by zero'
   end
 
   it 'should generate istore from array' do
