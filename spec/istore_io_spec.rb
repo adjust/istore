@@ -70,7 +70,7 @@ describe 'istore_io' do
     query("SELECT * FROM istore_io").should match ''
   end
 
-  describe 'invalud input' do
+  describe 'invalid input' do
     it 'should report invalid value input' do
       expect{query("SELECT '2=>4, 1=>foo, 5=>17'::istore")}.to throw_error 'invalid input syntax for istore: "2=>4, 1=>foo, 5=>17"'
     end
@@ -79,12 +79,28 @@ describe 'istore_io' do
       expect{query("SELECT '2=>4, 1=>5foo, 5=>17'::istore")}.to throw_error 'invalid input syntax for istore: "2=>4, 1=>5foo, 5=>17"'
     end
 
+    it 'should report to big value input' do
+      expect{query("SELECT '2=>4, 1=>4000000000, 5=>17'::istore")}.to throw_error 'istore "2=>4, 1=>4000000000, 5=>17" is out of range for type integer'
+    end
+
+    it 'should report to small value input' do
+      expect{query("SELECT '2=>4, 1=>-4000000000, 5=>17'::istore")}.to throw_error 'istore "2=>4, 1=>-4000000000, 5=>17" is out of range for type integer'
+    end
+
     it 'should report invalid key input' do
       expect{query("SELECT '2=>4, 54foo=>5, 5=>17'::istore")}.to throw_error 'invalid input syntax for istore: "2=>4, 54foo=>5, 5=>17"'
     end
 
     it 'should report invalid key input' do
       expect{query("SELECT '2=>4, foo=>5, 5=>17'::istore")}.to throw_error 'invalid input syntax for istore: "2=>4, foo=>5, 5=>17"'
+    end
+
+    it 'should report to big key input' do
+      expect{query("SELECT '2=>4, 4000000000=>5, 5=>17'::istore")}.to throw_error 'istore "2=>4, 4000000000=>5, 5=>17" is out of range for type integer'
+    end
+
+    it 'should report to small key input' do
+      expect{query("SELECT '2=>4, -4000000000=>5, 5=>17'::istore")}.to throw_error 'istore "2=>4, -4000000000=>5, 5=>17" is out of range for type integer'
     end
 
     it 'should report invalid delimiter input' do

@@ -15,9 +15,20 @@
     if (*_ptr == '"')      \
             _ptr++;
 
-#define GET_NUM(_parser, _key)                    \
-    do {                                                \
-        _key = strtol(_parser->ptr, &_parser->ptr, 10); \
+#define GET_NUM(_parser, _key)                                                              \
+    do {                                                                                    \
+        bool neg = false;                                                                   \
+        if (*(_parser->ptr) == '-')                                                         \
+            neg = true;                                                                     \
+        _key = strtol(_parser->ptr, &_parser->ptr, 10);                                     \
+        if (neg && _key > 0)                                                                \
+            ereport(ERROR,                                                                  \
+                (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),                               \
+                errmsg("istore \"%s\" is out of range for type integer", _parser->begin)));  \
+        else if (!neg && _key < 0)                                                          \
+            ereport(ERROR,                                                                  \
+                (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),                               \
+                errmsg("istore \"%s\" is out of range for type integer", _parser->begin)));  \
     } while (0)
 
 #define EMPTY_ISTORE(_istore)          \
