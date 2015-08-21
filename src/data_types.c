@@ -1,17 +1,6 @@
 #include "istore.h"
 #include "intutils.h"
 #include "utils/memutils.h"
-#define DIGIT_WIDTH(_digit, _width)       \
-    do {                                  \
-        int32 _local = _digit;            \
-        _width = 0;                       \
-        if (_local <= 0)                  \
-            ++_width;                     \
-        for (; _local != 0; _local /= 10) \
-            ++_width;                     \
-    } while (0)
-
-#define PAIRS_MAX (MaxAllocSize / sizeof(IStorePair))
 
 static inline int
 height(Position p)
@@ -237,13 +226,13 @@ istore_pairs_insert(IStorePairs *pairs, int32 key, int32 val)
         vallen;
 
     if (pairs->size == pairs->used) {
-        if (pairs->used == PAIRS_MAX)
-            elog(ERROR, "istore can't have more than %lu keys", PAIRS_MAX);
+        if (pairs->used == PAIRS_MAX(ISTOREPAIR))
+            elog(ERROR, "istore can't have more than %lu keys", PAIRS_MAX(ISTOREPAIR));
 
         pairs->size *= 2;
-        // overflow check pairs->size should have been grown but not exceed PAIRS_MAX
-        if (pairs->size < pairs->used || pairs->size > PAIRS_MAX)
-            pairs->size = PAIRS_MAX;
+        // overflow check pairs->size should have been grown but not exceed PAIRS_MAX(ISTOREPAIR)
+        if (pairs->size < pairs->used || pairs->size > PAIRS_MAX(ISTOREPAIR))
+            pairs->size = PAIRS_MAX(ISTOREPAIR);
 
         pairs->pairs = repalloc(pairs->pairs, pairs->size * sizeof(IStorePair));
     }
@@ -251,8 +240,8 @@ istore_pairs_insert(IStorePairs *pairs, int32 key, int32 val)
     pairs->pairs[pairs->used].key  = key;
     pairs->pairs[pairs->used].val  = val;
 
-    DIGIT_WIDTH(key, keylen);
-    DIGIT_WIDTH(val, vallen);
+    DIGIT_WIDTH(key, keylen, INT32);
+    DIGIT_WIDTH(val, vallen, INT32);
     pairs->buflen += keylen + vallen + BUFLEN_OFFSET;
     if (pairs->buflen < 0)
         elog(ERROR, "buffer overflow");

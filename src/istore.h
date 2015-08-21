@@ -8,6 +8,7 @@
 #include "libpq/pqformat.h"
 #include "access/htup_details.h"
 #include "utils/lsyscache.h"
+#include "istore_common.h"
 
 Datum array_to_istore(Datum *data, int count, bool *nulls);
 Datum istore_out(PG_FUNCTION_ARGS);
@@ -84,31 +85,6 @@ int istore_tree_length(Position p);
 int istore_tree_to_pairs(Position p, IStorePairs *pairs, int n);
 IStorePair* istore_find(IStore *is, int32 key);
 
-#define BUFLEN_OFFSET 8
-#define PAYLOAD(_pairs) _pairs->pairs
-#define PAYLOAD_SIZE(_pairs) (_pairs->used * sizeof(IStorePair))
 #define PG_GETARG_IS(x) (IStore *)PG_DETOAST_DATUM(PG_GETARG_DATUM(x))
-#define ISHDRSZ VARHDRSZ + sizeof(int32) + sizeof(int32)
-#define ISTORE_SIZE(x) (ISHDRSZ + x->len * sizeof(IStorePair))
-#define FIRST_PAIR(x) ((IStorePair*)((char *) x + ISHDRSZ))
 
-#define FINALIZE_ISTORE(_istore, _pairs)                                    \
-    do {                                                                    \
-        istore_pairs_sort(_pairs);                                              \
-        FINALIZE_ISTORE_NOSORT(_istore, _pairs);                            \
-    } while(0)
-
-#define FINALIZE_ISTORE_NOSORT(_istore, _pairs)                             \
-    do {                                                                    \
-        _istore = palloc0(ISHDRSZ + PAYLOAD_SIZE(_pairs));                  \
-        _istore->buflen = _pairs->buflen;                                   \
-        _istore->len    = _pairs->used;                                     \
-        SET_VARSIZE(_istore, ISHDRSZ + PAYLOAD_SIZE(_pairs));               \
-        memcpy(FIRST_PAIR(_istore), PAYLOAD(_pairs), PAYLOAD_SIZE(_pairs)); \
-        istore_pairs_deinit(_pairs);                                            \
-    } while(0)
-
-#define LARGER(_a, _b) (_a > _b) ? _a : _b
-#define SMALLER(_a ,_b) (_a < _b) ? _a : _b
-#define SAMESIGN(a,b)   (((a) < 0) == ((b) < 0))
 #endif // ISTORE_H
