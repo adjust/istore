@@ -254,8 +254,8 @@ istore_pairs_insert(IStorePairs *pairs, int32 key, int32 val)
     DIGIT_WIDTH(key, keylen);
     DIGIT_WIDTH(val, vallen);
     pairs->buflen += keylen + vallen + BUFLEN_OFFSET;
-    if pairs->buflen < 0
-        elog(ERROR, "buffer overflow")
+    if (pairs->buflen < 0)
+        elog(ERROR, "buffer overflow");
     pairs->used++;
 }
 
