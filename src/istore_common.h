@@ -8,7 +8,7 @@
 
 #define INT32 int32
 #define ISTOREPAIR IStorePair
-
+#define COMPARE(_a,_b) (_a - _b)
 #define DIGIT_WIDTH(_digit, _width, _dtype)       \
     do {                                  \
         _dtype _local = _digit;            \

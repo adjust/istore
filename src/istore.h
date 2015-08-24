@@ -75,10 +75,8 @@ void istore_pairs_insert(IStorePairs *pairs, int32 key, int32 val);
 int  istore_pairs_cmp(const void *a, const void *b);
 void istore_pairs_sort(IStorePairs *pairs);
 void istore_pairs_deinit(IStorePairs *pairs);
-void istore_pairs_debug(IStorePairs *pairs);
 
 AvlTree istore_make_empty(AvlTree t);
-int istore_compare(int32 key, AvlTree node);
 Position istore_tree_find(int32 key, AvlTree t);
 AvlTree istore_insert(AvlTree t, int32 key, int32 value);
 int istore_tree_length(Position p);

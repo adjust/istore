@@ -11,19 +11,6 @@ height(Position p)
         return p->height;
 }
 
-static inline int
-max(int lhs, int rhs)
-{
-    return lhs > rhs ? lhs : rhs;
-}
-
-/*static inline int
-min(int lhs, int rhs)
-{
-    return lhs < rhs ? lhs : rhs;
-}
-*/
-
 AvlTree
 istore_make_empty(AvlTree t)
 {
@@ -37,26 +24,16 @@ istore_make_empty(AvlTree t)
     return NULL;
 }
 
-int
-istore_compare(int32 key, AvlTree node)
-{
-    if (key == node->key)
-        return 0;
-    else if (key < node->key)
-        return -1;
-    else
-        return 1;
-}
 
 Position
 istore_tree_find(int32 key, AvlTree t)
 {
-    int cmp;
+    int32 cmp;
 
     if (t == NULL)
         return NULL;
 
-    cmp = istore_compare(key, t);
+    cmp = COMPARE(key, t->key);
     if (cmp < 0)
         return istore_tree_find(key, t->left);
     else if (cmp > 0)
@@ -77,8 +54,8 @@ singleRotateWithLeft(Position k2)
     k2->left = k1->right;
     k1->right = k2;
 
-    k2->height = max(height(k2->left), height(k2->right)) + 1;
-    k1->height = max(height(k1->left), k2->height) + 1;
+    k2->height = MAX(height(k2->left), height(k2->right)) + 1;
+    k1->height = MAX(height(k1->left), k2->height) + 1;
 
     return k1;  /* New root */
 }
@@ -96,8 +73,8 @@ singleRotateWithRight(Position k1)
     k1->right = k2->left;
     k2->left = k1;
 
-    k1->height = max(height(k1->left), height(k1->right)) + 1;
-    k2->height = max(height(k2->right), k1->height) + 1;
+    k1->height = MAX(height(k1->left), height(k1->right)) + 1;
+    k2->height = MAX(height(k2->right), k1->height) + 1;
 
     return k2;  /* New root */
 }
@@ -151,13 +128,13 @@ istore_insert(AvlTree t, int32 key, int32 value)
     }
     else
     {
-        int cmp = istore_compare(key, t);
+        int32 cmp = COMPARE(key, t->key);
         if (cmp < 0)
         {
             t->left = istore_insert(t->left, key, value);
             if (height(t->left) - height(t->right) == 2)
             {
-                if (istore_compare( key, t->left))
+                if (COMPARE(key, t->left->key))
                     t = singleRotateWithLeft(t);
                 else
                     t = doubleRotateWithLeft(t);
@@ -168,7 +145,7 @@ istore_insert(AvlTree t, int32 key, int32 value)
             t->right = istore_insert(t->right, key, value);
             if (height(t->right) - height(t->left) == 2)
             {
-                if (istore_compare(key, t->right))
+                if (COMPARE(key, t->right->key))
                     t = singleRotateWithRight(t);
                 else
                     t = doubleRotateWithRight(t);
@@ -180,7 +157,7 @@ istore_insert(AvlTree t, int32 key, int32 value)
         }
     }
 
-    t->height = max(height(t->left), height(t->right)) + 1;
+    t->height = MAX(height(t->left), height(t->right)) + 1;
     return t;
 }
 
@@ -244,7 +221,7 @@ istore_pairs_insert(IStorePairs *pairs, int32 key, int32 val)
     DIGIT_WIDTH(val, vallen, INT32);
     pairs->buflen += keylen + vallen + BUFLEN_OFFSET;
     if (pairs->buflen < 0)
-        elog(ERROR, "buffer overflow");
+        elog(ERROR, "istore buffer overflow");
     pairs->used++;
 }
 
@@ -266,14 +243,4 @@ void
 istore_pairs_deinit(IStorePairs *pairs)
 {
     pfree(pairs->pairs);
-}
-
-void
-istore_pairs_debug(IStorePairs *pairs)
-{
-    int i;
-    for (i = 0; i < pairs->used; ++i)
-    {
-        elog(INFO, "key: %d, val: %d", pairs->pairs[i].key, pairs->pairs[i].val);
-    }
 }
