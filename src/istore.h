@@ -84,5 +84,26 @@ int istore_tree_to_pairs(Position p, IStorePairs *pairs, int n);
 IStorePair* istore_find(IStore *is, int32 key);
 
 #define PG_GETARG_IS(x) (IStore *)PG_DETOAST_DATUM(PG_GETARG_DATUM(x))
+#define PAIRSORTFUNC istore_pairs_cmp
+#define ISINSERTFUNC istore_pairs_insert
+
+
+#define FINALIZE_ISTORE(_istore, _pairs)                                    \
+    do {                                                                          \
+        qsort(_pairs->pairs, _pairs->used, sizeof(IStorePair), istore_pairs_cmp); \
+        FINALIZE_ISTORE_NOSORT(_istore, _pairs);                       \
+    } while(0)
+
+#define FINALIZE_ISTORE_NOSORT(_istore, _pairs)                             \
+    do {                                                                    \
+        _istore = palloc0(ISHDRSZ + PAYLOAD_SIZE(_pairs, IStorePair));                  \
+        _istore->buflen = _pairs->buflen;                                   \
+        _istore->len    = _pairs->used;                                     \
+        SET_VARSIZE(_istore, ISHDRSZ + PAYLOAD_SIZE(_pairs, IStorePair));               \
+        memcpy(FIRST_PAIR(_istore, IStorePair), _pairs->pairs, PAYLOAD_SIZE(_pairs, IStorePair)); \
+        istore_pairs_deinit(_pairs);                                            \
+    } while(0)
+
+
 
 #endif // ISTORE_H

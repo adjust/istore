@@ -1,9 +1,9 @@
-#include "istore.h"
+#include "bigistore.h"
 #include "intutils.h"
 #include "utils/memutils.h"
 
 static inline int
-height(Position p)
+height(BigPosition p)
 {
     if (p == NULL)
         return -1;
@@ -11,13 +11,13 @@ height(Position p)
         return p->height;
 }
 
-AvlTree
-istore_make_empty(AvlTree t)
+BigAvlTree
+bigistore_make_empty(BigAvlTree t)
 {
     if (t != NULL)
     {
-        istore_make_empty(t->left);
-        istore_make_empty(t->right);
+        bigistore_make_empty(t->left);
+        bigistore_make_empty(t->right);
         pfree(t);
         t = NULL;
     }
@@ -25,8 +25,8 @@ istore_make_empty(AvlTree t)
 }
 
 
-Position
-istore_tree_find(int32 key, AvlTree t)
+BigPosition
+bigistore_tree_find(int32 key, BigAvlTree t)
 {
     int32 cmp;
 
@@ -35,9 +35,9 @@ istore_tree_find(int32 key, AvlTree t)
 
     cmp = COMPARE(key, t->key);
     if (cmp < 0)
-        return istore_tree_find(key, t->left);
+        return bigistore_tree_find(key, t->left);
     else if (cmp > 0)
-        return istore_tree_find(key, t->right);
+        return bigistore_tree_find(key, t->right);
     else
         return t;
 }
@@ -45,10 +45,10 @@ istore_tree_find(int32 key, AvlTree t)
 /* This function can be called only if k2 has a left child */
 /* Perform a rotate between a node (k2) and its left child */
 /* Update heights, then return new root */
-static Position
-singleRotateWithLeft(Position k2)
+static BigPosition
+singleRotateWithLeft(BigPosition k2)
 {
-    Position k1;
+    BigPosition k1;
 
     k1 = k2->left;
     k2->left = k1->right;
@@ -64,10 +64,10 @@ singleRotateWithLeft(Position k2)
 /* This function can be called only if k1 has a right child */
 /* Perform a rotate between a node (k1) and its right child */
 /* Update heights, then return new root */
-static Position
-singleRotateWithRight(Position k1)
+static BigPosition
+singleRotateWithRight(BigPosition k1)
 {
-    Position k2;
+    BigPosition k2;
 
     k2 = k1->right;
     k1->right = k2->left;
@@ -84,8 +84,8 @@ singleRotateWithRight(Position k1)
 /* child and k3's left child has a right child */
 /* Do the left-right double rotation */
 /* Update heights, then return new root */
-static Position
-doubleRotateWithLeft(Position k3)
+static BigPosition
+doubleRotateWithLeft(BigPosition k3)
 {
     /* Rotate between k1 and k2 */
     k3->left = singleRotateWithRight(k3->left);
@@ -98,8 +98,8 @@ doubleRotateWithLeft(Position k3)
 /* child and k1's right child has a left child */
 /* Do the right-left double rotation */
 /* Update heights, then return new root */
-static Position
-doubleRotateWithRight(Position k1)
+static BigPosition
+doubleRotateWithRight(BigPosition k1)
 {
     /* Rotate between k3 and k2 */
     k1->right = singleRotateWithLeft(k1->right);
@@ -108,15 +108,15 @@ doubleRotateWithRight(Position k1)
     return singleRotateWithRight(k1);
 }
 
-AvlTree
-istore_insert(AvlTree t, int32 key, int32 value)
+BigAvlTree
+bigistore_insert(BigAvlTree t, int32 key, int64 value)
 {
     if(t == NULL)
     {
         /* Create and return a one-node tree */
-        t = palloc0(sizeof(struct AvlNode));
+        t = palloc0(sizeof(struct BigAvlNode));
         if (t == NULL)
-            elog(ERROR, "AvlTree istore_insert: could not allocate memory");
+            elog(ERROR, "BigAvlTree bigistore_insert: could not allocate memory");
         else
         {
             t->key = key;
@@ -131,7 +131,7 @@ istore_insert(AvlTree t, int32 key, int32 value)
         int32 cmp = COMPARE(key, t->key);
         if (cmp < 0)
         {
-            t->left = istore_insert(t->left, key, value);
+            t->left = bigistore_insert(t->left, key, value);
             if (height(t->left) - height(t->right) == 2)
             {
                 if (COMPARE(key, t->left->key))
@@ -142,7 +142,7 @@ istore_insert(AvlTree t, int32 key, int32 value)
         }
         else if(cmp > 0)
         {
-            t->right = istore_insert(t->right, key, value);
+            t->right = bigistore_insert(t->right, key, value);
             if (height(t->right) - height(t->left) == 2)
             {
                 if (COMPARE(key, t->right->key))
@@ -163,73 +163,74 @@ istore_insert(AvlTree t, int32 key, int32 value)
 
 // return number of nodes
 int
-istore_tree_length(Position p)
+bigistore_tree_length(BigPosition p)
 {
     int n;
     if(p == NULL)
         return 0;
-    n = istore_tree_length(p->left);
+    n = bigistore_tree_length(p->left);
     ++n;
-    n += istore_tree_length(p->right);
+    n += bigistore_tree_length(p->right);
     return n;
 }
 
 int
-istore_tree_to_pairs(Position p, IStorePairs *pairs, int n)
+bigistore_tree_to_pairs(BigPosition p, BigIStorePairs *pairs, int n)
 {
     if(p == NULL)
         return n;
-    n = istore_tree_to_pairs(p->left, pairs, n);
+    n = bigistore_tree_to_pairs(p->left, pairs, n);
 
-    istore_pairs_insert(pairs, p->key, p->value);
+    bigistore_pairs_insert(pairs, p->key, p->value);
     ++n;
-    n = istore_tree_to_pairs(p->right, pairs, n);
+    n = bigistore_tree_to_pairs(p->right, pairs, n);
     return n;
 }
 
 void
-istore_pairs_init(IStorePairs *pairs, size_t initial_size)
+bigistore_pairs_init(BigIStorePairs *pairs, size_t initial_size)
 {
-    pairs->pairs   = palloc0(initial_size * sizeof(IStorePair));
+    pairs->pairs   = palloc0(initial_size * sizeof(BigIStorePair));
     pairs->used    = 0;
     pairs->size    = initial_size;
     pairs->buflen  = 0;
 }
 
 void
-istore_pairs_insert(IStorePairs *pairs, int32 key, int32 val)
+bigistore_pairs_insert(BigIStorePairs *pairs, int32 key, int64 val)
 {
     int keylen,
         vallen;
 
     if (pairs->size == pairs->used) {
         if (pairs->used == PAIRS_MAX(IStorePair))
-            elog(ERROR, "istore can't have more than %lu keys", PAIRS_MAX(IStorePair));
+            elog(ERROR, "bigistore can't have more than %lu keys", PAIRS_MAX(IStorePair));
 
         pairs->size *= 2;
         // overflow check pairs->size should have been grown but not exceed PAIRS_MAX(IStorePair)
         if (pairs->size < pairs->used || pairs->size > PAIRS_MAX(IStorePair))
             pairs->size = PAIRS_MAX(IStorePair);
 
-        pairs->pairs = repalloc(pairs->pairs, pairs->size * sizeof(IStorePair));
+        pairs->pairs = repalloc(pairs->pairs, pairs->size * sizeof(BigIStorePair));
     }
 
     pairs->pairs[pairs->used].key  = key;
     pairs->pairs[pairs->used].val  = val;
 
-    DIGIT_WIDTH(key, keylen, int32);
-    DIGIT_WIDTH(val, vallen, int32);
+    DIGIT_WIDTH(key, keylen, int64);
+    DIGIT_WIDTH(val, vallen, int64);
     pairs->buflen += keylen + vallen + BUFLEN_OFFSET;
     if (pairs->buflen < 0)
-        elog(ERROR, "istore buffer overflow");
+        elog(ERROR, "bigistore buffer overflow");
     pairs->used++;
 }
 
 int
-istore_pairs_cmp(const void *a, const void *b)
+bigistore_pairs_cmp(const void *a, const void *b)
 {
-    IStorePair *_a = (IStorePair *)a;
-    IStorePair *_b = (IStorePair *)b;
+    BigIStorePair *_a = (BigIStorePair *)a;
+    BigIStorePair *_b = (BigIStorePair *)b;
+
     if (_a->key < _b->key)
         return -1;
     else if (_a->key > _b->key)
@@ -239,7 +240,7 @@ istore_pairs_cmp(const void *a, const void *b)
 }
 
 void
-istore_pairs_deinit(IStorePairs *pairs)
+bigistore_pairs_deinit(BigIStorePairs *pairs)
 {
     pfree(pairs->pairs);
 }

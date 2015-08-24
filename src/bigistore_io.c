@@ -1,38 +1,41 @@
-#include "istore.h"
+#include "bigistore.h"
 #include "is_parser.h"
-
+#include <limits.h>
 #define GET_NUM(_parser, _num)                                                              \
     do {                                                                                    \
+        long _l;                                                                            \
         bool neg = false;                                                                   \
         if (*(_parser->ptr) == '-')                                                         \
             neg = true;                                                                     \
-        _num = strtol(_parser->ptr, &_parser->ptr, 10);                                     \
-        if (neg && _num > 0)                                                                \
+        _l   = strtol(_parser->ptr, &_parser->ptr, 10);                                     \
+        _num = _l;\
+        if (neg && _num > 0 || _l == LONG_MIN )                          \
             ereport(ERROR,                                                                  \
                 (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),                               \
-                errmsg("istore \"%s\" is out of range", _parser->begin)));  \
-        else if (!neg && _num < 0)                                                          \
+                errmsg("bigistore \"%s\" is out of range", _parser->begin)));               \
+        else if (!neg && _num < 0 || _l == LONG_MAX )                                                          \
             ereport(ERROR,                                                                  \
                 (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),                               \
-                errmsg("istore \"%s\" is out of range", _parser->begin)));  \
+                errmsg("bigistore \"%s\" is out of range", _parser->begin)));               \
     } while (0)
 
-typedef struct ISParser {
-    char    *begin;
-    char    *ptr;
-    int      state;
-    AvlNode *tree;
-} ISParser;
 
-static Datum istore_parse_istore(ISParser *parser);
+typedef struct BigISParser {
+    char       *begin;
+    char       *ptr;
+    int         state;
+    BigAvlNode *tree;
+} BigISParser;
+
+static Datum bigistore_parse_bigistore(BigISParser *parser);
 
 static Datum
-istore_parse_istore(ISParser *parser)
+bigistore_parse_bigistore(BigISParser *parser)
 {
-    IStore  *out;
-    IStorePairs *pairs;
-    int32    key;
-    int32    val;
+    BigIStore      *out;
+    BigIStorePairs *pairs;
+    int32           key;
+    int64           val;
 
     parser->state = WKEY;
     parser->ptr   = parser->begin;
@@ -64,9 +67,9 @@ istore_parse_istore(ISParser *parser)
             else
                 ereport(ERROR,
                     (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-                     errmsg("invalid input syntax for istore: \"%s\"",
+                     errmsg("invalid input syntax for bigistore: \"%s\"",
                             parser->begin),
-                     errdetail("unexpected sign %c, in istore key", *(parser->ptr))
+                     errdetail("unexpected sign %c, in bigistore key", *(parser->ptr))
                      ));
         }
         else if (parser->state == WGT)
@@ -79,7 +82,7 @@ istore_parse_istore(ISParser *parser)
             else
                 ereport(ERROR,
                     (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-                     errmsg("invalid input syntax for istore: \"%s\"",
+                     errmsg("invalid input syntax for bigistore: \"%s\"",
                             parser->begin),
                      errdetail("unexpected sign %c, expected '>'", *(parser->ptr))
                      ));
@@ -91,7 +94,7 @@ istore_parse_istore(ISParser *parser)
             GET_NUM(parser, val);
             SKIP_ESCAPED(parser->ptr);
             parser->state = WDEL;
-            parser->tree = istore_insert(parser->tree, key, val);
+            parser->tree = bigistore_insert(parser->tree, key, val);
         }
         else if (parser->state == WDEL)
         {
@@ -104,9 +107,9 @@ istore_parse_istore(ISParser *parser)
             else
                 ereport(ERROR,
                     (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-                     errmsg("invalid input syntax for istore: \"%s\"",
+                     errmsg("invalid input syntax for bigistore: \"%s\"",
                             parser->begin),
-                     errdetail("unexpected sign %c, in istore value", *(parser->ptr))
+                     errdetail("unexpected sign %c, in bigistore value", *(parser->ptr))
                      ));
 
             parser->ptr++;
@@ -117,23 +120,23 @@ istore_parse_istore(ISParser *parser)
         }
     }
 
-    pairs = palloc0(sizeof(IStorePairs));
-    istore_pairs_init(pairs, 200);
-    istore_tree_to_pairs(parser->tree, pairs, 0);
-    istore_make_empty(parser->tree);
-    FINALIZE_ISTORE(out, pairs);
+    pairs = palloc0(sizeof(BigIStorePairs));
+    bigistore_pairs_init(pairs, 200);
+    bigistore_tree_to_pairs(parser->tree, pairs, 0);
+    bigistore_make_empty(parser->tree);
+    FINALIZE_BIGISTORE(out, pairs);
     PG_RETURN_POINTER(out);
 }
 
-PG_FUNCTION_INFO_V1(istore_out);
+PG_FUNCTION_INFO_V1(bigistore_out);
 Datum
-istore_out(PG_FUNCTION_ARGS)
+bigistore_out(PG_FUNCTION_ARGS)
 {
-    IStore *in = PG_GETARG_IS(0);
+    BigIStore *in = PG_GETARG_BIGIS(0);
     int     i,
             ptr = 0;
     char   *out;
-    IStorePair *pairs;
+    BigIStorePair *pairs;
 
     if (in->len == 0)
     {
@@ -141,12 +144,12 @@ istore_out(PG_FUNCTION_ARGS)
         PG_RETURN_CSTRING(out);
     }
     out = palloc0(in->buflen + 1);
-    pairs = FIRST_PAIR(in, IStorePair);
+    pairs = FIRST_PAIR(in, BigIStorePair);
     for (i = 0; i<in->len; ++i)
     {
         ptr += sprintf(
             out+ptr,
-            "\"%d\"=>\"%d\", ",
+            "\"%d\"=>\"%ld\", ",
             pairs[i].key,
             pairs[i].val
         );
@@ -156,41 +159,41 @@ istore_out(PG_FUNCTION_ARGS)
     PG_RETURN_CSTRING(out);
 }
 
-PG_FUNCTION_INFO_V1(istore_in);
+PG_FUNCTION_INFO_V1(bigistore_in);
 Datum
-istore_in(PG_FUNCTION_ARGS)
+bigistore_in(PG_FUNCTION_ARGS)
 {
-    ISParser  parser;
+    BigISParser  parser;
     parser.begin = PG_GETARG_CSTRING(0);
-    return istore_parse_istore(&parser);
+    return bigistore_parse_bigistore(&parser);
 }
 
-PG_FUNCTION_INFO_V1(istore_recv);
+PG_FUNCTION_INFO_V1(bigistore_recv);
 Datum
-istore_recv(PG_FUNCTION_ARGS)
+bigistore_recv(PG_FUNCTION_ARGS)
 {
-    IStore *result;
+    BigIStore *result;
     StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
     int i = 0;
-    IStorePairs *creator = palloc0(sizeof *creator);
+    BigIStorePairs *creator = palloc0(sizeof *creator);
     int32 len = pq_getmsgint(buf, 4);
-    istore_pairs_init(creator, len);
+    bigistore_pairs_init(creator, len);
     for (; i < len; ++i)
     {
         int32  key  = pq_getmsgint(buf, 4);
-        int32  val  = pq_getmsgint(buf, 4);
-        istore_pairs_insert(creator, key, val);
+        int64  val  = pq_getmsgint64(buf);
+        bigistore_pairs_insert(creator, key, val);
     }
-    FINALIZE_ISTORE_NOSORT(result, creator);
+    FINALIZE_BIGISTORE_NOSORT(result, creator);
     PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(istore_send);
+PG_FUNCTION_INFO_V1(bigistore_send);
 Datum
-istore_send(PG_FUNCTION_ARGS)
+bigistore_send(PG_FUNCTION_ARGS)
 {
-    IStore *in = PG_GETARG_IS(0);
-    IStorePair *pairs= FIRST_PAIR(in, IStorePair);
+    BigIStore *in = PG_GETARG_BIGIS(0);
+    BigIStorePair *pairs= FIRST_PAIR(in, BigIStorePair);
     int i = 0;
     StringInfoData buf;
     pq_begintypsend(&buf);
@@ -198,9 +201,9 @@ istore_send(PG_FUNCTION_ARGS)
     for (; i < in->len; ++i)
     {
         int32 key = pairs[i].key;
-        int32 val = pairs[i].val;
+        int64 val = pairs[i].val;
         pq_sendint(&buf, key, 4);
-        pq_sendint(&buf, val, 4);
+        pq_sendint64(&buf, val);
     }
     PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }
