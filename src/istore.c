@@ -6,8 +6,8 @@ PG_MODULE_MAGIC;
 
 #define COPY_ISTORE(_dst, _src)                \
     do {                                       \
-        _dst = palloc0(ISTORE_SIZE(_src, ISTOREPAIR));      \
-        memcpy(_dst, _src, ISTORE_SIZE(_src, ISTOREPAIR)); \
+        _dst = palloc0(ISTORE_SIZE(_src, ISPAIR32));      \
+        memcpy(_dst, _src, ISTORE_SIZE(_src, ISPAIR32)); \
     } while(0)
 
 
@@ -21,7 +21,7 @@ istore_sum_up(PG_FUNCTION_ARGS)
     IStore      *is;
     IStorePair  *pairs;
     is              = PG_GETARG_IS(0);
-    pairs           = FIRST_PAIR(is, ISTOREPAIR);
+    pairs           = FIRST_PAIR(is, ISPAIR32);
     int64    result = 0;
     int      index  = 0;
 
@@ -39,7 +39,7 @@ istore_sum_up(PG_FUNCTION_ARGS)
 IStorePair*
 istore_find(IStore *is, int32 key)
 {
-    IStorePair *pairs  = FIRST_PAIR(is, ISTOREPAIR);
+    IStorePair *pairs  = FIRST_PAIR(is, ISPAIR32);
     IStorePair *result = NULL;
     int low        = 0;
     int max        = is->len;
@@ -53,7 +53,7 @@ istore_find(IStore *is, int32 key)
             low = mid + 1;
         else
         {
-            result = FIRST_PAIR(is, ISTOREPAIR) + mid;
+            result = FIRST_PAIR(is, ISPAIR32) + mid;
             break;
         }
     }
@@ -114,8 +114,8 @@ istore_add(PG_FUNCTION_ARGS)
 
     is1     = PG_GETARG_IS(0);
     is2     = PG_GETARG_IS(1);
-    pairs1  = FIRST_PAIR(is1, ISTOREPAIR);
-    pairs2  = FIRST_PAIR(is2, ISTOREPAIR);
+    pairs1  = FIRST_PAIR(is1, ISPAIR32);
+    pairs2  = FIRST_PAIR(is2, ISPAIR32);
     creator = palloc0(sizeof *creator);
 
     istore_pairs_init(creator, MIN(is1->len + is2->len, 200));
@@ -141,7 +141,7 @@ istore_add(PG_FUNCTION_ARGS)
     }
 
     FILLREMAINING(creator, index1, is1, pairs1, index2, is2, pairs2)
-    FINALIZE_ISTORE_NOSORT(result, creator, ISTOREPAIR);
+    FINALIZE_ISTORE_NOSORT(result, creator, ISPAIR32);
     PG_RETURN_POINTER(result);
 }
 
@@ -161,7 +161,7 @@ istore_add_integer(PG_FUNCTION_ARGS)
 
     is      = PG_GETARG_IS(0);
     int_arg = PG_GETARG_INT32(1);
-    pairs   = FIRST_PAIR(is, ISTOREPAIR);
+    pairs   = FIRST_PAIR(is, ISPAIR32);
     creator = palloc0(sizeof *creator);
 
     istore_pairs_init(creator, is->len);
@@ -170,7 +170,7 @@ istore_add_integer(PG_FUNCTION_ARGS)
         istore_pairs_insert(creator, pairs[index].key, int32add(pairs[index].val, int_arg));
         ++index;
     }
-    FINALIZE_ISTORE_NOSORT(result, creator, ISTOREPAIR);
+    FINALIZE_ISTORE_NOSORT(result, creator, ISPAIR32);
     PG_RETURN_POINTER(result);
 }
 
@@ -195,8 +195,8 @@ istore_subtract(PG_FUNCTION_ARGS)
 
     is1     = PG_GETARG_IS(0);
     is2     = PG_GETARG_IS(1);
-    pairs1  = FIRST_PAIR(is1, ISTOREPAIR);
-    pairs2  = FIRST_PAIR(is2, ISTOREPAIR);
+    pairs1  = FIRST_PAIR(is1, ISPAIR32);
+    pairs2  = FIRST_PAIR(is2, ISPAIR32);
     creator = palloc0(sizeof *creator);
 
     istore_pairs_init(creator, MIN(is1->len + is2->len, 200));
@@ -222,7 +222,7 @@ istore_subtract(PG_FUNCTION_ARGS)
     }
 
     FILLREMAINING(creator, index1, is1, pairs1, index2, is2, pairs2)
-    FINALIZE_ISTORE_NOSORT(result, creator, ISTOREPAIR);
+    FINALIZE_ISTORE_NOSORT(result, creator, ISPAIR32);
     PG_RETURN_POINTER(result);
 }
 
@@ -243,7 +243,7 @@ istore_subtract_integer(PG_FUNCTION_ARGS)
 
     is      = PG_GETARG_IS(0);
     int_arg = PG_GETARG_INT32(1);
-    pairs   = FIRST_PAIR(is, ISTOREPAIR);
+    pairs   = FIRST_PAIR(is, ISPAIR32);
     creator = palloc0(sizeof *creator);
 
     istore_pairs_init(creator, is->len);
@@ -253,7 +253,7 @@ istore_subtract_integer(PG_FUNCTION_ARGS)
         istore_pairs_insert(creator, pairs[index].key, int32sub(pairs[index].val, int_arg));
         ++index;
     }
-    FINALIZE_ISTORE(result, creator, ISTOREPAIR);
+    FINALIZE_ISTORE(result, creator, ISPAIR32);
     PG_RETURN_POINTER(result);
 }
 
@@ -278,8 +278,8 @@ istore_multiply(PG_FUNCTION_ARGS)
 
     is1     = PG_GETARG_IS(0);
     is2     = PG_GETARG_IS(1);
-    pairs1  = FIRST_PAIR(is1, ISTOREPAIR);
-    pairs2  = FIRST_PAIR(is2, ISTOREPAIR);
+    pairs1  = FIRST_PAIR(is1, ISPAIR32);
+    pairs2  = FIRST_PAIR(is2, ISPAIR32);
     creator = palloc0(sizeof *creator);
     istore_pairs_init(creator, MIN(is1->len, is2->len));
 
@@ -297,7 +297,7 @@ istore_multiply(PG_FUNCTION_ARGS)
         }
     }
 
-    FINALIZE_ISTORE(result, creator, ISTOREPAIR);
+    FINALIZE_ISTORE(result, creator, ISPAIR32);
     PG_RETURN_POINTER(result);
 }
 
@@ -317,7 +317,7 @@ istore_multiply_integer(PG_FUNCTION_ARGS)
 
     is      = PG_GETARG_IS(0);
     int_arg = PG_GETARG_INT32(1);
-    pairs   = FIRST_PAIR(is, ISTOREPAIR);
+    pairs   = FIRST_PAIR(is, ISPAIR32);
     creator = palloc0(sizeof *creator);
     istore_pairs_init(creator, is->len);
 
@@ -326,7 +326,7 @@ istore_multiply_integer(PG_FUNCTION_ARGS)
         istore_pairs_insert(creator, pairs[index].key, int32mul(pairs[index].val, int_arg));
         ++index;
     }
-    FINALIZE_ISTORE_NOSORT(result, creator, ISTOREPAIR);
+    FINALIZE_ISTORE_NOSORT(result, creator, ISPAIR32);
     PG_RETURN_POINTER(result);
 }
 
@@ -354,8 +354,8 @@ istore_divide(PG_FUNCTION_ARGS)
 
     is1     = PG_GETARG_IS(0);
     is2     = PG_GETARG_IS(1);
-    pairs1  = FIRST_PAIR(is1, ISTOREPAIR);
-    pairs2  = FIRST_PAIR(is2, ISTOREPAIR);
+    pairs1  = FIRST_PAIR(is1, ISPAIR32);
+    pairs2  = FIRST_PAIR(is2, ISPAIR32);
     creator = palloc0(sizeof *creator);
 
     istore_pairs_init(creator, MIN(is1->len, is2->len));
@@ -380,7 +380,7 @@ istore_divide(PG_FUNCTION_ARGS)
         }
     }
 
-    FINALIZE_ISTORE_NOSORT(result, creator, ISTOREPAIR);
+    FINALIZE_ISTORE_NOSORT(result, creator, ISPAIR32);
     PG_RETURN_POINTER(result);
 }
 
@@ -409,7 +409,7 @@ istore_divide_integer(PG_FUNCTION_ARGS)
             errmsg("division by zero")
         ));
 
-    pairs   = FIRST_PAIR(is, ISTOREPAIR);
+    pairs   = FIRST_PAIR(is, ISPAIR32);
     creator = palloc0(sizeof *creator);
 
     istore_pairs_init(creator, is->len);
@@ -418,7 +418,7 @@ istore_divide_integer(PG_FUNCTION_ARGS)
         istore_pairs_insert(creator, pairs[index].key, int32div(pairs[index].val, int_arg));
         ++index;
     }
-    FINALIZE_ISTORE_NOSORT(result, creator, ISTOREPAIR);
+    FINALIZE_ISTORE_NOSORT(result, creator, ISPAIR32);
     PG_RETURN_POINTER(result);
 }
 
@@ -487,7 +487,7 @@ istore_from_array(PG_FUNCTION_ARGS)
     istore_tree_to_pairs(tree, pairs, 0);
     istore_make_empty(tree);
 
-    FINALIZE_ISTORE(result, pairs, ISTOREPAIR);
+    FINALIZE_ISTORE(result, pairs, ISPAIR32);
     PG_RETURN_POINTER(result);
 }
 
@@ -513,7 +513,7 @@ array_to_istore(Datum *data, int count, bool *nulls)
         istore = (IStore *) data[i];
         for (index = 0; index < istore->len; ++index)
         {
-            payload = FIRST_PAIR(istore, ISTOREPAIR) + index;
+            payload = FIRST_PAIR(istore, ISPAIR32) + index;
             position = istore_tree_find(payload->key, tree);
             if (position == NULL)
                 tree = istore_insert(tree, payload->key, payload->val);
@@ -529,7 +529,7 @@ array_to_istore(Datum *data, int count, bool *nulls)
     istore_tree_to_pairs(tree, pairs, 0);
     istore_make_empty(tree);
 
-    FINALIZE_ISTORE(out, pairs, ISTOREPAIR);
+    FINALIZE_ISTORE(out, pairs, ISPAIR32);
     PG_RETURN_POINTER(out);
 }
 
@@ -701,7 +701,7 @@ istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
     istore_tree_to_pairs(tree, pairs, 0);
     istore_make_empty(tree);
 
-    FINALIZE_ISTORE(out, pairs, ISTOREPAIR);
+    FINALIZE_ISTORE(out, pairs, ISPAIR32);
     PG_RETURN_POINTER(out);
 }
 
@@ -781,7 +781,7 @@ istore_each(PG_FUNCTION_ARGS)
     funcctx = SRF_PERCALL_SETUP();
     is      = (IStore *) funcctx->user_fctx;
     i       = funcctx->call_cntr;
-    pairs   = FIRST_PAIR(is, ISTOREPAIR);
+    pairs   = FIRST_PAIR(is, ISPAIR32);
 
     if (i < is->len)
     {
@@ -824,7 +824,7 @@ istore_fill_gaps(PG_FUNCTION_ARGS)
     up_to = PG_GETARG_INT32(1);
 
     fill_with = PG_GETARG_INT64(2);
-    pairs     = FIRST_PAIR(is, ISTOREPAIR);
+    pairs     = FIRST_PAIR(is, ISPAIR32);
     creator   = palloc0(sizeof *creator);
 
     if (up_to < 0)
@@ -845,7 +845,7 @@ istore_fill_gaps(PG_FUNCTION_ARGS)
         }
     }
 
-    FINALIZE_ISTORE_NOSORT(result, creator, ISTOREPAIR);
+    FINALIZE_ISTORE_NOSORT(result, creator, ISPAIR32);
     PG_RETURN_POINTER(result);
 }
 
@@ -872,7 +872,7 @@ istore_accumulate(PG_FUNCTION_ARGS)
 
     is = PG_GETARG_IS(0);
 
-    pairs   = FIRST_PAIR(is, ISTOREPAIR);
+    pairs   = FIRST_PAIR(is, ISPAIR32);
     creator = palloc0(sizeof *creator);
 
     if (is->len > 0)
@@ -895,7 +895,7 @@ istore_accumulate(PG_FUNCTION_ARGS)
         istore_pairs_insert(creator, index1, sum);
     }
 
-    FINALIZE_ISTORE_NOSORT(result, creator, ISTOREPAIR);
+    FINALIZE_ISTORE_NOSORT(result, creator, ISPAIR32);
     PG_RETURN_POINTER(result);
 }
 
@@ -934,7 +934,7 @@ istore_seed(PG_FUNCTION_ARGS)
         istore_pairs_insert(creator, index1, fill_with);
     }
 
-    FINALIZE_ISTORE_NOSORT(result, creator, ISTOREPAIR);
+    FINALIZE_ISTORE_NOSORT(result, creator, ISPAIR32);
     PG_RETURN_POINTER(result);
 }
 
@@ -960,8 +960,8 @@ istore_val_larger(PG_FUNCTION_ARGS)
     is1     = PG_GETARG_IS(0);
     is2     = PG_GETARG_IS(1);
 
-    pairs1  = FIRST_PAIR(is1, ISTOREPAIR);
-    pairs2  = FIRST_PAIR(is2, ISTOREPAIR);
+    pairs1  = FIRST_PAIR(is1, ISPAIR32);
+    pairs2  = FIRST_PAIR(is2, ISPAIR32);
     creator = palloc0(sizeof *creator);
 
     istore_pairs_init(creator, MIN(is1->len + is2->len, 200));
@@ -986,7 +986,7 @@ istore_val_larger(PG_FUNCTION_ARGS)
     }
 
     FILLREMAINING(creator, index1, is1, pairs1, index2, is2, pairs2)
-    FINALIZE_ISTORE_NOSORT(result, creator, ISTOREPAIR);
+    FINALIZE_ISTORE_NOSORT(result, creator, ISPAIR32);
     PG_RETURN_POINTER(result);
 }
 
@@ -1013,8 +1013,8 @@ istore_val_smaller(PG_FUNCTION_ARGS)
     is1     = PG_GETARG_IS(0);
     is2     = PG_GETARG_IS(1);
 
-    pairs1  = FIRST_PAIR(is1, ISTOREPAIR);
-    pairs2  = FIRST_PAIR(is2, ISTOREPAIR);
+    pairs1  = FIRST_PAIR(is1, ISPAIR32);
+    pairs2  = FIRST_PAIR(is2, ISPAIR32);
     creator = palloc0(sizeof *creator);
 
     istore_pairs_init(creator, MIN(is1->len + is2->len, 200));
@@ -1039,6 +1039,6 @@ istore_val_smaller(PG_FUNCTION_ARGS)
     }
 
     FILLREMAINING(creator, index1, is1, pairs1, index2, is2, pairs2)
-    FINALIZE_ISTORE_NOSORT(result, creator, ISTOREPAIR);
+    FINALIZE_ISTORE_NOSORT(result, creator, ISPAIR32);
     PG_RETURN_POINTER(result);
 }

@@ -7,7 +7,7 @@
 #define SAMESIGN(a,b)   (((a) < 0) == ((b) < 0))
 
 #define INT32 int32
-#define ISTOREPAIR IStorePair
+#define ISPAIR32 IStorePair
 #define COMPARE(_a,_b) (_a - _b)
 #define DIGIT_WIDTH(_digit, _width, _dtype)       \
     do {                                  \

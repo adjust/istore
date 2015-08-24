@@ -32,7 +32,7 @@ gin_extract_istore_key(PG_FUNCTION_ARGS)
     IStore *is = PG_GETARG_IS(0);
     int32  *nentries = (int32 *) PG_GETARG_POINTER(1);
     Datum  *entries = NULL;
-    IStorePair *pairs = FIRST_PAIR(is,ISTOREPAIR);
+    IStorePair *pairs = FIRST_PAIR(is,ISPAIR32);
     int     count = is->len;
     int     i;
 

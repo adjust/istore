@@ -203,13 +203,13 @@ istore_pairs_insert(IStorePairs *pairs, int32 key, int32 val)
         vallen;
 
     if (pairs->size == pairs->used) {
-        if (pairs->used == PAIRS_MAX(ISTOREPAIR))
-            elog(ERROR, "istore can't have more than %lu keys", PAIRS_MAX(ISTOREPAIR));
+        if (pairs->used == PAIRS_MAX(ISPAIR32))
+            elog(ERROR, "istore can't have more than %lu keys", PAIRS_MAX(ISPAIR32));
 
         pairs->size *= 2;
-        // overflow check pairs->size should have been grown but not exceed PAIRS_MAX(ISTOREPAIR)
-        if (pairs->size < pairs->used || pairs->size > PAIRS_MAX(ISTOREPAIR))
-            pairs->size = PAIRS_MAX(ISTOREPAIR);
+        // overflow check pairs->size should have been grown but not exceed PAIRS_MAX(ISPAIR32)
+        if (pairs->size < pairs->used || pairs->size > PAIRS_MAX(ISPAIR32))
+            pairs->size = PAIRS_MAX(ISPAIR32);
 
         pairs->pairs = repalloc(pairs->pairs, pairs->size * sizeof(IStorePair));
     }

@@ -143,7 +143,7 @@ istore_parse_istore(ISParser *parser)
     istore_pairs_init(pairs, 200);
     istore_tree_to_pairs(parser->tree, pairs, 0);
     istore_make_empty(parser->tree);
-    FINALIZE_ISTORE(out, pairs, ISTOREPAIR);
+    FINALIZE_ISTORE(out, pairs, ISPAIR32);
     PG_RETURN_POINTER(out);
 }
 
@@ -163,7 +163,7 @@ istore_out(PG_FUNCTION_ARGS)
         PG_RETURN_CSTRING(out);
     }
     out = palloc0(in->buflen + 1);
-    pairs = FIRST_PAIR(in, ISTOREPAIR);
+    pairs = FIRST_PAIR(in, ISPAIR32);
     for (i = 0; i<in->len; ++i)
     {
         ptr += sprintf(
@@ -203,7 +203,7 @@ istore_recv(PG_FUNCTION_ARGS)
         int32  val  = pq_getmsgint(buf, 4);
         istore_pairs_insert(creator, key, val);
     }
-    FINALIZE_ISTORE_NOSORT(result, creator, ISTOREPAIR);
+    FINALIZE_ISTORE_NOSORT(result, creator, ISPAIR32);
     PG_RETURN_POINTER(result);
 }
 
@@ -212,7 +212,7 @@ Datum
 istore_send(PG_FUNCTION_ARGS)
 {
     IStore *in = PG_GETARG_IS(0);
-    IStorePair *pairs= FIRST_PAIR(in, ISTOREPAIR);
+    IStorePair *pairs= FIRST_PAIR(in, ISPAIR32);
     int i = 0;
     StringInfoData buf;
     pq_begintypsend(&buf);
