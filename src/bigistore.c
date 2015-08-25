@@ -469,8 +469,6 @@ bigistore_from_array(PG_FUNCTION_ARGS)
         if (nulls[i])
             continue;
         key = DatumGetInt32(i_data[i]);
-        if (key < 0)
-            elog(ERROR, "cannot count array that has negative integers");
         position = bigistore_tree_find(key, tree);
         if (position == NULL)
             tree = bigistore_insert(tree, key, 1);
@@ -512,11 +510,7 @@ array_to_bigistore(Datum *data, int count, bool *nulls)
         for (index = 0; index < bigistore->len; ++index)
         {
             payload = FIRST_PAIR(bigistore, BigIStorePair) + index;
-            position = bigistore_tree_find(payload->key, tree);
-            if (position == NULL)
-                tree = bigistore_insert(tree, payload->key, payload->val);
-            else
-                position->value = int32add(position->value, payload->val);
+            tree = bigistore_insert(tree, payload->key, payload->val);
         }
     }
     n = bigistore_tree_length(tree);
