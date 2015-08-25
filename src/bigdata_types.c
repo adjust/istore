@@ -134,7 +134,7 @@ bigistore_insert(BigAvlTree t, int32 key, int64 value)
             t->left = bigistore_insert(t->left, key, value);
             if (height(t->left) - height(t->right) == 2)
             {
-                if (COMPARE(key, t->left->key))
+                if (COMPARE(key, t->left->key) < 0)
                     t = singleRotateWithLeft(t);
                 else
                     t = doubleRotateWithLeft(t);
@@ -145,7 +145,7 @@ bigistore_insert(BigAvlTree t, int32 key, int64 value)
             t->right = bigistore_insert(t->right, key, value);
             if (height(t->right) - height(t->left) == 2)
             {
-                if (COMPARE(key, t->right->key))
+                if (COMPARE(key, t->right->key) > 0)
                     t = singleRotateWithRight(t);
                 else
                     t = doubleRotateWithRight(t);
@@ -154,6 +154,7 @@ bigistore_insert(BigAvlTree t, int32 key, int64 value)
         else
         {
             t->value = int32add(t->value, value);
+            return t;
         }
     }
 

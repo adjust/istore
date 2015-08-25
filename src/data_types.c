@@ -134,7 +134,7 @@ istore_insert(AvlTree t, int32 key, int32 value)
             t->left = istore_insert(t->left, key, value);
             if (height(t->left) - height(t->right) == 2)
             {
-                if (COMPARE(key, t->left->key))
+                if (COMPARE(key, t->left->key) < 0)
                     t = singleRotateWithLeft(t);
                 else
                     t = doubleRotateWithLeft(t);
@@ -145,7 +145,7 @@ istore_insert(AvlTree t, int32 key, int32 value)
             t->right = istore_insert(t->right, key, value);
             if (height(t->right) - height(t->left) == 2)
             {
-                if (COMPARE(key, t->right->key))
+                if (COMPARE(key, t->right->key) > 0 )
                     t = singleRotateWithRight(t);
                 else
                     t = doubleRotateWithRight(t);
