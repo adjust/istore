@@ -154,6 +154,7 @@ istore_insert(AvlTree t, int32 key, int32 value)
         else
         {
             t->value = int32add(t->value, value);
+            return t;
         }
     }
 
