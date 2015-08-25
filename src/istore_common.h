@@ -6,7 +6,7 @@
 #define MIN(_a ,_b) (_a < _b) ? _a : _b
 #define SAMESIGN(a,b)   (((a) < 0) == ((b) < 0))
 
-#define COMPARE(_a,_b) (_a - _b)
+#define COMPARE(_a,_b) (_a == _b ? 0 : (_a < _b ? -1 : 1))
 #define DIGIT_WIDTH(_digit, _width, _dtype)       \
     do {                                  \
         _dtype _local = _digit;            \
