@@ -1,0 +1,1 @@
+SELECT a + b as add FROM is_bench;

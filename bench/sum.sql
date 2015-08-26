@@ -1,0 +1,1 @@
+SELECT SUM(a) as sum FROM is_bench;

@@ -1,0 +1,1 @@
+SELECT accumulate(a) as acc FROM is_bench;

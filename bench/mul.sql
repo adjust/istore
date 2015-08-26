@@ -1,0 +1,1 @@
+SELECT a * b as mul FROM is_bench;
