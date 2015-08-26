@@ -38,7 +38,7 @@ bigistore_tree_find(int32 key, BigAvlTree t)
 /* This function can be called only if k2 has a left child */
 /* Perform a rotate between a node (k2) and its left child */
 /* Update heights, then return new root */
-static BigPosition
+static inline BigPosition
 singleRotateWithLeft(BigPosition k2)
 {
     BigPosition k1;
@@ -57,7 +57,7 @@ singleRotateWithLeft(BigPosition k2)
 /* This function can be called only if k1 has a right child */
 /* Perform a rotate between a node (k1) and its right child */
 /* Update heights, then return new root */
-static BigPosition
+static inline BigPosition
 singleRotateWithRight(BigPosition k1)
 {
     BigPosition k2;
@@ -77,7 +77,7 @@ singleRotateWithRight(BigPosition k1)
 /* child and k3's left child has a right child */
 /* Do the left-right double rotation */
 /* Update heights, then return new root */
-static BigPosition
+static inline BigPosition
 doubleRotateWithLeft(BigPosition k3)
 {
     /* Rotate between k1 and k2 */
@@ -91,7 +91,7 @@ doubleRotateWithLeft(BigPosition k3)
 /* child and k1's right child has a left child */
 /* Do the right-left double rotation */
 /* Update heights, then return new root */
-static BigPosition
+static inline BigPosition
 doubleRotateWithRight(BigPosition k1)
 {
     /* Rotate between k3 and k2 */

@@ -37,7 +37,7 @@ istore_tree_find(int32 key, AvlTree t)
 /* This function can be called only if k2 has a left child */
 /* Perform a rotate between a node (k2) and its left child */
 /* Update heights, then return new root */
-static Position
+static inline Position
 singleRotateWithLeft(Position k2)
 {
     Position k1;
@@ -56,7 +56,7 @@ singleRotateWithLeft(Position k2)
 /* This function can be called only if k1 has a right child */
 /* Perform a rotate between a node (k1) and its right child */
 /* Update heights, then return new root */
-static Position
+static inline Position
 singleRotateWithRight(Position k1)
 {
     Position k2;
@@ -76,7 +76,7 @@ singleRotateWithRight(Position k1)
 /* child and k3's left child has a right child */
 /* Do the left-right double rotation */
 /* Update heights, then return new root */
-static Position
+static inline Position
 doubleRotateWithLeft(Position k3)
 {
     /* Rotate between k1 and k2 */
@@ -90,7 +90,7 @@ doubleRotateWithLeft(Position k3)
 /* child and k1's right child has a left child */
 /* Do the right-left double rotation */
 /* Update heights, then return new root */
-static Position
+static inline Position
 doubleRotateWithRight(Position k1)
 {
     /* Rotate between k3 and k2 */
