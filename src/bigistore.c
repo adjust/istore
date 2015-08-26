@@ -2,13 +2,6 @@
 #include "funcapi.h"
 #include "intutils.h"
 
-#define COPY_ISTORE(_dst, _src)                \
-    do {                                       \
-        _dst = palloc0(ISTORE_SIZE(_src, BigIStorePair));      \
-        memcpy(_dst, _src, ISTORE_SIZE(_src, BigIStorePair)); \
-    } while(0)
-
-
 /*
  * Sum the values of an bigistore
  */
@@ -727,7 +720,8 @@ setup_firstcall(FuncCallContext *funcctx, BigIStore *is,
 
     oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
-    COPY_ISTORE(st, is);
+    st = palloc0(ISTORE_SIZE(is, BigIStorePair));
+    memcpy(st, is, ISTORE_SIZE(is, BigIStorePair));
 
     funcctx->user_fctx = (void *) st;
 

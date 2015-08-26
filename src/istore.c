@@ -4,13 +4,6 @@
 
 PG_MODULE_MAGIC;
 
-#define COPY_ISTORE(_dst, _src)                \
-    do {                                       \
-        _dst = palloc0(ISTORE_SIZE(_src, IStorePair));      \
-        memcpy(_dst, _src, ISTORE_SIZE(_src, IStorePair)); \
-    } while(0)
-
-
 /*
  * Sum the values of an istore
  */
@@ -729,7 +722,8 @@ setup_firstcall(FuncCallContext *funcctx, IStore *is,
 
     oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
-    COPY_ISTORE(st, is);
+    st = palloc0(ISTORE_SIZE(is, IStorePair));
+    memcpy(st, is, ISTORE_SIZE(is, IStorePair));
 
     funcctx->user_fctx = (void *) st;
 
