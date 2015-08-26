@@ -81,7 +81,11 @@ int32div(int32 arg1, int32 arg2)
 {
   int32   result;
 
-  if (arg2 == 0)
+  /* allow division by zero if nominator is zero */
+  if (arg1 == 0)
+    return 0;
+
+  if (arg2 == 0 )
   {
     ereport(ERROR,
         (errcode(ERRCODE_DIVISION_BY_ZERO),

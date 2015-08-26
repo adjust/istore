@@ -366,7 +366,7 @@ bigistore_divide(PG_FUNCTION_ARGS)
             ++index2;
         else
         {
-            if (pairs2[index2].val == 0)
+            if (pairs1[index1].val != 0 && pairs2[index2].val == 0)
                 ereport(ERROR, (
                     errcode(ERRCODE_DIVISION_BY_ZERO),
                     errmsg("division by zero"),

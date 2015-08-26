@@ -127,6 +127,8 @@ types.each do |type|
         query("SELECT divide('1=>1, 2=>1'::#{type}, '3=>0'::#{type})").should match ''
         query("SELECT divide('-1=>-1, 2=>1'::#{type}, -1)").should match \
           '"-1"=>"1", "2"=>"-1"'
+        query("SELECT divide('1=>1, 3=>0'::#{type}, '3=>0'::#{type})").should match \
+         '"3"=>"0"'
       end
 
       it 'should raise division by zero error' do
