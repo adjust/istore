@@ -463,7 +463,7 @@ istore_from_array(PG_FUNCTION_ARGS)
             &n
             );
 
-    tree = istore_make_empty(NULL);
+    tree = NULL;
 
     for (i = 0; i < n; ++i)
     {
@@ -479,7 +479,7 @@ istore_from_array(PG_FUNCTION_ARGS)
     istore_tree_to_pairs(tree, pairs, 0);
     istore_make_empty(tree);
 
-    FINALIZE_ISTORE(result, pairs);
+    FINALIZE_ISTORE_NOSORT(result, pairs);
     PG_RETURN_POINTER(result);
 }
 
@@ -495,7 +495,7 @@ array_to_istore(Datum *data, int count, bool *nulls)
     IStorePair   *payload;
     IStorePairs  *pairs;
 
-    tree = istore_make_empty(NULL);
+    tree = NULL;
 
     for (i = 0; i < count; ++i)
     {
@@ -516,7 +516,7 @@ array_to_istore(Datum *data, int count, bool *nulls)
     istore_tree_to_pairs(tree, pairs, 0);
     istore_make_empty(tree);
 
-    FINALIZE_ISTORE(out, pairs);
+    FINALIZE_ISTORE_NOSORT(out, pairs);
     PG_RETURN_POINTER(out);
 }
 
@@ -667,7 +667,7 @@ istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
     if (n1 != n2)
         elog(ERROR, "array dont have the same length");
 
-    tree = istore_make_empty(NULL);
+    tree = NULL;
 
     for (i = 0; i < n1; ++i)
     {
@@ -688,7 +688,7 @@ istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
     istore_tree_to_pairs(tree, pairs, 0);
     istore_make_empty(tree);
 
-    FINALIZE_ISTORE(out, pairs);
+    FINALIZE_ISTORE_NOSORT(out, pairs);
     PG_RETURN_POINTER(out);
 }
 

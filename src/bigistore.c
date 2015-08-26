@@ -251,7 +251,7 @@ bigistore_subtract_integer(PG_FUNCTION_ARGS)
         bigistore_pairs_insert(creator, pairs[index].key, int32sub(pairs[index].val, int_arg));
         ++index;
     }
-    FINALIZE_BIGISTORE(result, creator);
+    FINALIZE_BIGISTORE_NOSORT(result, creator);
     PG_RETURN_POINTER(result);
 }
 
@@ -295,7 +295,7 @@ bigistore_multiply(PG_FUNCTION_ARGS)
         }
     }
 
-    FINALIZE_BIGISTORE(result, creator);
+    FINALIZE_BIGISTORE_NOSORT(result, creator);
     PG_RETURN_POINTER(result);
 }
 
@@ -461,7 +461,7 @@ bigistore_from_array(PG_FUNCTION_ARGS)
             &n
             );
 
-    tree = bigistore_make_empty(NULL);
+    tree = NULL;
 
     for (i = 0; i < n; ++i)
     {
@@ -477,7 +477,7 @@ bigistore_from_array(PG_FUNCTION_ARGS)
     bigistore_tree_to_pairs(tree, pairs, 0);
     bigistore_make_empty(tree);
 
-    FINALIZE_BIGISTORE(result, pairs);
+    FINALIZE_BIGISTORE_NOSORT(result, pairs);
     PG_RETURN_POINTER(result);
 }
 
@@ -493,7 +493,7 @@ array_to_bigistore(Datum *data, int count, bool *nulls)
     BigIStorePair   *payload;
     BigIStorePairs  *pairs;
 
-    tree = bigistore_make_empty(NULL);
+    tree = NULL;
 
     for (i = 0; i < count; ++i)
     {
@@ -514,7 +514,7 @@ array_to_bigistore(Datum *data, int count, bool *nulls)
     bigistore_tree_to_pairs(tree, pairs, 0);
     bigistore_make_empty(tree);
 
-    FINALIZE_BIGISTORE(out, pairs);
+    FINALIZE_BIGISTORE_NOSORT(out, pairs);
     PG_RETURN_POINTER(out);
 }
 
@@ -665,7 +665,7 @@ bigistore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
     if (n1 != n2)
         elog(ERROR, "array dont have the same length");
 
-    tree = bigistore_make_empty(NULL);
+    tree = NULL;
 
     for (i = 0; i < n1; ++i)
     {
@@ -686,7 +686,7 @@ bigistore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
     bigistore_tree_to_pairs(tree, pairs, 0);
     bigistore_make_empty(tree);
 
-    FINALIZE_BIGISTORE(out, pairs);
+    FINALIZE_BIGISTORE_NOSORT(out, pairs);
     PG_RETURN_POINTER(out);
 }
 
