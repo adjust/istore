@@ -74,7 +74,6 @@ void bigistore_pairs_init(BigIStorePairs *pairs, size_t initial_size);
 void bigistore_pairs_insert(BigIStorePairs *pairs, int32 key, int64 val);
 int  bigistore_pairs_cmp(const void *a, const void *b);
 void bigistore_pairs_sort(BigIStorePairs *pairs);
-void bigistore_pairs_deinit(BigIStorePairs *pairs);
 
 BigAvlTree bigistore_make_empty(BigAvlTree t);
 BigPosition bigistore_tree_find(int32 key, BigAvlTree t);
@@ -100,7 +99,7 @@ BigIStorePair* bigistore_find(BigIStore *is, int32 key);
         _istore->len    = _pairs->used;                                     \
         SET_VARSIZE(_istore, ISHDRSZ + PAYLOAD_SIZE(_pairs, BigIStorePair));               \
         memcpy(FIRST_PAIR(_istore, BigIStorePair), _pairs->pairs, PAYLOAD_SIZE(_pairs, BigIStorePair)); \
-        bigistore_pairs_deinit(_pairs);                                            \
+        pfree(_pairs->pairs);                                        \
     } while(0)
 
 

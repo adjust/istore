@@ -436,7 +436,6 @@ istore_from_array(PG_FUNCTION_ARGS)
     Oid        i_eltype;
     AvlTree  tree;
     IStorePairs   *pairs;
-    Position position;
     int      key,
              i;
 
@@ -471,12 +470,7 @@ istore_from_array(PG_FUNCTION_ARGS)
         if (nulls[i])
             continue;
         key = DatumGetInt32(i_data[i]);
-        position = istore_tree_find(key, tree);
-        if (position == NULL)
-            tree = istore_insert(tree, key, 1);
-        else
-            // overflow is unlikely as you'd hit the 1GB limit before
-            position->value += 1;
+        tree = istore_insert(tree, key, 1);
     }
 
     n     = istore_tree_length(tree);
@@ -500,7 +494,6 @@ array_to_istore(Datum *data, int count, bool *nulls)
               index;
     IStorePair   *payload;
     IStorePairs  *pairs;
-    Position  position;
 
     tree = istore_make_empty(NULL);
 

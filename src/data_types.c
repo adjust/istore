@@ -1,15 +1,7 @@
 #include "istore.h"
 #include "intutils.h"
+#include "avl.h"
 #include "utils/memutils.h"
-
-static inline int
-height(Position p)
-{
-    if (p == NULL)
-        return -1;
-    else
-        return p->height;
-}
 
 AvlTree
 istore_make_empty(AvlTree t)
@@ -118,13 +110,7 @@ istore_insert(AvlTree t, int32 key, int32 value)
         if (t == NULL)
             elog(ERROR, "AvlTree istore_insert: could not allocate memory");
         else
-        {
-            t->key = key;
-            t->value = value;
-            t->height = 0;
-            t->left = NULL;
-            t->right = NULL;
-        }
+            ROOT(t,key,value);
     }
     else
     {
@@ -237,10 +223,4 @@ istore_pairs_cmp(const void *a, const void *b)
         return 1;
     else
         return 0;
-}
-
-void
-istore_pairs_deinit(IStorePairs *pairs)
-{
-    pfree(pairs->pairs);
 }

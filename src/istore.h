@@ -74,7 +74,6 @@ void istore_pairs_init(IStorePairs *pairs, size_t initial_size);
 void istore_pairs_insert(IStorePairs *pairs, int32 key, int32 val);
 int  istore_pairs_cmp(const void *a, const void *b);
 void istore_pairs_sort(IStorePairs *pairs);
-void istore_pairs_deinit(IStorePairs *pairs);
 
 AvlTree istore_make_empty(AvlTree t);
 Position istore_tree_find(int32 key, AvlTree t);
@@ -101,7 +100,7 @@ IStorePair* istore_find(IStore *is, int32 key);
         _istore->len    = _pairs->used;                                     \
         SET_VARSIZE(_istore, ISHDRSZ + PAYLOAD_SIZE(_pairs, IStorePair));               \
         memcpy(FIRST_PAIR(_istore, IStorePair), _pairs->pairs, PAYLOAD_SIZE(_pairs, IStorePair)); \
-        istore_pairs_deinit(_pairs);                                            \
+        pfree(_pairs->pairs);                                               \
     } while(0)
 
 

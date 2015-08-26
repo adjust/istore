@@ -1,15 +1,8 @@
 #include "bigistore.h"
 #include "intutils.h"
+#include "avl.h"
 #include "utils/memutils.h"
 
-static inline int
-height(BigPosition p)
-{
-    if (p == NULL)
-        return -1;
-    else
-        return p->height;
-}
 
 BigAvlTree
 bigistore_make_empty(BigAvlTree t)
@@ -118,13 +111,7 @@ bigistore_insert(BigAvlTree t, int32 key, int64 value)
         if (t == NULL)
             elog(ERROR, "BigAvlTree bigistore_insert: could not allocate memory");
         else
-        {
-            t->key = key;
-            t->value = value;
-            t->height = 0;
-            t->left = NULL;
-            t->right = NULL;
-        }
+            ROOT(t,key,value);
     }
     else
     {
@@ -238,10 +225,4 @@ bigistore_pairs_cmp(const void *a, const void *b)
         return 1;
     else
         return 0;
-}
-
-void
-bigistore_pairs_deinit(BigIStorePairs *pairs)
-{
-    pfree(pairs->pairs);
 }
