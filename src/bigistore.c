@@ -100,9 +100,6 @@ bigistore_add(PG_FUNCTION_ARGS)
     int     index1          = 0,
             index2          = 0;
 
-    if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
-        PG_RETURN_NULL();
-
     is1     = PG_GETARG_BIGIS(0);
     is2     = PG_GETARG_BIGIS(1);
     pairs1  = FIRST_PAIR(is1, BigIStorePair);

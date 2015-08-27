@@ -93,17 +93,14 @@ PG_FUNCTION_INFO_V1(istore_add);
 Datum
 istore_add(PG_FUNCTION_ARGS)
 {
-    IStore  *is1,
-            *is2,
-            *result;
+    IStore      *is1,
+                *is2,
+                *result;
     IStorePair  *pairs1,
-            *pairs2;
+                *pairs2;
     IStorePairs *creator = NULL;
-    int     index1   = 0,
-            index2   = 0;
-
-    if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
-        PG_RETURN_NULL();
+    int          index1  = 0,
+                 index2  = 0;
 
     is1     = PG_GETARG_IS(0);
     is2     = PG_GETARG_IS(1);
