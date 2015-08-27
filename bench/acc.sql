@@ -1,1 +1,1 @@
-SELECT accumulate(a) as acc FROM is_bench;
+SELECT accumulate(a) IS NULL as acc FROM is_bench;

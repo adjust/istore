@@ -1,1 +1,1 @@
-SELECT a + c as addi FROM is_bench;
+SELECT a + c IS NULL as addi FROM is_bench;

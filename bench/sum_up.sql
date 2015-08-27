@@ -1,1 +1,1 @@
-SELECT istore_sum_up(a) as sum_up FROM is_bench;
+SELECT istore_sum_up(a) IS NULL as sum_up FROM is_bench;

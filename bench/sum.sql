@@ -1,1 +1,1 @@
-SELECT SUM(a) as sum FROM is_bench;
+SELECT SUM(a) IS NULL as sum FROM is_bench;

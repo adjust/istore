@@ -1,1 +1,1 @@
-SELECT a * c as muli FROM is_bench;
+SELECT a * c IS NULL as muli FROM is_bench;

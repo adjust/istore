@@ -1,1 +1,1 @@
-SELECT a - b as sub FROM is_bench;
+SELECT a - b IS NULL as sub FROM is_bench;

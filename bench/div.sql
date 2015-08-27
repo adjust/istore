@@ -1,1 +1,1 @@
-SELECT a / b as div FROM is_bench;
+SELECT a / b IS NULL as div FROM is_bench;
