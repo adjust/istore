@@ -1,6 +1,7 @@
 #include "bigistore.h"
 #include "is_parser.h"
 #include <limits.h>
+#include "intutils.h"
 #define GET_NUM(_parser, _num)                                                              \
     do {                                                                                    \
         long _l;                                                                            \
@@ -147,12 +148,13 @@ bigistore_out(PG_FUNCTION_ARGS)
     pairs = FIRST_PAIR(in, BigIStorePair);
     for (i = 0; i<in->len; ++i)
     {
-        ptr += sprintf(
-            out+ptr,
-            "\"%d\"=>\"%ld\", ",
-            pairs[i].key,
-            pairs[i].val
-        );
+        out[ptr++] = '"';
+        ptr += is_ltoa(pairs[i].key, out+ptr);
+        memcpy(out+ptr, "\"=>\"", 5);
+        ptr += 4;
+        ptr += is_lltoa(pairs[i].val, out+ptr);
+        memcpy(out+ptr, "\", ", 4);
+        ptr += 3;
     }
     // replace trailing , with terminating null
     out[in->buflen - 2] = '\0';
