@@ -187,9 +187,6 @@ bigistore_pairs_init(BigIStorePairs *pairs, size_t initial_size)
 void
 bigistore_pairs_insert(BigIStorePairs *pairs, int32 key, int64 val)
 {
-    int keylen,
-        vallen;
-
     if (pairs->size == pairs->used) {
         if (pairs->used == PAIRS_MAX(IStorePair))
             elog(ERROR, "bigistore can't have more than %lu keys", PAIRS_MAX(IStorePair));
@@ -204,10 +201,8 @@ bigistore_pairs_insert(BigIStorePairs *pairs, int32 key, int64 val)
 
     pairs->pairs[pairs->used].key  = key;
     pairs->pairs[pairs->used].val  = val;
+    pairs->buflen += digits64(key) + digits64(val) + BUFLEN_OFFSET;
 
-    DIGIT_WIDTH(key, keylen, int64);
-    DIGIT_WIDTH(val, vallen, int64);
-    pairs->buflen += keylen + vallen + BUFLEN_OFFSET;
     if (pairs->buflen < 0)
         elog(ERROR, "bigistore buffer overflow");
     pairs->used++;

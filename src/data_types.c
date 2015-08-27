@@ -186,9 +186,6 @@ istore_pairs_init(IStorePairs *pairs, size_t initial_size)
 void
 istore_pairs_insert(IStorePairs *pairs, int32 key, int32 val)
 {
-    int keylen,
-        vallen;
-
     if (pairs->size == pairs->used) {
         if (pairs->used == PAIRS_MAX(IStorePair))
             elog(ERROR, "istore can't have more than %lu keys", PAIRS_MAX(IStorePair));
@@ -203,10 +200,8 @@ istore_pairs_insert(IStorePairs *pairs, int32 key, int32 val)
 
     pairs->pairs[pairs->used].key  = key;
     pairs->pairs[pairs->used].val  = val;
+    pairs->buflen += digits32(key) + digits32(val) + BUFLEN_OFFSET;
 
-    DIGIT_WIDTH(key, keylen, int32);
-    DIGIT_WIDTH(val, vallen, int32);
-    pairs->buflen += keylen + vallen + BUFLEN_OFFSET;
     if (pairs->buflen < 0)
         elog(ERROR, "istore buffer overflow");
     pairs->used++;
