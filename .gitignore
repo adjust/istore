@@ -23,4 +23,4 @@
 *.swp
 temp
 results
-bench/benchmarks.csv
+bench/benchmarks*
