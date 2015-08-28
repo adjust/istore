@@ -424,6 +424,7 @@ bigistore_from_array(PG_FUNCTION_ARGS)
     Oid             i_eltype;
     BigAvlTree      tree;
     BigIStorePairs *pairs;
+    BigPosition     position;
     int             key,
                     i;
 
@@ -458,7 +459,12 @@ bigistore_from_array(PG_FUNCTION_ARGS)
         if (nulls[i])
             continue;
         key = DatumGetInt32(i_data[i]);
-        tree = bigistore_insert(tree, key, 1);
+        position = bigistore_tree_find(key, tree);
+        if (position == NULL)
+            tree = bigistore_insert(tree, key, 1);
+        else
+            // overflow is unlikely as you'd hit the 1GB limit before
+            position->value += 1;
     }
 
     n     = bigistore_tree_length(tree);
@@ -482,6 +488,7 @@ array_to_bigistore(Datum *data, int count, bool *nulls)
               index;
     BigIStorePair   *payload;
     BigIStorePairs  *pairs;
+    BigPosition     position;
 
     tree = NULL;
 
@@ -493,7 +500,11 @@ array_to_bigistore(Datum *data, int count, bool *nulls)
         for (index = 0; index < bigistore->len; ++index)
         {
             payload = FIRST_PAIR(bigistore, BigIStorePair) + index;
-            tree = bigistore_insert(tree, payload->key, payload->val);
+            position = bigistore_tree_find(payload->key, tree);
+            if (position == NULL)
+                tree = bigistore_insert(tree, payload->key, payload->val);
+            else
+                position->value = int32add(position->value, payload->val);
         }
     }
     n = bigistore_tree_length(tree);
