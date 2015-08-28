@@ -148,19 +148,6 @@ istore_insert(AvlTree t, int32 key, int32 value)
     return t;
 }
 
-// return number of nodes
-int
-istore_tree_length(Position p)
-{
-    int n;
-    if(p == NULL)
-        return 0;
-    n = istore_tree_length(p->left);
-    ++n;
-    n += istore_tree_length(p->right);
-    return n;
-}
-
 int
 istore_tree_to_pairs(Position p, IStorePairs *pairs, int n)
 {

@@ -419,7 +419,8 @@ istore_from_array(PG_FUNCTION_ARGS)
     IStore    *result;
     Datum     *i_data;
     bool      *nulls;
-    int        n;
+    int        n,
+               s = 0;
     int16      i_typlen;
     bool       i_typbyval;
     char       i_typalign;
@@ -463,15 +464,17 @@ istore_from_array(PG_FUNCTION_ARGS)
         key = DatumGetInt32(i_data[i]);
         position = istore_tree_find(key, tree);
         if (position == NULL)
+        {
             tree = istore_insert(tree, key, 1);
+            ++s;
+        }
         else
             // overflow is unlikely as you'd hit the 1GB limit before
             position->value += 1;
     }
 
-    n     = istore_tree_length(tree);
     pairs = palloc0(sizeof *pairs);
-    istore_pairs_init(pairs, n);
+    istore_pairs_init(pairs, s);
     istore_tree_to_pairs(tree, pairs, 0);
     istore_make_empty(tree);
 
@@ -486,7 +489,7 @@ array_to_istore(Datum *data, int count, bool *nulls)
              *istore;
     AvlTree   tree;
     int       i,
-              n,
+              n = 0,
               index;
     IStorePair   *payload;
     IStorePairs  *pairs;
@@ -504,12 +507,15 @@ array_to_istore(Datum *data, int count, bool *nulls)
         {
             position = istore_tree_find(payload[index].key, tree);
             if (position == NULL)
+            {
                 tree = istore_insert(tree, payload[index].key, payload[index].val);
+                ++n;
+            }
             else
                 position->value = int32add(position->value, payload[index].val);
         }
     }
-    n = istore_tree_length(tree);
+
     if (n == 0)
         return 0;
     pairs = palloc0(sizeof *pairs);
@@ -610,7 +616,7 @@ istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
                 *nulls2;
     IStorePairs *pairs;
     int          i,
-                 n,
+                 n = 0,
                  n1,
                  n2;
     int16        i_typlen1,
@@ -679,11 +685,14 @@ istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
         position = istore_tree_find(key, tree);
 
         if (position == NULL)
+        {
             tree = istore_insert(tree, key, value);
+            ++n;
+        }
         else
             position->value = int32add(position->value, value);
     }
-    n = istore_tree_length(tree);
+
     pairs = palloc0(sizeof *pairs);
     istore_pairs_init(pairs, n);
     istore_tree_to_pairs(tree, pairs, 0);

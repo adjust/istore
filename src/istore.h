@@ -78,7 +78,6 @@ void istore_pairs_sort(IStorePairs *pairs);
 AvlTree istore_make_empty(AvlTree t);
 Position istore_tree_find(int32 key, AvlTree t);
 AvlTree istore_insert(AvlTree t, int32 key, int32 value);
-int istore_tree_length(Position p);
 int istore_tree_to_pairs(Position p, IStorePairs *pairs, int n);
 IStorePair* istore_find(IStore *is, int32 key);
 

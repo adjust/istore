@@ -417,7 +417,8 @@ bigistore_from_array(PG_FUNCTION_ARGS)
     BigIStore      *result;
     Datum          *i_data;
     bool           *nulls;
-    int             n;
+    int             n,
+                    s = 0;
     int16           i_typlen;
     bool            i_typbyval;
     char            i_typalign;
@@ -461,15 +462,17 @@ bigistore_from_array(PG_FUNCTION_ARGS)
         key = DatumGetInt32(i_data[i]);
         position = bigistore_tree_find(key, tree);
         if (position == NULL)
+        {
             tree = bigistore_insert(tree, key, 1);
+            ++s;
+        }
         else
             // overflow is unlikely as you'd hit the 1GB limit before
             position->value += 1;
     }
 
-    n     = bigistore_tree_length(tree);
     pairs = palloc0(sizeof *pairs);
-    bigistore_pairs_init(pairs, n);
+    bigistore_pairs_init(pairs, s);
     bigistore_tree_to_pairs(tree, pairs, 0);
     bigistore_make_empty(tree);
 
@@ -484,7 +487,7 @@ array_to_bigistore(Datum *data, int count, bool *nulls)
              *bigistore;
     BigAvlTree   tree;
     int       i,
-              n,
+              n = 0 ,
               index;
     BigIStorePair   *payload;
     BigIStorePairs  *pairs;
@@ -502,12 +505,14 @@ array_to_bigistore(Datum *data, int count, bool *nulls)
         {
             position = bigistore_tree_find(payload[index].key, tree);
             if (position == NULL)
+            {
                 tree = bigistore_insert(tree, payload[index].key, payload[index].val);
+                ++n;
+            }
             else
                 position->value = int32add(position->value, payload[index].val);
         }
     }
-    n = bigistore_tree_length(tree);
     if (n == 0)
         return 0;
     pairs = palloc0(sizeof *pairs);
@@ -608,7 +613,7 @@ bigistore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
                    *nulls2;
     BigIStorePairs *pairs;
     int             i,
-                    n,
+                    n = 0,
                     n1,
                     n2;
     int16           i_typlen1,
@@ -677,11 +682,14 @@ bigistore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
         position = bigistore_tree_find(key, tree);
 
         if (position == NULL)
+        {
             tree = bigistore_insert(tree, key, value);
+            ++n;
+        }
         else
             position->value = int32add(position->value, value);
     }
-    n = bigistore_tree_length(tree);
+
     pairs = palloc0(sizeof *pairs);
     bigistore_pairs_init(pairs, n);
     bigistore_tree_to_pairs(tree, pairs, 0);

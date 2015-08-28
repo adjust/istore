@@ -149,19 +149,6 @@ bigistore_insert(BigAvlTree t, int32 key, int64 value)
     return t;
 }
 
-// return number of nodes
-int
-bigistore_tree_length(BigPosition p)
-{
-    int n;
-    if(p == NULL)
-        return 0;
-    n = bigistore_tree_length(p->left);
-    ++n;
-    n += bigistore_tree_length(p->right);
-    return n;
-}
-
 int
 bigistore_tree_to_pairs(BigPosition p, BigIStorePairs *pairs, int n)
 {

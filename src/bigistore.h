@@ -78,7 +78,6 @@ void bigistore_pairs_sort(BigIStorePairs *pairs);
 BigAvlTree bigistore_make_empty(BigAvlTree t);
 BigPosition bigistore_tree_find(int32 key, BigAvlTree t);
 BigAvlTree bigistore_insert(BigAvlTree t, int32 key, int64 value);
-int bigistore_tree_length(BigPosition p);
 int bigistore_tree_to_pairs(BigPosition p, BigIStorePairs *pairs, int n);
 BigIStorePair* bigistore_find(BigIStore *is, int32 key);
 
