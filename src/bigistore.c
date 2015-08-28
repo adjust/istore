@@ -497,14 +497,14 @@ array_to_bigistore(Datum *data, int count, bool *nulls)
         if (nulls[i])
             continue;
         bigistore = (BigIStore *) data[i];
+        payload = FIRST_PAIR(bigistore, BigIStorePair);
         for (index = 0; index < bigistore->len; ++index)
         {
-            payload = FIRST_PAIR(bigistore, BigIStorePair) + index;
-            position = bigistore_tree_find(payload->key, tree);
+            position = bigistore_tree_find(payload[index].key, tree);
             if (position == NULL)
-                tree = bigistore_insert(tree, payload->key, payload->val);
+                tree = bigistore_insert(tree, payload[index].key, payload[index].val);
             else
-                position->value = int32add(position->value, payload->val);
+                position->value = int32add(position->value, payload[index].val);
         }
     }
     n = bigistore_tree_length(tree);

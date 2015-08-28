@@ -499,14 +499,14 @@ array_to_istore(Datum *data, int count, bool *nulls)
         if (nulls[i])
             continue;
         istore = (IStore *) data[i];
+        payload = FIRST_PAIR(istore, IStorePair);
         for (index = 0; index < istore->len; ++index)
         {
-            payload = FIRST_PAIR(istore, IStorePair) + index;
-            position = istore_tree_find(payload->key, tree);
+            position = istore_tree_find(payload[index].key, tree);
             if (position == NULL)
-                tree = istore_insert(tree, payload->key, payload->val);
+                tree = istore_insert(tree, payload[index].key, payload[index].val);
             else
-                position->value = int32add(position->value, payload->val);
+                position->value = int32add(position->value, payload[index].val);
         }
     }
     n = istore_tree_length(tree);
