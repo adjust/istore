@@ -51,15 +51,13 @@ typedef struct {
 } IStorePairs;
 
 typedef struct AvlNode AvlNode;
-typedef struct AvlNode *Position;
-typedef struct AvlNode *AvlTree;
 
 struct AvlNode
 {
     int32    key;
     int32    value;
-    AvlTree  left;
-    AvlTree  right;
+    AvlNode  *left;
+    AvlNode  *right;
     int      height;
 };
 
@@ -75,10 +73,10 @@ void istore_pairs_insert(IStorePairs *pairs, int32 key, int32 val);
 int  istore_pairs_cmp(const void *a, const void *b);
 void istore_pairs_sort(IStorePairs *pairs);
 
-AvlTree istore_make_empty(AvlTree t);
-Position istore_tree_find(int32 key, AvlTree t);
-AvlTree istore_insert(AvlTree t, int32 key, int32 value);
-int istore_tree_to_pairs(Position p, IStorePairs *pairs, int n);
+AvlNode* istore_make_empty(AvlNode *t);
+AvlNode* istore_tree_find(int32 key, AvlNode *t);
+AvlNode* istore_insert(AvlNode *t, int32 key, int32 value);
+int istore_tree_to_pairs(AvlNode *p, IStorePairs *pairs, int n);
 IStorePair* istore_find(IStore *is, int32 key);
 
 #define PG_GETARG_IS(x) (IStore *)PG_DETOAST_DATUM(PG_GETARG_DATUM(x))

@@ -4,8 +4,8 @@
 #include "utils/memutils.h"
 
 
-BigAvlTree
-bigistore_make_empty(BigAvlTree t)
+BigAvlNode*
+bigistore_make_empty(BigAvlNode *t)
 {
     if (t != NULL)
     {
@@ -18,8 +18,8 @@ bigistore_make_empty(BigAvlTree t)
 }
 
 
-BigPosition
-bigistore_tree_find(int32 key, BigAvlTree t)
+BigAvlNode*
+bigistore_tree_find(int32 key, BigAvlNode *t)
 {
     int32 cmp;
 
@@ -38,10 +38,10 @@ bigistore_tree_find(int32 key, BigAvlTree t)
 /* This function can be called only if k2 has a left child */
 /* Perform a rotate between a node (k2) and its left child */
 /* Update heights, then return new root */
-static inline BigPosition
-singleRotateWithLeft(BigPosition k2)
+static inline BigAvlNode*
+singleRotateWithLeft(BigAvlNode *k2)
 {
-    BigPosition k1;
+    BigAvlNode *k1;
 
     k1 = k2->left;
     k2->left = k1->right;
@@ -57,10 +57,10 @@ singleRotateWithLeft(BigPosition k2)
 /* This function can be called only if k1 has a right child */
 /* Perform a rotate between a node (k1) and its right child */
 /* Update heights, then return new root */
-static inline BigPosition
-singleRotateWithRight(BigPosition k1)
+static inline BigAvlNode*
+singleRotateWithRight(BigAvlNode *k1)
 {
-    BigPosition k2;
+    BigAvlNode *k2;
 
     k2 = k1->right;
     k1->right = k2->left;
@@ -77,8 +77,8 @@ singleRotateWithRight(BigPosition k1)
 /* child and k3's left child has a right child */
 /* Do the left-right double rotation */
 /* Update heights, then return new root */
-static inline BigPosition
-doubleRotateWithLeft(BigPosition k3)
+static inline BigAvlNode*
+doubleRotateWithLeft(BigAvlNode *k3)
 {
     /* Rotate between k1 and k2 */
     k3->left = singleRotateWithRight(k3->left);
@@ -91,8 +91,8 @@ doubleRotateWithLeft(BigPosition k3)
 /* child and k1's right child has a left child */
 /* Do the right-left double rotation */
 /* Update heights, then return new root */
-static inline BigPosition
-doubleRotateWithRight(BigPosition k1)
+static inline BigAvlNode*
+doubleRotateWithRight(BigAvlNode *k1)
 {
     /* Rotate between k3 and k2 */
     k1->right = singleRotateWithLeft(k1->right);
@@ -101,15 +101,15 @@ doubleRotateWithRight(BigPosition k1)
     return singleRotateWithRight(k1);
 }
 
-BigAvlTree
-bigistore_insert(BigAvlTree t, int32 key, int64 value)
+BigAvlNode*
+bigistore_insert(BigAvlNode *t, int32 key, int64 value)
 {
     if(t == NULL)
     {
         /* Create and return a one-node tree */
         t = palloc0(sizeof(struct BigAvlNode));
         if (t == NULL)
-            elog(ERROR, "BigAvlTree bigistore_insert: could not allocate memory");
+            elog(ERROR, "BigAvlNode bigistore_insert: could not allocate memory");
         else
             ROOT(t,key,value);
     }
@@ -150,7 +150,7 @@ bigistore_insert(BigAvlTree t, int32 key, int64 value)
 }
 
 int
-bigistore_tree_to_pairs(BigPosition p, BigIStorePairs *pairs, int n)
+bigistore_tree_to_pairs(BigAvlNode *p, BigIStorePairs *pairs, int n)
 {
     if(p == NULL)
         return n;

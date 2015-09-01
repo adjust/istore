@@ -51,15 +51,13 @@ typedef struct {
 } BigIStorePairs;
 
 typedef struct BigAvlNode BigAvlNode;
-typedef struct BigAvlNode *BigPosition;
-typedef struct BigAvlNode *BigAvlTree;
 
 struct BigAvlNode
 {
     int32       key;
     int64       value;
-    BigAvlTree  left;
-    BigAvlTree  right;
+    BigAvlNode  *left;
+    BigAvlNode  *right;
     int         height;
 };
 
@@ -75,10 +73,10 @@ void bigistore_pairs_insert(BigIStorePairs *pairs, int32 key, int64 val);
 int  bigistore_pairs_cmp(const void *a, const void *b);
 void bigistore_pairs_sort(BigIStorePairs *pairs);
 
-BigAvlTree bigistore_make_empty(BigAvlTree t);
-BigPosition bigistore_tree_find(int32 key, BigAvlTree t);
-BigAvlTree bigistore_insert(BigAvlTree t, int32 key, int64 value);
-int bigistore_tree_to_pairs(BigPosition p, BigIStorePairs *pairs, int n);
+BigAvlNode* bigistore_make_empty(BigAvlNode *t);
+BigAvlNode* bigistore_tree_find(int32 key, BigAvlNode *t);
+BigAvlNode* bigistore_insert(BigAvlNode *t, int32 key, int64 value);
+int bigistore_tree_to_pairs(BigAvlNode *p, BigIStorePairs *pairs, int n);
 BigIStorePair* bigistore_find(BigIStore *is, int32 key);
 
 #define PG_GETARG_BIGIS(x) (BigIStore *)PG_DETOAST_DATUM(PG_GETARG_DATUM(x))

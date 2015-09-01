@@ -3,8 +3,8 @@
 #include "avl.h"
 #include "utils/memutils.h"
 
-AvlTree
-istore_make_empty(AvlTree t)
+AvlNode*
+istore_make_empty(AvlNode *t)
 {
     if (t != NULL)
     {
@@ -17,8 +17,8 @@ istore_make_empty(AvlTree t)
 }
 
 
-Position
-istore_tree_find(int32 key, AvlTree t)
+AvlNode*
+istore_tree_find(int32 key, AvlNode *t)
 {
     int32 cmp;
 
@@ -37,10 +37,10 @@ istore_tree_find(int32 key, AvlTree t)
 /* This function can be called only if k2 has a left child */
 /* Perform a rotate between a node (k2) and its left child */
 /* Update heights, then return new root */
-static inline Position
-singleRotateWithLeft(Position k2)
+static inline AvlNode*
+singleRotateWithLeft(AvlNode *k2)
 {
-    Position k1;
+    AvlNode *k1;
 
     k1 = k2->left;
     k2->left = k1->right;
@@ -56,10 +56,10 @@ singleRotateWithLeft(Position k2)
 /* This function can be called only if k1 has a right child */
 /* Perform a rotate between a node (k1) and its right child */
 /* Update heights, then return new root */
-static inline Position
-singleRotateWithRight(Position k1)
+static inline AvlNode*
+singleRotateWithRight(AvlNode *k1)
 {
-    Position k2;
+    AvlNode *k2;
 
     k2 = k1->right;
     k1->right = k2->left;
@@ -76,8 +76,8 @@ singleRotateWithRight(Position k1)
 /* child and k3's left child has a right child */
 /* Do the left-right double rotation */
 /* Update heights, then return new root */
-static inline Position
-doubleRotateWithLeft(Position k3)
+static inline AvlNode*
+doubleRotateWithLeft(AvlNode *k3)
 {
     /* Rotate between k1 and k2 */
     k3->left = singleRotateWithRight(k3->left);
@@ -90,8 +90,8 @@ doubleRotateWithLeft(Position k3)
 /* child and k1's right child has a left child */
 /* Do the right-left double rotation */
 /* Update heights, then return new root */
-static inline Position
-doubleRotateWithRight(Position k1)
+static inline AvlNode*
+doubleRotateWithRight(AvlNode *k1)
 {
     /* Rotate between k3 and k2 */
     k1->right = singleRotateWithLeft(k1->right);
@@ -100,8 +100,8 @@ doubleRotateWithRight(Position k1)
     return singleRotateWithRight(k1);
 }
 
-AvlTree
-istore_insert(AvlTree t, int32 key, int32 value)
+AvlNode*
+istore_insert(AvlNode *t, int32 key, int32 value)
 {
     if(t == NULL)
     {
@@ -149,7 +149,7 @@ istore_insert(AvlTree t, int32 key, int32 value)
 }
 
 int
-istore_tree_to_pairs(Position p, IStorePairs *pairs, int n)
+istore_tree_to_pairs(AvlNode *p, IStorePairs *pairs, int n)
 {
     if(p == NULL)
         return n;

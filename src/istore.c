@@ -425,9 +425,9 @@ istore_from_array(PG_FUNCTION_ARGS)
     bool       i_typbyval;
     char       i_typalign;
     Oid        i_eltype;
-    AvlTree  tree;
+    AvlNode   *tree;
     IStorePairs   *pairs;
-    Position  position;
+    AvlNode   *position;
     int      key,
              i;
 
@@ -487,13 +487,13 @@ array_to_istore(Datum *data, int count, bool *nulls)
 {
     IStore   *out,
              *istore;
-    AvlTree   tree;
+    AvlNode   *tree;
     int       i,
               n = 0,
               index;
     IStorePair   *payload;
     IStorePairs  *pairs;
-    Position  position;
+    AvlNode  *position;
 
     tree = NULL;
 
@@ -627,8 +627,8 @@ istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
                  i_typalign2;
     Oid          i_eltype1,
                  i_eltype2;
-    AvlTree      tree;
-    Position     position;
+    AvlNode      *tree;
+    AvlNode      *position;
     int32        key,
                  value;
 

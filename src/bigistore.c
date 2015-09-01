@@ -423,9 +423,9 @@ bigistore_from_array(PG_FUNCTION_ARGS)
     bool            i_typbyval;
     char            i_typalign;
     Oid             i_eltype;
-    BigAvlTree      tree;
+    BigAvlNode      *tree;
     BigIStorePairs *pairs;
-    BigPosition     position;
+    BigAvlNode     *position;
     int             key,
                     i;
 
@@ -485,13 +485,13 @@ array_to_bigistore(Datum *data, int count, bool *nulls)
 {
     BigIStore   *out,
              *bigistore;
-    BigAvlTree   tree;
+    BigAvlNode   *tree;
     int       i,
               n = 0 ,
               index;
     BigIStorePair   *payload;
     BigIStorePairs  *pairs;
-    BigPosition     position;
+    BigAvlNode     *position;
 
     tree = NULL;
 
@@ -624,8 +624,8 @@ bigistore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
                     i_typalign2;
     Oid             i_eltype1,
                     i_eltype2;
-    BigAvlTree      tree;
-    BigPosition     position;
+    BigAvlNode      *tree;
+    BigAvlNode     *position;
     int32           key,
                     value;
 
