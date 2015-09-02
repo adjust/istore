@@ -13,10 +13,13 @@ istore_sum_up(PG_FUNCTION_ARGS)
 {
     IStore      *is;
     IStorePair  *pairs;
-    is              = PG_GETARG_IS(0);
-    pairs           = FIRST_PAIR(is, IStorePair);
-    int64    result = 0;
-    int      index  = 0;
+    int64        result;
+    int          index;
+
+    is     = PG_GETARG_IS(0);
+    pairs  = FIRST_PAIR(is, IStorePair);
+    result = 0;
+    index  = 0;
 
     while (index < is->len){
         result = int32add(result, pairs[index++].val);
@@ -462,10 +465,10 @@ istore_from_array(PG_FUNCTION_ARGS)
         if (nulls[i])
             continue;
         key = DatumGetInt32(i_data[i]);
-        position = istore_tree_find(key, tree);
+        position = tree_find(key, tree);
         if (position == NULL)
         {
-            tree = istore_insert(tree, key, 1);
+            tree = tree_insert(tree, key, 1);
             ++s;
         }
         else
@@ -505,10 +508,10 @@ array_to_istore(Datum *data, int count, bool *nulls)
         payload = FIRST_PAIR(istore, IStorePair);
         for (index = 0; index < istore->len; ++index)
         {
-            position = istore_tree_find(payload[index].key, tree);
+            position = tree_find(payload[index].key, tree);
             if (position == NULL)
             {
-                tree = istore_insert(tree, payload[index].key, payload[index].val);
+                tree = tree_insert(tree, payload[index].key, payload[index].val);
                 ++n;
             }
             else
@@ -682,11 +685,11 @@ istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
             continue;
         key      = DatumGetInt32(i_data1[i]);
         value    = DatumGetInt32(i_data2[i]);
-        position = istore_tree_find(key, tree);
+        position = tree_find(key, tree);
 
         if (position == NULL)
         {
-            tree = istore_insert(tree, key, value);
+            tree = tree_insert(tree, key, value);
             ++n;
         }
         else

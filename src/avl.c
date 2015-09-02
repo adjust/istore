@@ -15,7 +15,7 @@ istore_make_empty(AvlNode *t)
 
 
 AvlNode*
-istore_tree_find(int32 key, AvlNode *t)
+tree_find(int32 key, AvlNode *t)
 {
     int32 cmp;
 
@@ -24,9 +24,9 @@ istore_tree_find(int32 key, AvlNode *t)
 
     cmp = COMPARE(key, t->key);
     if (cmp < 0)
-        return istore_tree_find(key, t->left);
+        return tree_find(key, t->left);
     else if (cmp > 0)
-        return istore_tree_find(key, t->right);
+        return tree_find(key, t->right);
     else
         return t;
 }
@@ -111,14 +111,14 @@ tree_length(AvlNode* t)
 }
 
 AvlNode*
-istore_insert(AvlNode *t, int32 key, int64 value)
+tree_insert(AvlNode *t, int32 key, int64 value)
 {
     if(t == NULL)
     {
         /* Create and return a one-node tree */
         t = palloc0(sizeof(struct AvlNode));
         if (t == NULL)
-            elog(ERROR, "AvlTree istore_insert: could not allocate memory");
+            elog(ERROR, "AvlTree tree_insert: could not allocate memory");
         else{
             t->key = key;
             t->value = value;
@@ -132,7 +132,7 @@ istore_insert(AvlNode *t, int32 key, int64 value)
         int32 cmp = COMPARE(key, t->key);
         if (cmp < 0)
         {
-            t->left = istore_insert(t->left, key, value);
+            t->left = tree_insert(t->left, key, value);
             if (height(t->left) - height(t->right) == 2)
             {
                 if (COMPARE(key, t->left->key) < 0)
@@ -143,7 +143,7 @@ istore_insert(AvlNode *t, int32 key, int64 value)
         }
         else if(cmp > 0)
         {
-            t->right = istore_insert(t->right, key, value);
+            t->right = tree_insert(t->right, key, value);
             if (height(t->right) - height(t->left) == 2)
             {
                 if (COMPARE(key, t->right->key) > 0 )

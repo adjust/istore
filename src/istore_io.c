@@ -93,7 +93,7 @@ istore_parse_istore(ISParser *parser)
             GET_NUM(parser, val);
             SKIP_ESCAPED(parser->ptr);
             parser->state = WDEL;
-            parser->tree = istore_insert(parser->tree, key, val);
+            parser->tree = tree_insert(parser->tree, key, val);
         }
         else if (parser->state == WDEL)
         {

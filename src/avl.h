@@ -20,7 +20,7 @@ struct AvlNode
 };
 
 AvlNode* istore_make_empty(AvlNode *t);
-AvlNode* istore_tree_find(int32 key, AvlNode *t);
-AvlNode* istore_insert(AvlNode *t, int32 key, int64 value);
+AvlNode* tree_find(int32 key, AvlNode *t);
+AvlNode* tree_insert(AvlNode *t, int32 key, int64 value);
 int tree_length(AvlNode* t);
 #endif // ISTORE_AVL_H

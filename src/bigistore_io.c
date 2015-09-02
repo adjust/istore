@@ -10,11 +10,11 @@
             neg = true;                                                                     \
         _l   = strtol(_parser->ptr, &_parser->ptr, 10);                                     \
         _num = _l;\
-        if (neg && _num > 0 || _l == LONG_MIN )                          \
+        if ((neg && _num > 0) || (_l == LONG_MIN) )                          \
             ereport(ERROR,                                                                  \
                 (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),                               \
                 errmsg("bigistore \"%s\" is out of range", _parser->begin)));               \
-        else if (!neg && _num < 0 || _l == LONG_MAX )                                                          \
+        else if ((!neg && _num < 0) || (_l == LONG_MAX ))                                                          \
             ereport(ERROR,                                                                  \
                 (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),                               \
                 errmsg("bigistore \"%s\" is out of range", _parser->begin)));               \
@@ -96,7 +96,7 @@ bigistore_parse_bigistore(BigISParser *parser)
             GET_NUM(parser, val);
             SKIP_ESCAPED(parser->ptr);
             parser->state = WDEL;
-            parser->tree = istore_insert(parser->tree, key, val);
+            parser->tree = tree_insert(parser->tree, key, val);
         }
         else if (parser->state == WDEL)
         {
