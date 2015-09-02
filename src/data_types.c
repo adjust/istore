@@ -1,20 +1,15 @@
 #include "istore.h"
 #include "intutils.h"
 #include "avl.h"
-#include "utils/memutils.h"
 
-
-int
-istore_tree_to_pairs(AvlNode *p, IStorePairs *pairs, int n)
+void
+istore_tree_to_pairs(AvlNode *p, IStorePairs *pairs)
 {
     if(p == NULL)
-        return n;
-    n = istore_tree_to_pairs(p->left, pairs, n);
-
+        return;
+    istore_tree_to_pairs(p->left, pairs);
     istore_pairs_insert(pairs, p->key, int6432(p->value));
-    ++n;
-    n = istore_tree_to_pairs(p->right, pairs, n);
-    return n;
+    istore_tree_to_pairs(p->right, pairs);
 }
 
 void

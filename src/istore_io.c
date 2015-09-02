@@ -56,7 +56,7 @@ istore_in(PG_FUNCTION_ARGS)
     pairs = palloc0(sizeof(IStorePairs));
     n = tree_length(tree);
     istore_pairs_init(pairs, n);
-    istore_tree_to_pairs(tree, pairs, 0);
+    istore_tree_to_pairs(tree, pairs);
     istore_make_empty(tree);
     FINALIZE_ISTORE(out, pairs);
     PG_RETURN_POINTER(out);

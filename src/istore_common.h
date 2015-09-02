@@ -1,6 +1,8 @@
 #ifndef ISTORECOMMON_H
 #define ISTORECOMMON_H
 
+#include "utils/memutils.h"
+
 #define BUFLEN_OFFSET 8
 #define MAX(_a, _b) ((_a > _b) ? _a : _b)
 #define MIN(_a ,_b) ((_a < _b) ? _a : _b)

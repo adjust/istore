@@ -61,9 +61,8 @@ typedef struct
 void bigistore_pairs_init(BigIStorePairs *pairs, size_t initial_size);
 void bigistore_pairs_insert(BigIStorePairs *pairs, int32 key, int64 val);
 int  bigistore_pairs_cmp(const void *a, const void *b);
-void bigistore_pairs_sort(BigIStorePairs *pairs);
 
-int bigistore_tree_to_pairs(AvlNode *p, BigIStorePairs *pairs, int n);
+void bigistore_tree_to_pairs(AvlNode *p, BigIStorePairs *pairs);
 BigIStorePair* bigistore_find(BigIStore *is, int32 key);
 
 #define PG_GETARG_BIGIS(x) (BigIStore *)PG_DETOAST_DATUM(PG_GETARG_DATUM(x))

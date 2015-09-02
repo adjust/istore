@@ -478,7 +478,7 @@ istore_from_array(PG_FUNCTION_ARGS)
 
     pairs = palloc0(sizeof *pairs);
     istore_pairs_init(pairs, s);
-    istore_tree_to_pairs(tree, pairs, 0);
+    istore_tree_to_pairs(tree, pairs);
     istore_make_empty(tree);
 
     FINALIZE_ISTORE_NOSORT(result, pairs);
@@ -523,7 +523,7 @@ array_to_istore(Datum *data, int count, bool *nulls)
         return 0;
     pairs = palloc0(sizeof *pairs);
     istore_pairs_init(pairs, n);
-    istore_tree_to_pairs(tree, pairs, 0);
+    istore_tree_to_pairs(tree, pairs);
     istore_make_empty(tree);
 
     FINALIZE_ISTORE_NOSORT(out, pairs);
@@ -698,7 +698,7 @@ istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
 
     pairs = palloc0(sizeof *pairs);
     istore_pairs_init(pairs, n);
-    istore_tree_to_pairs(tree, pairs, 0);
+    istore_tree_to_pairs(tree, pairs);
     istore_make_empty(tree);
 
     FINALIZE_ISTORE_NOSORT(out, pairs);

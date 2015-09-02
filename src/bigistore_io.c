@@ -56,7 +56,7 @@ bigistore_in(PG_FUNCTION_ARGS)
     pairs = palloc0(sizeof(BigIStorePairs));
     n = tree_length(tree);
     bigistore_pairs_init(pairs, n);
-    bigistore_tree_to_pairs(tree, pairs, 0);
+    bigistore_tree_to_pairs(tree, pairs);
     istore_make_empty(tree);
     FINALIZE_BIGISTORE_NOSORT(out, pairs);
     PG_RETURN_POINTER(out);

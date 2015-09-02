@@ -476,7 +476,7 @@ bigistore_from_array(PG_FUNCTION_ARGS)
 
     pairs = palloc0(sizeof *pairs);
     bigistore_pairs_init(pairs, s);
-    bigistore_tree_to_pairs(tree, pairs, 0);
+    bigistore_tree_to_pairs(tree, pairs);
     istore_make_empty(tree);
 
     FINALIZE_BIGISTORE_NOSORT(result, pairs);
@@ -520,7 +520,7 @@ array_to_bigistore(Datum *data, int count, bool *nulls)
         return 0;
     pairs = palloc0(sizeof *pairs);
     bigistore_pairs_init(pairs, n);
-    bigistore_tree_to_pairs(tree, pairs, 0);
+    bigistore_tree_to_pairs(tree, pairs);
     istore_make_empty(tree);
 
     FINALIZE_BIGISTORE_NOSORT(out, pairs);
@@ -695,7 +695,7 @@ bigistore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
 
     pairs = palloc0(sizeof *pairs);
     bigistore_pairs_init(pairs, n);
-    bigistore_tree_to_pairs(tree, pairs, 0);
+    bigistore_tree_to_pairs(tree, pairs);
     istore_make_empty(tree);
 
     FINALIZE_BIGISTORE_NOSORT(out, pairs);

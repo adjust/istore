@@ -1,19 +1,15 @@
 #include "bigistore.h"
 #include "intutils.h"
 #include "avl.h"
-#include "utils/memutils.h"
 
-int
-bigistore_tree_to_pairs(AvlNode *p, BigIStorePairs *pairs, int n)
+void
+bigistore_tree_to_pairs(AvlNode *p, BigIStorePairs *pairs)
 {
     if(p == NULL)
-        return n;
-    n = bigistore_tree_to_pairs(p->left, pairs, n);
-
+        return ;
+    bigistore_tree_to_pairs(p->left, pairs);
     bigistore_pairs_insert(pairs, p->key, p->value);
-    ++n;
-    n = bigistore_tree_to_pairs(p->right, pairs, n);
-    return n;
+    bigistore_tree_to_pairs(p->right, pairs);
 }
 
 void

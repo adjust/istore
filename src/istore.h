@@ -62,9 +62,8 @@ typedef struct
 void istore_pairs_init(IStorePairs *pairs, size_t initial_size);
 void istore_pairs_insert(IStorePairs *pairs, int32 key, int32 val);
 int  istore_pairs_cmp(const void *a, const void *b);
-void istore_pairs_sort(IStorePairs *pairs);
 
-int istore_tree_to_pairs(AvlNode *p, IStorePairs *pairs, int n);
+void istore_tree_to_pairs(AvlNode *p, IStorePairs *pairs);
 IStorePair* istore_find(IStore *is, int32 key);
 
 #define PG_GETARG_IS(x) (IStore *)PG_DETOAST_DATUM(PG_GETARG_DATUM(x))
