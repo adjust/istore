@@ -2,6 +2,9 @@
 #define IS_PARSER_H
 
 #include "avl.h"
+#include <limits.h>
+#include "intutils.h"
+
 
 typedef struct ISParser {
     char    *begin;

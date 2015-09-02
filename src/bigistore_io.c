@@ -1,7 +1,5 @@
 #include "bigistore.h"
 #include "is_parser.h"
-#include <limits.h>
-#include "intutils.h"
 
 PG_FUNCTION_INFO_V1(bigistore_out);
 Datum
