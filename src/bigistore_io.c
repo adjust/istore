@@ -25,7 +25,7 @@ typedef struct BigISParser {
     char       *begin;
     char       *ptr;
     int         state;
-    BigAvlNode *tree;
+    AvlNode *tree;
 } BigISParser;
 
 static Datum bigistore_parse_bigistore(BigISParser *parser);
@@ -95,7 +95,7 @@ bigistore_parse_bigistore(BigISParser *parser)
             GET_NUM(parser, val);
             SKIP_ESCAPED(parser->ptr);
             parser->state = WDEL;
-            parser->tree = bigistore_insert(parser->tree, key, val);
+            parser->tree = istore_insert(parser->tree, key, val);
         }
         else if (parser->state == WDEL)
         {
@@ -124,7 +124,7 @@ bigistore_parse_bigistore(BigISParser *parser)
     pairs = palloc0(sizeof(BigIStorePairs));
     bigistore_pairs_init(pairs, 200);
     bigistore_tree_to_pairs(parser->tree, pairs, 0);
-    bigistore_make_empty(parser->tree);
+    istore_make_empty(parser->tree);
     FINALIZE_BIGISTORE(out, pairs);
     PG_RETURN_POINTER(out);
 }

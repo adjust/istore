@@ -9,6 +9,7 @@
 #include "access/htup_details.h"
 #include "utils/lsyscache.h"
 #include "istore_common.h"
+#include "avl.h"
 
 Datum array_to_bigistore(Datum *data, int count, bool *nulls);
 Datum bigistore_out(PG_FUNCTION_ARGS);
@@ -50,17 +51,6 @@ typedef struct {
     int     buflen;
 } BigIStorePairs;
 
-typedef struct BigAvlNode BigAvlNode;
-
-struct BigAvlNode
-{
-    int32       key;
-    int64       value;
-    BigAvlNode  *left;
-    BigAvlNode  *right;
-    int         height;
-};
-
 typedef struct
 {
     int32 __varlen;
@@ -73,10 +63,7 @@ void bigistore_pairs_insert(BigIStorePairs *pairs, int32 key, int64 val);
 int  bigistore_pairs_cmp(const void *a, const void *b);
 void bigistore_pairs_sort(BigIStorePairs *pairs);
 
-BigAvlNode* bigistore_make_empty(BigAvlNode *t);
-BigAvlNode* bigistore_tree_find(int32 key, BigAvlNode *t);
-BigAvlNode* bigistore_insert(BigAvlNode *t, int32 key, int64 value);
-int bigistore_tree_to_pairs(BigAvlNode *p, BigIStorePairs *pairs, int n);
+int bigistore_tree_to_pairs(AvlNode *p, BigIStorePairs *pairs, int n);
 BigIStorePair* bigistore_find(BigIStore *is, int32 key);
 
 #define PG_GETARG_BIGIS(x) (BigIStore *)PG_DETOAST_DATUM(PG_GETARG_DATUM(x))

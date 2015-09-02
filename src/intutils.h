@@ -3,26 +3,45 @@
 
 #include <limits.h>
 #include "postgres.h"
-#include "istore.h"
 
 #define SAMESIGN(a,b) (((a) < 0) == ((b) < 0))
 
 static inline int32
 int32add(int32 arg1, int32 arg2)
 {
-  int32   result;
+    int32   result;
 
-  result = arg1 + arg2;
+    result = arg1 + arg2;
 
-  /*
-   * Overflow check.  If the inputs are of different signs then their sum
-   * cannot overflow.  If the inputs are of the same sign, their sum had
-   * better be that sign too.
-   */
-  if (SAMESIGN(arg1, arg2) && !SAMESIGN(result, arg1))
-    ereport(ERROR,
-        (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-         errmsg("integer out of range")));
+    /*
+     * Overflow check.  If the inputs are of different signs then their sum
+     * cannot overflow.  If the inputs are of the same sign, their sum had
+     * better be that sign too.
+    */
+    if (SAMESIGN(arg1, arg2) && !SAMESIGN(result, arg1))
+        ereport(ERROR,
+            (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
+             errmsg("integer out of range")));
+
+  return result;
+}
+
+static inline int64
+int64add(int64 arg1, int64 arg2)
+{
+    int64   result;
+
+    result = arg1 + arg2;
+
+    /*
+     * Overflow check.  If the inputs are of different signs then their sum
+     * cannot overflow.  If the inputs are of the same sign, their sum had
+     * better be that sign too.
+     */
+    if (SAMESIGN(arg1, arg2) && !SAMESIGN(result, arg1))
+        ereport(ERROR,
+            (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
+            errmsg("bigint out of range")));
 
   return result;
 }
@@ -107,7 +126,7 @@ int32div(int32 arg1, int32 arg2)
       ereport(ERROR,
           (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
            errmsg("integer out of range")));
-    PG_RETURN_INT32(result);
+    return result;
   }
 
   /* No overflow is possible */
@@ -116,6 +135,23 @@ int32div(int32 arg1, int32 arg2)
 
   return result;
 }
+
+static inline int32
+int6432(int64 arg)
+{
+    int32       result;
+
+    result = (int32) arg;
+
+    /* Test for overflow by reverse-conversion. */
+    if ((int64) result != arg)
+        ereport(ERROR,
+                (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
+                 errmsg("integer out of range")));
+
+    return result;
+}
+
 
 static inline int
 digits32(int32 num){

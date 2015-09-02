@@ -3,154 +3,8 @@
 #include "avl.h"
 #include "utils/memutils.h"
 
-
-BigAvlNode*
-bigistore_make_empty(BigAvlNode *t)
-{
-    if (t != NULL)
-    {
-        bigistore_make_empty(t->left);
-        bigistore_make_empty(t->right);
-        pfree(t);
-        t = NULL;
-    }
-    return NULL;
-}
-
-
-BigAvlNode*
-bigistore_tree_find(int32 key, BigAvlNode *t)
-{
-    int32 cmp;
-
-    if (t == NULL)
-        return NULL;
-
-    cmp = COMPARE(key, t->key);
-    if (cmp < 0)
-        return bigistore_tree_find(key, t->left);
-    else if (cmp > 0)
-        return bigistore_tree_find(key, t->right);
-    else
-        return t;
-}
-
-/* This function can be called only if k2 has a left child */
-/* Perform a rotate between a node (k2) and its left child */
-/* Update heights, then return new root */
-static inline BigAvlNode*
-singleRotateWithLeft(BigAvlNode *k2)
-{
-    BigAvlNode *k1;
-
-    k1 = k2->left;
-    k2->left = k1->right;
-    k1->right = k2;
-
-    k2->height = MAX(height(k2->left), height(k2->right)) + 1;
-    k1->height = MAX(height(k1->left), k2->height) + 1;
-
-    return k1;  /* New root */
-}
-
-
-/* This function can be called only if k1 has a right child */
-/* Perform a rotate between a node (k1) and its right child */
-/* Update heights, then return new root */
-static inline BigAvlNode*
-singleRotateWithRight(BigAvlNode *k1)
-{
-    BigAvlNode *k2;
-
-    k2 = k1->right;
-    k1->right = k2->left;
-    k2->left = k1;
-
-    k1->height = MAX(height(k1->left), height(k1->right)) + 1;
-    k2->height = MAX(height(k2->right), k1->height) + 1;
-
-    return k2;  /* New root */
-}
-
-
-/* This function can be called only if k3 has a left */
-/* child and k3's left child has a right child */
-/* Do the left-right double rotation */
-/* Update heights, then return new root */
-static inline BigAvlNode*
-doubleRotateWithLeft(BigAvlNode *k3)
-{
-    /* Rotate between k1 and k2 */
-    k3->left = singleRotateWithRight(k3->left);
-
-    /* Rotate between k3 and k2 */
-    return singleRotateWithLeft(k3);
-}
-
-/* This function can be called only if k1 has a right */
-/* child and k1's right child has a left child */
-/* Do the right-left double rotation */
-/* Update heights, then return new root */
-static inline BigAvlNode*
-doubleRotateWithRight(BigAvlNode *k1)
-{
-    /* Rotate between k3 and k2 */
-    k1->right = singleRotateWithLeft(k1->right);
-
-    /* Rotate between k1 and k2 */
-    return singleRotateWithRight(k1);
-}
-
-BigAvlNode*
-bigistore_insert(BigAvlNode *t, int32 key, int64 value)
-{
-    if(t == NULL)
-    {
-        /* Create and return a one-node tree */
-        t = palloc0(sizeof(struct BigAvlNode));
-        if (t == NULL)
-            elog(ERROR, "BigAvlNode bigistore_insert: could not allocate memory");
-        else
-            ROOT(t,key,value);
-    }
-    else
-    {
-        int32 cmp = COMPARE(key, t->key);
-        if (cmp < 0)
-        {
-            t->left = bigistore_insert(t->left, key, value);
-            if (height(t->left) - height(t->right) == 2)
-            {
-                if (COMPARE(key, t->left->key) < 0)
-                    t = singleRotateWithLeft(t);
-                else
-                    t = doubleRotateWithLeft(t);
-            }
-        }
-        else if(cmp > 0)
-        {
-            t->right = bigistore_insert(t->right, key, value);
-            if (height(t->right) - height(t->left) == 2)
-            {
-                if (COMPARE(key, t->right->key) > 0)
-                    t = singleRotateWithRight(t);
-                else
-                    t = doubleRotateWithRight(t);
-            }
-        }
-        else
-        {
-            t->value = int32add(t->value, value);
-            return t;
-        }
-    }
-
-    t->height = MAX(height(t->left), height(t->right)) + 1;
-    return t;
-}
-
 int
-bigistore_tree_to_pairs(BigAvlNode *p, BigIStorePairs *pairs, int n)
+bigistore_tree_to_pairs(AvlNode *p, BigIStorePairs *pairs, int n)
 {
     if(p == NULL)
         return n;
@@ -175,13 +29,13 @@ void
 bigistore_pairs_insert(BigIStorePairs *pairs, int32 key, int64 val)
 {
     if (pairs->size == pairs->used) {
-        if (pairs->used == PAIRS_MAX(IStorePair))
-            elog(ERROR, "bigistore can't have more than %lu keys", PAIRS_MAX(IStorePair));
+        if (pairs->used == PAIRS_MAX(BigIStorePair))
+            elog(ERROR, "bigistore can't have more than %lu keys", PAIRS_MAX(BigIStorePair));
 
         pairs->size *= 2;
-        // overflow check pairs->size should have been grown but not exceed PAIRS_MAX(IStorePair)
-        if (pairs->size < pairs->used || pairs->size > PAIRS_MAX(IStorePair))
-            pairs->size = PAIRS_MAX(IStorePair);
+        // overflow check pairs->size should have been grown but not exceed PAIRS_MAX(BigIStorePair)
+        if (pairs->size < pairs->used || pairs->size > PAIRS_MAX(BigIStorePair))
+            pairs->size = PAIRS_MAX(BigIStorePair);
 
         pairs->pairs = repalloc(pairs->pairs, pairs->size * sizeof(BigIStorePair));
     }

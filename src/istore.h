@@ -9,6 +9,7 @@
 #include "access/htup_details.h"
 #include "utils/lsyscache.h"
 #include "istore_common.h"
+#include "avl.h"
 
 Datum array_to_istore(Datum *data, int count, bool *nulls);
 Datum istore_out(PG_FUNCTION_ARGS);
@@ -50,16 +51,6 @@ typedef struct {
     int     buflen;
 } IStorePairs;
 
-typedef struct AvlNode AvlNode;
-
-struct AvlNode
-{
-    int32    key;
-    int32    value;
-    AvlNode  *left;
-    AvlNode  *right;
-    int      height;
-};
 
 typedef struct
 {
@@ -73,9 +64,6 @@ void istore_pairs_insert(IStorePairs *pairs, int32 key, int32 val);
 int  istore_pairs_cmp(const void *a, const void *b);
 void istore_pairs_sort(IStorePairs *pairs);
 
-AvlNode* istore_make_empty(AvlNode *t);
-AvlNode* istore_tree_find(int32 key, AvlNode *t);
-AvlNode* istore_insert(AvlNode *t, int32 key, int32 value);
 int istore_tree_to_pairs(AvlNode *p, IStorePairs *pairs, int n);
 IStorePair* istore_find(IStore *is, int32 key);
 

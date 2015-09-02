@@ -423,9 +423,9 @@ bigistore_from_array(PG_FUNCTION_ARGS)
     bool            i_typbyval;
     char            i_typalign;
     Oid             i_eltype;
-    BigAvlNode      *tree;
+    AvlNode      *tree;
     BigIStorePairs *pairs;
-    BigAvlNode     *position;
+    AvlNode     *position;
     int             key,
                     i;
 
@@ -460,10 +460,10 @@ bigistore_from_array(PG_FUNCTION_ARGS)
         if (nulls[i])
             continue;
         key = DatumGetInt32(i_data[i]);
-        position = bigistore_tree_find(key, tree);
+        position = istore_tree_find(key, tree);
         if (position == NULL)
         {
-            tree = bigistore_insert(tree, key, 1);
+            tree = istore_insert(tree, key, 1);
             ++s;
         }
         else
@@ -474,7 +474,7 @@ bigistore_from_array(PG_FUNCTION_ARGS)
     pairs = palloc0(sizeof *pairs);
     bigistore_pairs_init(pairs, s);
     bigistore_tree_to_pairs(tree, pairs, 0);
-    bigistore_make_empty(tree);
+    istore_make_empty(tree);
 
     FINALIZE_BIGISTORE_NOSORT(result, pairs);
     PG_RETURN_POINTER(result);
@@ -485,13 +485,13 @@ array_to_bigistore(Datum *data, int count, bool *nulls)
 {
     BigIStore   *out,
              *bigistore;
-    BigAvlNode   *tree;
+    AvlNode   *tree;
     int       i,
               n = 0 ,
               index;
     BigIStorePair   *payload;
     BigIStorePairs  *pairs;
-    BigAvlNode     *position;
+    AvlNode     *position;
 
     tree = NULL;
 
@@ -503,10 +503,10 @@ array_to_bigistore(Datum *data, int count, bool *nulls)
         payload = FIRST_PAIR(bigistore, BigIStorePair);
         for (index = 0; index < bigistore->len; ++index)
         {
-            position = bigistore_tree_find(payload[index].key, tree);
+            position = istore_tree_find(payload[index].key, tree);
             if (position == NULL)
             {
-                tree = bigistore_insert(tree, payload[index].key, payload[index].val);
+                tree = istore_insert(tree, payload[index].key, payload[index].val);
                 ++n;
             }
             else
@@ -518,7 +518,7 @@ array_to_bigistore(Datum *data, int count, bool *nulls)
     pairs = palloc0(sizeof *pairs);
     bigistore_pairs_init(pairs, n);
     bigistore_tree_to_pairs(tree, pairs, 0);
-    bigistore_make_empty(tree);
+    istore_make_empty(tree);
 
     FINALIZE_BIGISTORE_NOSORT(out, pairs);
     PG_RETURN_POINTER(out);
@@ -624,8 +624,8 @@ bigistore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
                     i_typalign2;
     Oid             i_eltype1,
                     i_eltype2;
-    BigAvlNode      *tree;
-    BigAvlNode     *position;
+    AvlNode      *tree;
+    AvlNode     *position;
     int32           key,
                     value;
 
@@ -679,11 +679,11 @@ bigistore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
             continue;
         key      = DatumGetInt32(i_data1[i]);
         value    = DatumGetInt32(i_data2[i]);
-        position = bigistore_tree_find(key, tree);
+        position = istore_tree_find(key, tree);
 
         if (position == NULL)
         {
-            tree = bigistore_insert(tree, key, value);
+            tree = istore_insert(tree, key, value);
             ++n;
         }
         else
@@ -693,7 +693,7 @@ bigistore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
     pairs = palloc0(sizeof *pairs);
     bigistore_pairs_init(pairs, n);
     bigistore_tree_to_pairs(tree, pairs, 0);
-    bigistore_make_empty(tree);
+    istore_make_empty(tree);
 
     FINALIZE_BIGISTORE_NOSORT(out, pairs);
     PG_RETURN_POINTER(out);
