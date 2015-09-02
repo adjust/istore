@@ -2,33 +2,6 @@
 #include "is_parser.h"
 #include "intutils.h"
 
-static Datum istore_parse_istore(ISParser *parser);
-
-static Datum
-istore_parse_istore(ISParser *parser)
-{
-    IStore  *out;
-    IStorePairs *pairs;
-    AvlNode *tree;
-    int      n;
-
-    if (parser->begin[0] == '\0')
-    {
-        EMPTY_ISTORE(out);
-        PG_RETURN_POINTER(out);
-    }
-
-    tree = parse_istore(parser);
-
-    pairs = palloc0(sizeof(IStorePairs));
-    n = tree_length(tree);
-    istore_pairs_init(pairs, n);
-    istore_tree_to_pairs(tree, pairs, 0);
-    istore_make_empty(tree);
-    FINALIZE_ISTORE(out, pairs);
-    PG_RETURN_POINTER(out);
-}
-
 PG_FUNCTION_INFO_V1(istore_out);
 Datum
 istore_out(PG_FUNCTION_ARGS)
@@ -65,9 +38,29 @@ PG_FUNCTION_INFO_V1(istore_in);
 Datum
 istore_in(PG_FUNCTION_ARGS)
 {
-    ISParser  parser;
+    ISParser     parser;
+    IStore      *out;
+    IStorePairs *pairs;
+    AvlNode     *tree;
+    int          n;
+
     parser.begin = PG_GETARG_CSTRING(0);
-    return istore_parse_istore(&parser);
+
+    if (parser.begin[0] == '\0')
+    {
+        EMPTY_ISTORE(out);
+        PG_RETURN_POINTER(out);
+    }
+
+    tree = parse_istore(&parser);
+
+    pairs = palloc0(sizeof(IStorePairs));
+    n = tree_length(tree);
+    istore_pairs_init(pairs, n);
+    istore_tree_to_pairs(tree, pairs, 0);
+    istore_make_empty(tree);
+    FINALIZE_ISTORE(out, pairs);
+    PG_RETURN_POINTER(out);
 }
 
 PG_FUNCTION_INFO_V1(istore_recv);

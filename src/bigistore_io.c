@@ -3,33 +3,6 @@
 #include <limits.h>
 #include "intutils.h"
 
-static Datum bigistore_parse_bigistore(ISParser *parser);
-
-static Datum
-bigistore_parse_bigistore(ISParser *parser)
-{
-    BigIStore      *out;
-    BigIStorePairs *pairs;
-    AvlNode        *tree;
-    int             n;
-
-    if (parser->begin[0] == '\0')
-    {
-        EMPTY_ISTORE(out);
-        PG_RETURN_POINTER(out);
-    }
-
-    tree = parse_istore(parser);
-
-    pairs = palloc0(sizeof(BigIStorePairs));
-    n = tree_length(tree);
-    bigistore_pairs_init(pairs, n);
-    bigistore_tree_to_pairs(tree, pairs, 0);
-    istore_make_empty(tree);
-    FINALIZE_BIGISTORE_NOSORT(out, pairs);
-    PG_RETURN_POINTER(out);
-}
-
 PG_FUNCTION_INFO_V1(bigistore_out);
 Datum
 bigistore_out(PG_FUNCTION_ARGS)
@@ -66,9 +39,29 @@ PG_FUNCTION_INFO_V1(bigistore_in);
 Datum
 bigistore_in(PG_FUNCTION_ARGS)
 {
-    ISParser  parser;
+    ISParser       parser;
+    BigIStore      *out;
+    BigIStorePairs *pairs;
+    AvlNode        *tree;
+    int             n;
+
     parser.begin = PG_GETARG_CSTRING(0);
-    return bigistore_parse_bigistore(&parser);
+
+    if (parser.begin[0] == '\0')
+    {
+        EMPTY_ISTORE(out);
+        PG_RETURN_POINTER(out);
+    }
+
+    tree = parse_istore(&parser);
+
+    pairs = palloc0(sizeof(BigIStorePairs));
+    n = tree_length(tree);
+    bigistore_pairs_init(pairs, n);
+    bigistore_tree_to_pairs(tree, pairs, 0);
+    istore_make_empty(tree);
+    FINALIZE_BIGISTORE_NOSORT(out, pairs);
+    PG_RETURN_POINTER(out);
 }
 
 PG_FUNCTION_INFO_V1(bigistore_recv);
