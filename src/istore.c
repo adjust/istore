@@ -243,7 +243,7 @@ istore_subtract_integer(PG_FUNCTION_ARGS)
         istore_pairs_insert(creator, pairs[index].key, int32sub(pairs[index].val, int_arg));
         ++index;
     }
-    FINALIZE_ISTORE(result, creator);
+    FINALIZE_ISTORE_NOSORT(result, creator);
     PG_RETURN_POINTER(result);
 }
 
@@ -287,7 +287,7 @@ istore_multiply(PG_FUNCTION_ARGS)
         }
     }
 
-    FINALIZE_ISTORE(result, creator);
+    FINALIZE_ISTORE_NOSORT(result, creator);
     PG_RETURN_POINTER(result);
 }
 

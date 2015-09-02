@@ -34,6 +34,7 @@ istore_parse_istore(ISParser *parser)
     IStorePairs *pairs;
     int32    key;
     int32    val;
+    int      n;
 
     parser->state = WKEY;
     parser->ptr   = parser->begin;
@@ -119,7 +120,8 @@ istore_parse_istore(ISParser *parser)
     }
 
     pairs = palloc0(sizeof(IStorePairs));
-    istore_pairs_init(pairs, 200);
+    n = tree_length(parser->tree);
+    istore_pairs_init(pairs, n);
     istore_tree_to_pairs(parser->tree, pairs, 0);
     istore_make_empty(parser->tree);
     FINALIZE_ISTORE(out, pairs);

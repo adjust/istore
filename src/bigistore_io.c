@@ -37,6 +37,7 @@ bigistore_parse_bigistore(BigISParser *parser)
     BigIStorePairs *pairs;
     int32           key;
     int64           val;
+    int             n;
 
     parser->state = WKEY;
     parser->ptr   = parser->begin;
@@ -122,10 +123,11 @@ bigistore_parse_bigistore(BigISParser *parser)
     }
 
     pairs = palloc0(sizeof(BigIStorePairs));
-    bigistore_pairs_init(pairs, 200);
+    n = tree_length(parser->tree);
+    bigistore_pairs_init(pairs, n);
     bigistore_tree_to_pairs(parser->tree, pairs, 0);
     istore_make_empty(parser->tree);
-    FINALIZE_BIGISTORE(out, pairs);
+    FINALIZE_BIGISTORE_NOSORT(out, pairs);
     PG_RETURN_POINTER(out);
 }
 
