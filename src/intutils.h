@@ -147,7 +147,8 @@ int6432(int64 arg)
     if ((int64) result != arg)
         ereport(ERROR,
                 (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-                 errmsg("integer out of range")));
+                 errmsg("integer out of range"),
+                 errdetail("value %ld is out of range for type integer", arg)));
 
     return result;
 }
