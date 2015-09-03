@@ -60,6 +60,8 @@ typedef struct
     int32   len;
 } IStore;
 
+IStore* istore_merge(IStore *arg1, IStore *arg2, PGFunction mergefunc, PGFunction miss1func);
+IStore* istore_apply_datum(IStore *arg1, Datum arg2, PGFunction applyfunc);
 void istore_pairs_init(IStorePairs *pairs, size_t initial_size);
 void istore_pairs_insert(IStorePairs *pairs, int32 key, int32 val);
 int  istore_pairs_cmp(const void *a, const void *b);

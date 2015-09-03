@@ -53,7 +53,7 @@ CREATE FUNCTION add(bigistore, bigistore)
     AS '$libdir/istore.so', 'bigistore_add'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION add(bigistore, integer)
+CREATE FUNCTION add(bigistore, bigint)
     RETURNS bigistore
     AS '$libdir/istore.so', 'bigistore_add_integer'
     LANGUAGE C IMMUTABLE STRICT;
@@ -63,7 +63,7 @@ CREATE FUNCTION subtract(bigistore, bigistore)
     AS '$libdir/istore.so', 'bigistore_subtract'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION subtract(bigistore, integer)
+CREATE FUNCTION subtract(bigistore, bigint)
     RETURNS bigistore
     AS '$libdir/istore.so', 'bigistore_subtract_integer'
     LANGUAGE C IMMUTABLE STRICT;
@@ -73,7 +73,7 @@ CREATE FUNCTION multiply(bigistore, bigistore)
     AS '$libdir/istore.so', 'bigistore_multiply'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION multiply(bigistore, integer)
+CREATE FUNCTION multiply(bigistore, bigint)
     RETURNS bigistore
     AS '$libdir/istore.so', 'bigistore_multiply_integer'
     LANGUAGE C IMMUTABLE STRICT;
@@ -83,7 +83,7 @@ CREATE FUNCTION divide(bigistore, bigistore)
     AS '$libdir/istore.so', 'bigistore_divide'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION divide(bigistore, integer)
+CREATE FUNCTION divide(bigistore, bigint)
     RETURNS bigistore
     AS '$libdir/istore.so', 'bigistore_divide_integer'
     LANGUAGE C IMMUTABLE STRICT;
@@ -118,7 +118,7 @@ CREATE FUNCTION bigistore(integer[], integer[])
     AS '$libdir/istore.so', 'bigistore_array_add'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION fill_gaps(bigistore, integer, integer DEFAULT 0)
+CREATE FUNCTION fill_gaps(bigistore, integer, bigint DEFAULT 0)
     RETURNS bigistore
     AS '$libdir/istore.so', 'bigistore_fill_gaps'
     LANGUAGE C IMMUTABLE STRICT;
@@ -133,7 +133,7 @@ CREATE FUNCTION accumulate(bigistore, integer)
     AS '$libdir/istore.so', 'bigistore_accumulate'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION bigistore_seed(integer, integer, integer)
+CREATE FUNCTION bigistore_seed(integer, integer, bigint)
     RETURNS bigistore
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
@@ -185,7 +185,7 @@ CREATE OPERATOR + (
 
 CREATE OPERATOR + (
     leftarg   = bigistore,
-    rightarg  = integer,
+    rightarg  = bigint,
     procedure = add
 );
 
@@ -197,7 +197,7 @@ CREATE OPERATOR - (
 
 CREATE OPERATOR - (
     leftarg   = bigistore,
-    rightarg  = integer,
+    rightarg  = bigint,
     procedure = subtract
 );
 
@@ -209,7 +209,7 @@ CREATE OPERATOR * (
 
 CREATE OPERATOR * (
     leftarg   = bigistore,
-    rightarg  = integer,
+    rightarg  = bigint,
     procedure = multiply
 );
 
@@ -221,7 +221,7 @@ CREATE OPERATOR / (
 
 CREATE OPERATOR / (
     leftarg   = bigistore,
-    rightarg  = integer,
+    rightarg  = bigint,
     procedure = divide
 );
  

@@ -2,6 +2,118 @@
 #include "funcapi.h"
 #include "intutils.h"
 
+
+/*
+ * combine two istores by applying PGFunction mergefunc on values where key match
+ * if PGFunction miss1func is not NULL values for keys which doesn't exists on
+ * first istore is added to the result by applying miss1func to the value
+ * while values for keys which doesn't exists on second istore will be added without
+ * change.
+ * if PGFunction miss1func is NULL only the result will only contain matching keys
+ */
+BigIStore*
+bigistore_merge(BigIStore *arg1, BigIStore *arg2, PGFunction mergefunc, PGFunction miss1func)
+{
+    BigIStore      *result;
+    BigIStorePair  *pairs1,
+                   *pairs2;
+    BigIStorePairs *creator = NULL;
+    int             index1  = 0,
+                    index2  = 0;
+
+    pairs1  = FIRST_PAIR(arg1, BigIStorePair);
+    pairs2  = FIRST_PAIR(arg2, BigIStorePair);
+    creator = palloc0(sizeof *creator);
+
+    bigistore_pairs_init(creator, MIN(arg1->len + arg2->len, 200));
+
+    while (index1 < arg1->len && index2 < arg2->len)
+    {
+        if (pairs1[index1].key < pairs2[index2].key)
+        {
+            if (miss1func != NULL)
+                bigistore_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val);
+            ++index1;
+        }
+        else if (pairs1[index1].key > pairs2[index2].key)
+        {
+            if (miss1func != NULL)
+                bigistore_pairs_insert(creator, pairs2[index2].key, DirectFunctionCall1(miss1func, pairs2[index2].val));
+            ++index2;
+        }
+        else
+        {
+            bigistore_pairs_insert(creator, pairs1[index1].key, DirectFunctionCall2(mergefunc, pairs1[index1].val, pairs2[index2].val));
+            ++index1;
+            ++index2;
+        }
+    }
+
+    if (miss1func != NULL){
+        while (index1 < arg1->len)
+        {
+            bigistore_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val);
+            ++index1;
+        }
+
+        while (index2 < arg2->len)
+        {
+            bigistore_pairs_insert(creator, pairs2[index2].key, DirectFunctionCall1(miss1func, pairs2[index2].val));
+            ++index2;
+        }
+    }
+
+    FINALIZE_BIGISTORE_NOSORT(result, creator);
+
+    return result;
+}
+
+/*
+ * apply PGFunction applyfunc on each value of arg1 with arg2
+ */
+BigIStore*
+bigistore_apply_datum(BigIStore *arg1, Datum arg2, PGFunction applyfunc)
+{
+    BigIStore      *result;
+    BigIStorePair  *pairs;
+    BigIStorePairs *creator = NULL;
+    int             index  = 0;
+
+
+    pairs   = FIRST_PAIR(arg1, BigIStorePair);
+    creator = palloc0(sizeof *creator);
+
+    bigistore_pairs_init(creator, arg1->len);
+    while (index < arg1->len)
+    {
+        bigistore_pairs_insert(creator, pairs[index].key, DirectFunctionCall2(applyfunc, pairs[index].val, arg2));
+        ++index;
+    }
+    FINALIZE_BIGISTORE_NOSORT(result, creator);
+
+    return result;
+}
+
+/*
+ * special division operations that allows division by zero if nominator is zero
+ * as well. Thus 0/0 becomes 0
+ */
+PG_FUNCTION_INFO_V1(is_int8div);
+Datum
+is_int8div(PG_FUNCTION_ARGS)
+{
+    int64 arg1,
+          arg2;
+
+    arg1 = PG_GETARG_INT64(0);
+    arg2 = PG_GETARG_INT64(1);
+
+    if (arg1 == 0)
+        PG_RETURN_INT64(0);
+
+    PG_RETURN_INT64(DirectFunctionCall2(int8div, arg1, arg2));
+}
+
 /*
  * Sum the values of an bigistore
  */
@@ -94,46 +206,13 @@ PG_FUNCTION_INFO_V1(bigistore_add);
 Datum
 bigistore_add(PG_FUNCTION_ARGS)
 {
-    BigIStore      *is1,
-                   *is2,
-                   *result;
-    BigIStorePair  *pairs1,
-                   *pairs2;
-    BigIStorePairs *creator = NULL;
-    int     index1          = 0,
-            index2          = 0;
+    BigIStore   *is1,
+                *is2;
 
     is1     = PG_GETARG_BIGIS(0);
     is2     = PG_GETARG_BIGIS(1);
-    pairs1  = FIRST_PAIR(is1, BigIStorePair);
-    pairs2  = FIRST_PAIR(is2, BigIStorePair);
-    creator = palloc0(sizeof *creator);
 
-    bigistore_pairs_init(creator, MIN(is1->len + is2->len, 200));
-
-    while (index1 < is1->len && index2 < is2->len)
-    {
-        if (pairs1[index1].key < pairs2[index2].key)
-        {
-            bigistore_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val);
-            ++index1;
-        }
-        else if (pairs1[index1].key > pairs2[index2].key)
-        {
-            bigistore_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val);
-            ++index2;
-        }
-        else
-        {
-            bigistore_pairs_insert(creator, pairs1[index1].key, DirectFunctionCall2(int8pl, pairs1[index1].val, pairs2[index2].val));
-            ++index1;
-            ++index2;
-        }
-    }
-
-    FILLREMAINING(creator, index1, is1, pairs1, index2, is2, pairs2, BIGISINSERTFUNC)
-    FINALIZE_BIGISTORE_NOSORT(result, creator);
-    PG_RETURN_POINTER(result);
+    PG_RETURN_POINTER(bigistore_merge(is1, is2, int8pl, int8up));
 }
 
 /*
@@ -143,26 +222,13 @@ PG_FUNCTION_INFO_V1(bigistore_add_integer);
 Datum
 bigistore_add_integer(PG_FUNCTION_ARGS)
 {
-    BigIStore  *is,
-            *result;
-    BigIStorePair  *pairs;
-    BigIStorePairs *creator = NULL;
-    int     index    = 0,
-            int_arg;
+    BigIStore   *is;
+    Datum        int_arg;
 
     is      = PG_GETARG_BIGIS(0);
-    int_arg = PG_GETARG_INT32(1);
-    pairs   = FIRST_PAIR(is, BigIStorePair);
-    creator = palloc0(sizeof *creator);
+    int_arg = PG_GETARG_DATUM(1);
 
-    bigistore_pairs_init(creator, is->len);
-    while (index < is->len)
-    {
-        bigistore_pairs_insert(creator, pairs[index].key, DirectFunctionCall2(int8pl, pairs[index].val, int_arg));
-        ++index;
-    }
-    FINALIZE_BIGISTORE_NOSORT(result, creator);
-    PG_RETURN_POINTER(result);
+    PG_RETURN_POINTER(bigistore_apply_datum(is, int_arg, int8pl));
 }
 
 /*
@@ -176,45 +242,12 @@ Datum
 bigistore_subtract(PG_FUNCTION_ARGS)
 {
     BigIStore      *is1,
-                *is2,
-                *result;
-    BigIStorePair  *pairs1,
-                *pairs2;
-    BigIStorePairs *creator = NULL;
-    int     index1       = 0,
-            index2       = 0;
+                *is2;
 
     is1     = PG_GETARG_BIGIS(0);
     is2     = PG_GETARG_BIGIS(1);
-    pairs1  = FIRST_PAIR(is1, BigIStorePair);
-    pairs2  = FIRST_PAIR(is2, BigIStorePair);
-    creator = palloc0(sizeof *creator);
 
-    bigistore_pairs_init(creator, MIN(is1->len + is2->len, 200));
-
-    while (index1 < is1->len && index2 < is2->len)
-    {
-        if (pairs1[index1].key < pairs2[index2].key)
-        {
-            bigistore_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val);
-            ++index1;
-        }
-        else if (pairs1[index1].key > pairs2[index2].key)
-        {
-            bigistore_pairs_insert(creator, pairs2[index2].key, -pairs2[index2].val);
-            ++index2;
-        }
-        else
-        {
-            bigistore_pairs_insert(creator, pairs1[index1].key, DirectFunctionCall2(int8mi, pairs1[index1].val, pairs2[index2].val ));
-            ++index1;
-            ++index2;
-        }
-    }
-
-    FILLREMAINING(creator, index1, is1, pairs1, index2, is2, pairs2, BIGISINSERTFUNC)
-    FINALIZE_BIGISTORE_NOSORT(result, creator);
-    PG_RETURN_POINTER(result);
+    PG_RETURN_POINTER(bigistore_merge(is1, is2, int8mi, int8um));
 }
 
 /*
@@ -224,28 +257,13 @@ PG_FUNCTION_INFO_V1(bigistore_subtract_integer);
 Datum
 bigistore_subtract_integer(PG_FUNCTION_ARGS)
 {
-    BigIStore  *is,
-            *result;
-    BigIStorePair  *pairs;
-    BigIStorePairs *creator = NULL;
-
-    int     index = 0,
-            int_arg;
+    BigIStore   *is;
+    Datum        int_arg;
 
     is      = PG_GETARG_BIGIS(0);
-    int_arg = PG_GETARG_INT32(1);
-    pairs   = FIRST_PAIR(is, BigIStorePair);
-    creator = palloc0(sizeof *creator);
+    int_arg = PG_GETARG_DATUM(1);
 
-    bigistore_pairs_init(creator, is->len);
-
-    while (index < is->len)
-    {
-        bigistore_pairs_insert(creator, pairs[index].key, DirectFunctionCall2(int8mi, pairs[index].val, int_arg));
-        ++index;
-    }
-    FINALIZE_BIGISTORE_NOSORT(result, creator);
-    PG_RETURN_POINTER(result);
+    PG_RETURN_POINTER(bigistore_apply_datum(is, int_arg, int8mi));
 }
 
 /*
@@ -258,38 +276,13 @@ PG_FUNCTION_INFO_V1(bigistore_multiply);
 Datum
 bigistore_multiply(PG_FUNCTION_ARGS)
 {
-    BigIStore  *is1,
-            *is2,
-            *result;
-    BigIStorePair  *pairs1,
-            *pairs2;
-    BigIStorePairs *creator = NULL;
-    int     index1   = 0,
-            index2   = 0;
+    BigIStore      *is1,
+                *is2;
 
     is1     = PG_GETARG_BIGIS(0);
     is2     = PG_GETARG_BIGIS(1);
-    pairs1  = FIRST_PAIR(is1, BigIStorePair);
-    pairs2  = FIRST_PAIR(is2, BigIStorePair);
-    creator = palloc0(sizeof *creator);
-    bigistore_pairs_init(creator, MIN(is1->len, is2->len));
 
-    while (index1 < is1->len && index2 < is2->len)
-    {
-        if (pairs1[index1].key < pairs2[index2].key)
-            ++index1;
-        else if (pairs1[index1].key > pairs2[index2].key)
-            ++index2;
-        else
-        {
-            bigistore_pairs_insert(creator, pairs1[index1].key, DirectFunctionCall2(int8mul, pairs1[index1].val, pairs2[index2].val));
-            ++index1;
-            ++index2;
-        }
-    }
-
-    FINALIZE_BIGISTORE_NOSORT(result, creator);
-    PG_RETURN_POINTER(result);
+    PG_RETURN_POINTER(bigistore_merge(is1, is2, int8mul, NULL));
 }
 
 /*
@@ -299,26 +292,13 @@ PG_FUNCTION_INFO_V1(bigistore_multiply_integer);
 Datum
 bigistore_multiply_integer(PG_FUNCTION_ARGS)
 {
-    BigIStore  *is,
-            *result;
-    BigIStorePair  *pairs;
-    BigIStorePairs *creator = NULL;
-    int     index    = 0,
-            int_arg;
+    BigIStore   *is;
+    Datum        int_arg;
 
     is      = PG_GETARG_BIGIS(0);
-    int_arg = PG_GETARG_INT32(1);
-    pairs   = FIRST_PAIR(is, BigIStorePair);
-    creator = palloc0(sizeof *creator);
-    bigistore_pairs_init(creator, is->len);
+    int_arg = PG_GETARG_DATUM(1);
 
-    while (index < is->len)
-    {
-        bigistore_pairs_insert(creator, pairs[index].key, DirectFunctionCall2(int8mul, pairs[index].val, int_arg));
-        ++index;
-    }
-    FINALIZE_BIGISTORE_NOSORT(result, creator);
-    PG_RETURN_POINTER(result);
+    PG_RETURN_POINTER(bigistore_apply_datum(is, int_arg, int8mul));
 }
 
 /*
@@ -333,50 +313,13 @@ PG_FUNCTION_INFO_V1(bigistore_divide);
 Datum
 bigistore_divide(PG_FUNCTION_ARGS)
 {
-    BigIStore  *is1,
-            *is2,
-            *result;
-    BigIStorePair  *pairs1,
-            *pairs2;
-    BigIStorePairs *creator = NULL;
-
-    int     index1 = 0,
-            index2 = 0;
+    BigIStore   *is1,
+                *is2;
 
     is1     = PG_GETARG_BIGIS(0);
     is2     = PG_GETARG_BIGIS(1);
-    pairs1  = FIRST_PAIR(is1, BigIStorePair);
-    pairs2  = FIRST_PAIR(is2, BigIStorePair);
-    creator = palloc0(sizeof *creator);
 
-    bigistore_pairs_init(creator, MIN(is1->len, is2->len));
-
-    while (index1 < is1->len && index2 < is2->len)
-    {
-        if (pairs1[index1].key < pairs2[index2].key)
-            ++index1;
-        else if (pairs1[index1].key > pairs2[index2].key)
-            ++index2;
-        else
-        {
-            // allow division by zero if nominator is zero
-            if (pairs1[index1].val == 0)
-                bigistore_pairs_insert(creator, pairs1[index1].key, 0);
-            else if (pairs1[index1].val != 0 && pairs2[index2].val == 0)
-                ereport(ERROR, (
-                    errcode(ERRCODE_DIVISION_BY_ZERO),
-                    errmsg("division by zero"),
-                    errdetail("Key \"%d\" of right argument has value 0", pairs2[index2].key)
-                ));
-            else
-                bigistore_pairs_insert(creator, pairs1[index1].key, DirectFunctionCall2(int8div, pairs1[index1].val, pairs2[index2].val));
-            ++index1;
-            ++index2;
-        }
-    }
-
-    FINALIZE_BIGISTORE_NOSORT(result, creator);
-    PG_RETURN_POINTER(result);
+    PG_RETURN_POINTER(bigistore_merge(is1, is2, is_int8div, NULL));
 }
 
 /*
@@ -388,33 +331,13 @@ PG_FUNCTION_INFO_V1(bigistore_divide_integer);
 Datum
 bigistore_divide_integer(PG_FUNCTION_ARGS)
 {
-    BigIStore  *is,
-            *result;
-    BigIStorePair  *pairs;
-    BigIStorePairs *creator = NULL;
-    int     int_arg,
-            index    = 0;
+    BigIStore   *is;
+    Datum        int_arg;
 
     is      = PG_GETARG_BIGIS(0);
-    int_arg = PG_GETARG_INT32(1);
+    int_arg = PG_GETARG_DATUM(1);
 
-    if (int_arg == 0)
-        ereport(ERROR, (
-            errcode(ERRCODE_DIVISION_BY_ZERO),
-            errmsg("division by zero")
-        ));
-
-    pairs   = FIRST_PAIR(is, BigIStorePair);
-    creator = palloc0(sizeof *creator);
-
-    bigistore_pairs_init(creator, is->len);
-    while (index < is->len)
-    {
-        bigistore_pairs_insert(creator, pairs[index].key, DirectFunctionCall2(int8div, pairs[index].val, int_arg));
-        ++index;
-    }
-    FINALIZE_BIGISTORE_NOSORT(result, creator);
-    PG_RETURN_POINTER(result);
+    PG_RETURN_POINTER(bigistore_apply_datum(is, int_arg, int8div));
 }
 
 PG_FUNCTION_INFO_V1(bigistore_from_array);
@@ -947,49 +870,13 @@ PG_FUNCTION_INFO_V1(bigistore_val_larger);
 Datum
 bigistore_val_larger(PG_FUNCTION_ARGS)
 {
-    BigIStore      *is1,
-                *is2,
-                *result;
-    BigIStorePair  *pairs1,
-                *pairs2;
-    BigIStorePairs *creator = NULL;
-    int          index1  = 0,
-                 index2  = 0;
-
-    if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
-        PG_RETURN_NULL();
+    BigIStore   *is1,
+                *is2;
 
     is1     = PG_GETARG_BIGIS(0);
     is2     = PG_GETARG_BIGIS(1);
 
-    pairs1  = FIRST_PAIR(is1, BigIStorePair);
-    pairs2  = FIRST_PAIR(is2, BigIStorePair);
-    creator = palloc0(sizeof *creator);
-
-    bigistore_pairs_init(creator, MIN(is1->len + is2->len, 200));
-    while (index1 < is1->len && index2 < is2->len)
-    {
-        if (pairs1[index1].key < pairs2[index2].key)
-        {
-            bigistore_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val);
-            ++index1;
-        }
-        else if (pairs1[index1].key > pairs2[index2].key)
-        {
-            bigistore_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val);
-            ++index2;
-        }
-        else
-        {
-            bigistore_pairs_insert(creator, pairs1[index1].key, MAX(pairs1[index1].val,pairs2[index2].val));
-            ++index1;
-            ++index2;
-        }
-    }
-
-    FILLREMAINING(creator, index1, is1, pairs1, index2, is2, pairs2, BIGISINSERTFUNC)
-    FINALIZE_BIGISTORE_NOSORT(result, creator);
-    PG_RETURN_POINTER(result);
+    PG_RETURN_POINTER(bigistore_merge(is1, is2, int8larger, int8up));
 }
 
 /*
@@ -999,48 +886,11 @@ PG_FUNCTION_INFO_V1(bigistore_val_smaller);
 Datum
 bigistore_val_smaller(PG_FUNCTION_ARGS)
 {
-    BigIStore  *is1,
-            *is2,
-            *result;
-    BigIStorePair  *pairs1,
-            *pairs2;
-    BigIStorePairs *creator = NULL;
-
-    int     index1 = 0,
-            index2 = 0;
-
-    if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
-        PG_RETURN_NULL();
+    BigIStore   *is1,
+                *is2;
 
     is1     = PG_GETARG_BIGIS(0);
     is2     = PG_GETARG_BIGIS(1);
 
-    pairs1  = FIRST_PAIR(is1, BigIStorePair);
-    pairs2  = FIRST_PAIR(is2, BigIStorePair);
-    creator = palloc0(sizeof *creator);
-
-    bigistore_pairs_init(creator, MIN(is1->len + is2->len, 200));
-    while (index1 < is1->len && index2 < is2->len)
-    {
-        if (pairs1[index1].key < pairs2[index2].key)
-        {
-            bigistore_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val);
-            ++index1;
-        }
-        else if (pairs1[index1].key > pairs2[index2].key)
-        {
-            bigistore_pairs_insert(creator, pairs2[index2].key, pairs2[index2].val);
-            ++index2;
-        }
-        else
-        {
-            bigistore_pairs_insert(creator, pairs1[index1].key, MIN(pairs1[index1].val, pairs2[index2].val));
-            ++index1;
-            ++index2;
-        }
-    }
-
-    FILLREMAINING(creator, index1, is1, pairs1, index2, is2, pairs2, BIGISINSERTFUNC)
-    FINALIZE_BIGISTORE_NOSORT(result, creator);
-    PG_RETURN_POINTER(result);
+    PG_RETURN_POINTER(bigistore_merge(is1, is2, int8smaller, int8up));
 }

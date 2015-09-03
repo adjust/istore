@@ -60,6 +60,9 @@ typedef struct
     int32   len;
 } BigIStore;
 
+BigIStore* bigistore_merge(BigIStore *arg1, BigIStore *arg2, PGFunction mergefunc, PGFunction miss1func);
+BigIStore* bigistore_apply_datum(BigIStore *arg1, Datum arg2, PGFunction applyfunc);
+
 void bigistore_pairs_init(BigIStorePairs *pairs, size_t initial_size);
 void bigistore_pairs_insert(BigIStorePairs *pairs, int32 key, int64 val);
 int  bigistore_pairs_cmp(const void *a, const void *b);
