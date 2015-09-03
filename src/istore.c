@@ -22,7 +22,7 @@ istore_sum_up(PG_FUNCTION_ARGS)
     index  = 0;
 
     while (index < is->len){
-        result = int32add(result, pairs[index++].val);
+        result = DirectFunctionCall2(int4pl, result, pairs[index++].val);
     }
     PG_RETURN_INT64(result);
 }
@@ -127,7 +127,7 @@ istore_add(PG_FUNCTION_ARGS)
         }
         else
         {
-            istore_pairs_insert(creator, pairs1[index1].key, int32add(pairs1[index1].val, pairs2[index2].val));
+            istore_pairs_insert(creator, pairs1[index1].key, DirectFunctionCall2(int4pl, pairs1[index1].val, pairs2[index2].val));
             ++index1;
             ++index2;
         }
@@ -160,7 +160,7 @@ istore_add_integer(PG_FUNCTION_ARGS)
     istore_pairs_init(creator, is->len);
     while (index < is->len)
     {
-        istore_pairs_insert(creator, pairs[index].key, int32add(pairs[index].val, int_arg));
+        istore_pairs_insert(creator, pairs[index].key, DirectFunctionCall2(int4pl, pairs[index].val, int_arg));
         ++index;
     }
     FINALIZE_ISTORE_NOSORT(result, creator);
@@ -208,7 +208,7 @@ istore_subtract(PG_FUNCTION_ARGS)
         }
         else
         {
-            istore_pairs_insert(creator, pairs1[index1].key, int32sub(pairs1[index1].val, pairs2[index2].val ));
+            istore_pairs_insert(creator, pairs1[index1].key, DirectFunctionCall2(int4mi, pairs1[index1].val, pairs2[index2].val ));
             ++index1;
             ++index2;
         }
@@ -243,7 +243,7 @@ istore_subtract_integer(PG_FUNCTION_ARGS)
 
     while (index < is->len)
     {
-        istore_pairs_insert(creator, pairs[index].key, int32sub(pairs[index].val, int_arg));
+        istore_pairs_insert(creator, pairs[index].key, DirectFunctionCall2(int4mi, pairs[index].val, int_arg));
         ++index;
     }
     FINALIZE_ISTORE_NOSORT(result, creator);
@@ -284,7 +284,7 @@ istore_multiply(PG_FUNCTION_ARGS)
             ++index2;
         else
         {
-            istore_pairs_insert(creator, pairs1[index1].key, int32mul(pairs1[index1].val, pairs2[index2].val));
+            istore_pairs_insert(creator, pairs1[index1].key, DirectFunctionCall2(int4mul, pairs1[index1].val, pairs2[index2].val));
             ++index1;
             ++index2;
         }
@@ -316,7 +316,7 @@ istore_multiply_integer(PG_FUNCTION_ARGS)
 
     while (index < is->len)
     {
-        istore_pairs_insert(creator, pairs[index].key, int32mul(pairs[index].val, int_arg));
+        istore_pairs_insert(creator, pairs[index].key, DirectFunctionCall2(int4mul, pairs[index].val, int_arg));
         ++index;
     }
     FINALIZE_ISTORE_NOSORT(result, creator);
@@ -361,13 +361,17 @@ istore_divide(PG_FUNCTION_ARGS)
             ++index2;
         else
         {
-            if (pairs1[index1].val != 0 && pairs2[index2].val == 0)
+            // allow division by zero if nominator is zero
+            if (pairs1[index1].val == 0)
+                istore_pairs_insert(creator, pairs1[index1].key, 0);
+            else if (pairs1[index1].val != 0 && pairs2[index2].val == 0)
                 ereport(ERROR, (
                     errcode(ERRCODE_DIVISION_BY_ZERO),
                     errmsg("division by zero"),
                     errdetail("Key \"%d\" of right argument has value 0", pairs2[index2].key)
                 ));
-            istore_pairs_insert(creator, pairs1[index1].key, int32div(pairs1[index1].val, pairs2[index2].val));
+            else
+                istore_pairs_insert(creator, pairs1[index1].key, DirectFunctionCall2(int4div, pairs1[index1].val, pairs2[index2].val));
             ++index1;
             ++index2;
         }
@@ -408,7 +412,7 @@ istore_divide_integer(PG_FUNCTION_ARGS)
     istore_pairs_init(creator, is->len);
     while (index < is->len)
     {
-        istore_pairs_insert(creator, pairs[index].key, int32div(pairs[index].val, int_arg));
+        istore_pairs_insert(creator, pairs[index].key, DirectFunctionCall2(int4div, pairs[index].val, int_arg));
         ++index;
     }
     FINALIZE_ISTORE_NOSORT(result, creator);
@@ -515,7 +519,7 @@ array_to_istore(Datum *data, int count, bool *nulls)
                 ++n;
             }
             else
-                position->value = int32add(position->value, payload[index].val);
+                position->value = DirectFunctionCall2(int4pl, position->value, payload[index].val);
         }
     }
 
@@ -693,7 +697,7 @@ istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
             ++n;
         }
         else
-            position->value = int32add(position->value, value);
+            position->value = DirectFunctionCall2(int4pl, position->value, value);
     }
 
     pairs = palloc0(sizeof *pairs);
@@ -890,7 +894,7 @@ istore_accumulate(PG_FUNCTION_ARGS)
         if (index2 < is->len && index1 == pairs[index2].key)
         {
 
-            sum = int32add(sum, pairs[index2].val);
+            sum = DirectFunctionCall2(int4pl, sum, pairs[index2].val);
             ++index2;
         }
         istore_pairs_insert(creator, index1, sum);

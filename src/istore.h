@@ -3,6 +3,7 @@
 
 #include "postgres.h"
 #include "fmgr.h"
+#include "utils/builtins.h"
 #include "utils/array.h"
 #include "catalog/pg_type.h"
 #include "libpq/pqformat.h"

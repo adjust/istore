@@ -154,7 +154,7 @@ tree_insert(AvlNode *t, int32 key, int64 value)
         }
         else
         {
-            t->value = int64add(t->value, value);
+            t->value = DirectFunctionCall2(int8pl, t->value, value);
             return t;
         }
     }
