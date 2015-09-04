@@ -58,7 +58,7 @@ bigistore_in(PG_FUNCTION_ARGS)
     bigistore_pairs_init(pairs, n);
     bigistore_tree_to_pairs(tree, pairs);
     istore_make_empty(tree);
-    FINALIZE_BIGISTORE_NOSORT(out, pairs);
+    FINALIZE_BIGISTORE(out, pairs);
     PG_RETURN_POINTER(out);
 }
 
@@ -78,7 +78,7 @@ bigistore_recv(PG_FUNCTION_ARGS)
         int64  val  = pq_getmsgint64(buf);
         bigistore_pairs_insert(creator, key, val);
     }
-    FINALIZE_BIGISTORE_NOSORT(result, creator);
+    FINALIZE_BIGISTORE(result, creator);
     PG_RETURN_POINTER(result);
 }
 

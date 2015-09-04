@@ -44,16 +44,3 @@ istore_pairs_insert(IStorePairs *pairs, int32 key, int32 val)
         elog(ERROR, "istore buffer overflow");
     pairs->used++;
 }
-
-int
-istore_pairs_cmp(const void *a, const void *b)
-{
-    IStorePair *_a = (IStorePair *)a;
-    IStorePair *_b = (IStorePair *)b;
-    if (_a->key < _b->key)
-        return -1;
-    else if (_a->key > _b->key)
-        return 1;
-    else
-        return 0;
-}

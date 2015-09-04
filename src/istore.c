@@ -64,7 +64,7 @@ istore_merge(IStore *arg1, IStore *arg2, PGFunction mergefunc, PGFunction miss1f
         }
     }
 
-    FINALIZE_ISTORE_NOSORT(result, creator);
+    FINALIZE_ISTORE(result, creator);
 
     return result;
 }
@@ -90,7 +90,7 @@ istore_apply_datum(IStore *arg1, Datum arg2, PGFunction applyfunc)
         istore_pairs_insert(creator, pairs[index].key, DirectFunctionCall2(applyfunc, pairs[index].val, arg2));
         ++index;
     }
-    FINALIZE_ISTORE_NOSORT(result, creator);
+    FINALIZE_ISTORE(result, creator);
 
     return result;
 }
@@ -408,7 +408,7 @@ istore_from_array(PG_FUNCTION_ARGS)
     istore_tree_to_pairs(tree, pairs);
     istore_make_empty(tree);
 
-    FINALIZE_ISTORE_NOSORT(result, pairs);
+    FINALIZE_ISTORE(result, pairs);
     PG_RETURN_POINTER(result);
 }
 
@@ -453,7 +453,7 @@ array_to_istore(Datum *data, int count, bool *nulls)
     istore_tree_to_pairs(tree, pairs);
     istore_make_empty(tree);
 
-    FINALIZE_ISTORE_NOSORT(out, pairs);
+    FINALIZE_ISTORE(out, pairs);
     PG_RETURN_POINTER(out);
 }
 
@@ -628,7 +628,7 @@ istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
     istore_tree_to_pairs(tree, pairs);
     istore_make_empty(tree);
 
-    FINALIZE_ISTORE_NOSORT(out, pairs);
+    FINALIZE_ISTORE(out, pairs);
     PG_RETURN_POINTER(out);
 }
 
@@ -773,7 +773,7 @@ istore_fill_gaps(PG_FUNCTION_ARGS)
         }
     }
 
-    FINALIZE_ISTORE_NOSORT(result, creator);
+    FINALIZE_ISTORE(result, creator);
     PG_RETURN_POINTER(result);
 }
 
@@ -823,7 +823,7 @@ istore_accumulate(PG_FUNCTION_ARGS)
         istore_pairs_insert(creator, index1, sum);
     }
 
-    FINALIZE_ISTORE_NOSORT(result, creator);
+    FINALIZE_ISTORE(result, creator);
     PG_RETURN_POINTER(result);
 }
 
@@ -862,7 +862,7 @@ istore_seed(PG_FUNCTION_ARGS)
         istore_pairs_insert(creator, index1, fill_with);
     }
 
-    FINALIZE_ISTORE_NOSORT(result, creator);
+    FINALIZE_ISTORE(result, creator);
     PG_RETURN_POINTER(result);
 }
 

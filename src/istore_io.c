@@ -78,7 +78,7 @@ istore_recv(PG_FUNCTION_ARGS)
         int32  val  = pq_getmsgint(buf, 4);
         istore_pairs_insert(creator, key, val);
     }
-    FINALIZE_ISTORE_NOSORT(result, creator);
+    FINALIZE_ISTORE(result, creator);
     PG_RETURN_POINTER(result);
 }
 

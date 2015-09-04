@@ -44,17 +44,3 @@ bigistore_pairs_insert(BigIStorePairs *pairs, int32 key, int64 val)
         elog(ERROR, "bigistore buffer overflow");
     pairs->used++;
 }
-
-int
-bigistore_pairs_cmp(const void *a, const void *b)
-{
-    BigIStorePair *_a = (BigIStorePair *)a;
-    BigIStorePair *_b = (BigIStorePair *)b;
-
-    if (_a->key < _b->key)
-        return -1;
-    else if (_a->key > _b->key)
-        return 1;
-    else
-        return 0;
-}

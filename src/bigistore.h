@@ -71,16 +71,8 @@ void bigistore_tree_to_pairs(AvlNode *p, BigIStorePairs *pairs);
 BigIStorePair* bigistore_find(BigIStore *is, int32 key);
 
 #define PG_GETARG_BIGIS(x) (BigIStore *)PG_DETOAST_DATUM(PG_GETARG_DATUM(x))
-#define BIGPAIRSORTFUNC bigistore_pairs_cmp
-#define BIGISINSERTFUNC bigistore_pairs_insert
 
-#define FINALIZE_BIGISTORE(_istore, _pairs)                                    \
-    do {                                                                          \
-        qsort(_pairs->pairs, _pairs->used, sizeof(BigIStorePair), bigistore_pairs_cmp); \
-        FINALIZE_BIGISTORE_NOSORT(_istore, _pairs);                       \
-    } while(0)
-
-#define FINALIZE_BIGISTORE_NOSORT(_istore, _pairs)                             \
+#define FINALIZE_BIGISTORE(_istore, _pairs)                             \
     do {                                                                    \
         _istore = palloc0(ISHDRSZ + PAYLOAD_SIZE(_pairs, BigIStorePair));                  \
         _istore->buflen = _pairs->buflen;                                   \

@@ -63,7 +63,7 @@ bigistore_merge(BigIStore *arg1, BigIStore *arg2, PGFunction mergefunc, PGFuncti
         }
     }
 
-    FINALIZE_BIGISTORE_NOSORT(result, creator);
+    FINALIZE_BIGISTORE(result, creator);
 
     return result;
 }
@@ -89,7 +89,7 @@ bigistore_apply_datum(BigIStore *arg1, Datum arg2, PGFunction applyfunc)
         bigistore_pairs_insert(creator, pairs[index].key, DirectFunctionCall2(applyfunc, pairs[index].val, arg2));
         ++index;
     }
-    FINALIZE_BIGISTORE_NOSORT(result, creator);
+    FINALIZE_BIGISTORE(result, creator);
 
     return result;
 }
@@ -406,7 +406,7 @@ bigistore_from_array(PG_FUNCTION_ARGS)
     bigistore_tree_to_pairs(tree, pairs);
     istore_make_empty(tree);
 
-    FINALIZE_BIGISTORE_NOSORT(result, pairs);
+    FINALIZE_BIGISTORE(result, pairs);
     PG_RETURN_POINTER(result);
 }
 
@@ -450,7 +450,7 @@ array_to_bigistore(Datum *data, int count, bool *nulls)
     bigistore_tree_to_pairs(tree, pairs);
     istore_make_empty(tree);
 
-    FINALIZE_BIGISTORE_NOSORT(out, pairs);
+    FINALIZE_BIGISTORE(out, pairs);
     PG_RETURN_POINTER(out);
 }
 
@@ -625,7 +625,7 @@ bigistore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
     bigistore_tree_to_pairs(tree, pairs);
     istore_make_empty(tree);
 
-    FINALIZE_BIGISTORE_NOSORT(out, pairs);
+    FINALIZE_BIGISTORE(out, pairs);
     PG_RETURN_POINTER(out);
 }
 
@@ -770,7 +770,7 @@ bigistore_fill_gaps(PG_FUNCTION_ARGS)
         }
     }
 
-    FINALIZE_BIGISTORE_NOSORT(result, creator);
+    FINALIZE_BIGISTORE(result, creator);
     PG_RETURN_POINTER(result);
 }
 
@@ -820,7 +820,7 @@ bigistore_accumulate(PG_FUNCTION_ARGS)
         bigistore_pairs_insert(creator, index1, sum);
     }
 
-    FINALIZE_BIGISTORE_NOSORT(result, creator);
+    FINALIZE_BIGISTORE(result, creator);
     PG_RETURN_POINTER(result);
 }
 
@@ -859,7 +859,7 @@ bigistore_seed(PG_FUNCTION_ARGS)
         bigistore_pairs_insert(creator, index1, fill_with);
     }
 
-    FINALIZE_BIGISTORE_NOSORT(result, creator);
+    FINALIZE_BIGISTORE(result, creator);
     PG_RETURN_POINTER(result);
 }
 
