@@ -5,31 +5,45 @@ PG_FUNCTION_INFO_V1(bigistore_out);
 Datum
 bigistore_out(PG_FUNCTION_ARGS)
 {
-    BigIStore *in = PG_GETARG_BIGIS(0);
-    int     i,
-            ptr = 0;
-    char   *out;
+    BigIStore     *in;
+    int            i;
+    char          *out,
+                  *walk;
     BigIStorePair *pairs;
+
+    in = PG_GETARG_BIGIS(0);
 
     if (in->len == 0)
     {
         out = palloc0(1);
         PG_RETURN_CSTRING(out);
     }
+
     out = palloc0(in->buflen + 1);
     pairs = FIRST_PAIR(in, BigIStorePair);
+    walk = out;
+
     for (i = 0; i<in->len; ++i)
     {
-        out[ptr++] = '"';
-        ptr += is_ltoa(pairs[i].key, out+ptr);
-        memcpy(out+ptr, "\"=>\"", 5);
-        ptr += 4;
-        ptr += is_lltoa(pairs[i].val, out+ptr);
-        memcpy(out+ptr, "\", ", 4);
-        ptr += 3;
+        *walk++ = '"';
+        pg_lltoa(pairs[i].key, walk);
+        while (*++walk != '\0') ;
+
+        *walk++ = '"';
+        *walk++ = '=';
+        *walk++ = '>';
+        *walk++ = '"';
+        pg_lltoa(pairs[i].val, walk);
+        while (*++walk != '\0') ;
+
+        *walk++ = '"';
+        *walk++ = ',';
+        *walk++ = ' ';
+
     }
-    // replace trailing , with terminating null
-    out[in->buflen - 2] = '\0';
+    // replace trailing ", " with terminating null
+    --walk;
+    *--walk = '\0';
     PG_RETURN_CSTRING(out);
 }
 

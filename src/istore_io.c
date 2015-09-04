@@ -1,15 +1,18 @@
 #include "istore.h"
 #include "is_parser.h"
+#include "utils/builtins.h"
 
 PG_FUNCTION_INFO_V1(istore_out);
 Datum
 istore_out(PG_FUNCTION_ARGS)
 {
-    IStore *in = PG_GETARG_IS(0);
-    int     i,
-            ptr = 0;
-    char   *out;
-    IStorePair *pairs;
+    IStore       *in;
+    int           i;
+    char         *out,
+                 *walk;
+    IStorePair   *pairs;
+
+    in = PG_GETARG_IS(0);
 
     if (in->len == 0)
     {
@@ -18,18 +21,28 @@ istore_out(PG_FUNCTION_ARGS)
     }
     out = palloc0(in->buflen + 1);
     pairs = FIRST_PAIR(in, IStorePair);
+    walk = out;
+
     for (i = 0; i<in->len; ++i)
     {
-        out[ptr++] = '"';
-        ptr += is_ltoa(pairs[i].key, out+ptr);
-        memcpy(out+ptr, "\"=>\"", 5);
-        ptr += 4;
-        ptr += is_ltoa(pairs[i].val, out+ptr);
-        memcpy(out+ptr, "\", ", 4);
-        ptr += 3;
+        *walk++ = '"';
+        pg_ltoa(pairs[i].key, walk);
+        while (*++walk != '\0') ;
+
+        *walk++ = '"';
+        *walk++ = '=';
+        *walk++ = '>';
+        *walk++ = '"';
+        pg_ltoa(pairs[i].val, walk);
+        while (*++walk != '\0') ;
+        *walk++ = '"';
+        *walk++ = ',';
+        *walk++ = ' ';
+
     }
-    // replace trailing , with terminating null
-    out[in->buflen - 2] = '\0';
+    // replace trailing ", " with terminating null
+    --walk;
+    *--walk = '\0';
     PG_RETURN_CSTRING(out);
 }
 
