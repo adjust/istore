@@ -1,5 +1,7 @@
 #include "avl.h"
 
+#define COMPARE(_a,_b) ((_a == _b) ? 0 : ((_a < _b) ? -1 : 1))
+
 AvlNode*
 istore_make_empty(AvlNode *t)
 {
