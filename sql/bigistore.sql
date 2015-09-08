@@ -1,32 +1,4 @@
-CREATE TYPE bigistore;
-
-CREATE FUNCTION bigistore_in(cstring)
-    RETURNS bigistore
-    AS '$libdir/istore.so'
-    LANGUAGE C IMMUTABLE STRICT;
-
-CREATE FUNCTION bigistore_out(bigistore)
-    RETURNS cstring
-    AS '$libdir/istore.so'
-    LANGUAGE C IMMUTABLE STRICT;
-
-CREATE FUNCTION bigistore_send(bigistore)
-    RETURNS bytea
-    AS '$libdir/istore.so'
-    LANGUAGE C IMMUTABLE STRICT;
-
-CREATE FUNCTION bigistore_recv(internal)
-    RETURNS bigistore
-    AS '$libdir/istore.so'
-    LANGUAGE C IMMUTABLE STRICT;
-
-CREATE TYPE bigistore (
-    INPUT   = bigistore_in,
-    OUTPUT  = bigistore_out,
-    RECEIVE = bigistore_recv,
-    SEND    = bigistore_send,
-    STORAGE = EXTENDED
-);
+--require types
 
 CREATE FUNCTION exist(bigistore, integer)
     RETURNS boolean
