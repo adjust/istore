@@ -39,6 +39,7 @@ Datum istore_accumulate(PG_FUNCTION_ARGS);
 Datum istore_seed(PG_FUNCTION_ARGS);
 Datum istore_val_larger(PG_FUNCTION_ARGS);
 Datum istore_val_smaller(PG_FUNCTION_ARGS);
+Datum  istore_array_sum(Datum *data, int count, bool *nulls);
 
 typedef struct {
     int32  key;

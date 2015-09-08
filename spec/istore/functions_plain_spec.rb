@@ -183,7 +183,7 @@ types.each do |type|
         query("SELECT istore_sum_up('1=>1 ,2=>-1, 1=>1'::#{type})").should match 1
       end
 
-      it 'should sum istores from table' do
+      it 'should sum istores from table' , :focus do
         query("CREATE TABLE test (a #{type})")
         query("INSERT INTO test VALUES('1=>1'),('2=>1'), ('3=>1')")
         query("SELECT SUM(a) FROM test").should match \

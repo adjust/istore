@@ -528,7 +528,7 @@ istore_agg_finalfn(PG_FUNCTION_ARGS)
     if (count == 0)
         PG_RETURN_NULL();
 
-    result = array_to_istore(data, count, nulls);
+    result = istore_array_sum(data, count, nulls);
 
     if (result == 0)
         PG_RETURN_NULL();
