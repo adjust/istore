@@ -1,17 +1,14 @@
 #include "istore.h"
 
-void is_pairs_init(ISPairs *pairs, size_t initial_size, uint8 type);
-void is_pairs_insert(ISPairs *pairs, int32 key, long val, uint8 type);
-int  is_pairs_cmp(const void *a, const void *b);
-void is_pairs_sort(ISPairs *pairs);
-void is_pairs_deinit(ISPairs *pairs);
-void is_pairs_debug(ISPairs *pairs);
-
-int is_compare(int32 key, AvlTree node);
-Position is_tree_find(int32 key, AvlTree t);
-AvlTree is_insert(int32 key, long value, bool null, AvlTree t);
-int is_tree_length(Position p);
-int is_tree_to_pairs(Position p, ISPairs *pairs, int n);
+#define DIGIT_WIDTH(_digit, _width)       \
+    do {                                  \
+        int64 _local = _digit;             \
+        _width = 0;                       \
+        if (_local <= 0)                  \
+            ++_width;                     \
+        for (; _local != 0; _local /= 10) \
+            ++_width;                     \
+    } while (0)
 
 static inline int
 height(Position p)
@@ -143,7 +140,7 @@ doubleRotateWithRight(Position k1)
 }
 
 AvlTree
-is_insert(int32 key, long value, bool null, AvlTree t)
+is_insert(AvlTree t, int32 key, int64 value)
 {
     if(t == NULL)
     {
@@ -158,7 +155,6 @@ is_insert(int32 key, long value, bool null, AvlTree t)
             t->height = 0;
             t->left = NULL;
             t->right = NULL;
-            t->null  = null;
         }
     }
     else
@@ -166,7 +162,7 @@ is_insert(int32 key, long value, bool null, AvlTree t)
         int cmp = is_compare(key, t);
         if (cmp < 0)
         {
-            t->left = is_insert(key, value, null, t->left);
+            t->left = is_insert(t->left, key, value);
             if (height(t->left) - height(t->right) == 2)
             {
                 if (is_compare( key, t->left))
@@ -177,7 +173,7 @@ is_insert(int32 key, long value, bool null, AvlTree t)
         }
         else if(cmp > 0)
         {
-            t->right = is_insert(key, value, null, t->right);
+            t->right = is_insert(t->right, key, value);
             if (height(t->right) - height(t->left) == 2)
             {
                 if (is_compare(key, t->right))
@@ -212,30 +208,27 @@ is_tree_length(Position p)
 int
 is_tree_to_pairs(Position p, ISPairs *pairs, int n)
 {
-    uint8 local_type = pairs->type;
     if(p == NULL)
         return n;
     n = is_tree_to_pairs(p->left, pairs, n);
-    if (p->null)
-        local_type = null_type_for(pairs->type);
-    is_pairs_insert(pairs, p->key, p->value, local_type);
+
+    is_pairs_insert(pairs, p->key, p->value);
     ++n;
     n = is_tree_to_pairs(p->right, pairs, n);
     return n;
 }
 
 void
-is_pairs_init(ISPairs *pairs, size_t initial_size, uint8 type)
+is_pairs_init(ISPairs *pairs, size_t initial_size)
 {
-    pairs->pairs  = palloc0(initial_size * sizeof(ISPair));
-    pairs->used   = 0;
-    pairs->size   = initial_size;
-    pairs->buflen = 0;
-    pairs->type   = type;
+    pairs->pairs   = palloc0(initial_size * sizeof(ISPair));
+    pairs->used    = 0;
+    pairs->size    = initial_size;
+    pairs->buflen  = 0;
 }
 
 void
-is_pairs_insert(ISPairs *pairs, int32 key, long val, uint8 type)
+is_pairs_insert(ISPairs *pairs, int32 key, int64 val)
 {
     int keylen,
         vallen;
@@ -247,66 +240,10 @@ is_pairs_insert(ISPairs *pairs, int32 key, long val, uint8 type)
 
     pairs->pairs[pairs->used].key  = key;
     pairs->pairs[pairs->used].val  = val;
-    switch (type)
-    {
-        case (PLAIN_ISTORE):
-            DIGIT_WIDTH(key, keylen);
-            DIGIT_WIDTH(val, vallen);
-            pairs->pairs[pairs->used].null = false;
-            pairs->buflen += keylen + vallen + BUFLEN_OFFSET;
-            break;
-        case (NULL_VAL_ISTORE):
-            DIGIT_WIDTH(key, keylen);
-            pairs->pairs[pairs->used].null = true;
-            pairs->buflen += keylen + NULL_BUFLEN_OFFSET;
-            break;
-        case (DEVICE_ISTORE):
-            keylen = get_device_type_length(key);
-            DIGIT_WIDTH(val, vallen);
-            pairs->pairs[pairs->used].null = false;
-            pairs->buflen += keylen + vallen + BUFLEN_OFFSET;
-            break;
-        case (NULL_DEVICE_ISTORE):
-            keylen = get_device_type_length(key);
-            pairs->pairs[pairs->used].null = true;
-            pairs->buflen += keylen + NULL_BUFLEN_OFFSET;
-            break;
-        case (COUNTRY_ISTORE):
-            keylen = 2;
-            DIGIT_WIDTH(val, vallen);
-            pairs->pairs[pairs->used].null = false;
-            pairs->buflen += keylen + vallen + BUFLEN_OFFSET;
-            break;
-        case (NULL_COUNTRY_ISTORE):
-            keylen = 2;
-            pairs->pairs[pairs->used].null = true;
-            pairs->buflen += keylen + NULL_BUFLEN_OFFSET;
-            break;
-        case (OS_NAME_ISTORE):
-            keylen = get_os_name_length(key);
-            DIGIT_WIDTH(val, vallen);
-            pairs->pairs[pairs->used].null = false;
-            pairs->buflen += keylen + vallen + BUFLEN_OFFSET;
-            break;
-        case (NULL_OS_NAME_ISTORE):
-            keylen = get_os_name_length(key);
-            pairs->pairs[pairs->used].null = true;
-            pairs->buflen += keylen + NULL_BUFLEN_OFFSET;
-            break;
-        case (C_ISTORE):
-            C_ISTORE_KEY_LEN(key, keylen);
-            DIGIT_WIDTH(val, vallen);
-            pairs->pairs[pairs->used].null = false;
-            pairs->buflen += keylen + vallen + BUFLEN_OFFSET;
-            break;
-        case (C_ISTORE_COHORT):
-            C_ISTORE_COHORT_KEY_LEN(key, keylen);
-            DIGIT_WIDTH(val, vallen);
-            pairs->pairs[pairs->used].null = false;
-            pairs->buflen += keylen + vallen + BUFLEN_OFFSET;
-            break;
-        default: elog(ERROR, "unknown pairs type");
-    }
+
+    DIGIT_WIDTH(key, keylen);
+    DIGIT_WIDTH(val, vallen);
+    pairs->buflen += keylen + vallen + BUFLEN_OFFSET;
     pairs->used++;
 }
 
@@ -315,12 +252,7 @@ is_pairs_cmp(const void *a, const void *b)
 {
     ISPair *_a = (ISPair *)a;
     ISPair *_b = (ISPair *)b;
-    if (_a->key < _b->key)
-        return -1;
-    else if (_a->key > _b->key)
-        return 1;
-    else
-        return 0;
+    return (int)(_a->key - _b->key);
 }
 
 void inline

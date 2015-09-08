@@ -1,3 +1,4 @@
+--source file sql/istore.sql
 CREATE TYPE istore;
 
 CREATE FUNCTION istore_in(cstring)
@@ -267,3 +268,4 @@ AS
     FUNCTION 3 gin_extract_istore_key_query(internal, internal, int2, internal, internal),
     FUNCTION 4 gin_consistent_istore_key(internal, int2, internal, int4, internal, internal),
     STORAGE  integer;
+ 
