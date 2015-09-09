@@ -62,11 +62,6 @@ CREATE FUNCTION istore_from_array(integer[])
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION istore_agg(istore[])
-    RETURNS istore
-    AS '$libdir/istore.so'
-    LANGUAGE C IMMUTABLE STRICT;
-
 CREATE FUNCTION istore_agg_finalfn(internal)
     RETURNS bigistore
     AS '$libdir/istore.so'

@@ -457,55 +457,6 @@ array_to_istore(Datum *data, int count, bool *nulls)
     PG_RETURN_POINTER(out);
 }
 
-PG_FUNCTION_INFO_V1(istore_agg);
-Datum
-istore_agg(PG_FUNCTION_ARGS)
-{
-    Datum      result;
-    ArrayType *input;
-    Datum     *i_data;
-    bool      *nulls;
-    int        n;
-    int16      i_typlen;
-    bool       i_typbyval;
-    char       i_typalign;
-    Oid        i_eltype;
-
-    if (PG_ARGISNULL(0))
-        PG_RETURN_NULL();
-
-    input = PG_GETARG_ARRAYTYPE_P(0);
-
-    i_eltype = ARR_ELEMTYPE(input);
-
-    get_typlenbyvalalign(
-            i_eltype,
-            &i_typlen,
-            &i_typbyval,
-            &i_typalign
-            );
-
-    deconstruct_array(
-            input,
-            i_eltype,
-            i_typlen,
-            i_typbyval,
-            i_typalign,
-            &i_data,
-            &nulls,
-            &n
-            );
-
-    if (n == 0 || (n == 1 && nulls[0]))
-        PG_RETURN_NULL();
-
-    result = array_to_istore(i_data, n, nulls);
-    if (result == 0)
-        PG_RETURN_NULL();
-    else
-        return result;
-}
-
 PG_FUNCTION_INFO_V1(istore_agg_finalfn);
 Datum
 istore_agg_finalfn(PG_FUNCTION_ARGS)

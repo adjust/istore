@@ -27,7 +27,6 @@ Datum istore_divide_int8(PG_FUNCTION_ARGS);
 Datum istore_divide(PG_FUNCTION_ARGS);
 Datum istore_subtract_integer(PG_FUNCTION_ARGS);
 Datum istore_subtract(PG_FUNCTION_ARGS);
-Datum istore_agg(PG_FUNCTION_ARGS);
 Datum istore_add_integer(PG_FUNCTION_ARGS);
 Datum istore_add(PG_FUNCTION_ARGS);
 Datum istore_fetchval(PG_FUNCTION_ARGS);

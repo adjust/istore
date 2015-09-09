@@ -28,7 +28,6 @@ Datum bigistore_divide_int8(PG_FUNCTION_ARGS);
 Datum bigistore_divide(PG_FUNCTION_ARGS);
 Datum bigistore_subtract_integer(PG_FUNCTION_ARGS);
 Datum bigistore_subtract(PG_FUNCTION_ARGS);
-Datum bigistore_agg(PG_FUNCTION_ARGS);
 Datum bigistore_add_integer(PG_FUNCTION_ARGS);
 Datum bigistore_add(PG_FUNCTION_ARGS);
 Datum bigistore_fetchval(PG_FUNCTION_ARGS);
