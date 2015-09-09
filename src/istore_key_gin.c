@@ -20,6 +20,7 @@
 #include "access/skey.h"
 
 #include "istore.h"
+#include "bigistore.h"
 
 
 /*
@@ -33,6 +34,31 @@ gin_extract_istore_key(PG_FUNCTION_ARGS)
     int32  *nentries = (int32 *) PG_GETARG_POINTER(1);
     Datum  *entries = NULL;
     IStorePair *pairs = FIRST_PAIR(is,IStorePair);
+    int     count = is->len;
+    int     i;
+
+    *nentries = count;
+
+    if (count > 0)
+        entries = (Datum *) palloc(sizeof(Datum) * count);
+
+    for (i = 0; i < count; ++i)
+        entries[i] = Int32GetDatum(pairs[i].key);
+
+    PG_RETURN_POINTER(entries);
+}
+
+/*
+ * The Gin key extractor
+ */
+PG_FUNCTION_INFO_V1(gin_extract_bigistore_key);
+Datum
+gin_extract_bigistore_key(PG_FUNCTION_ARGS)
+{
+    BigIStore *is = PG_GETARG_BIGIS(0);
+    int32  *nentries = (int32 *) PG_GETARG_POINTER(1);
+    Datum  *entries = NULL;
+    BigIStorePair *pairs = FIRST_PAIR(is,BigIStorePair);
     int     count = is->len;
     int     i;
 
