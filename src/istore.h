@@ -12,7 +12,6 @@
 #include "istore_common.h"
 #include "avl.h"
 
-Datum array_to_istore(Datum *data, int count, bool *nulls);
 Datum istore_out(PG_FUNCTION_ARGS);
 Datum istore_in(PG_FUNCTION_ARGS);
 Datum istore_recv(PG_FUNCTION_ARGS);

@@ -13,7 +13,6 @@
 #include "istore_common.h"
 #include "avl.h"
 
-Datum array_to_bigistore(Datum *data, int count, bool *nulls);
 Datum bigistore_out(PG_FUNCTION_ARGS);
 Datum bigistore_in(PG_FUNCTION_ARGS);
 Datum bigistore_recv(PG_FUNCTION_ARGS);
@@ -39,6 +38,7 @@ Datum bigistore_accumulate(PG_FUNCTION_ARGS);
 Datum bigistore_seed(PG_FUNCTION_ARGS);
 Datum bigistore_val_larger(PG_FUNCTION_ARGS);
 Datum bigistore_val_smaller(PG_FUNCTION_ARGS);
+Datum bigistore_array_sum(Datum *data, int count, bool *nulls);
 
 typedef struct {
     int32  key;

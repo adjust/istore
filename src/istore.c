@@ -412,51 +412,6 @@ istore_from_intarray(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(result);
 }
 
-Datum
-array_to_istore(Datum *data, int count, bool *nulls)
-{
-    IStore   *out,
-             *istore;
-    AvlNode   *tree;
-    int       i,
-              n = 0,
-              index;
-    IStorePair   *payload;
-    IStorePairs  *pairs;
-    AvlNode  *position;
-
-    tree = NULL;
-
-    for (i = 0; i < count; ++i)
-    {
-        if (nulls[i])
-            continue;
-        istore = (IStore *) data[i];
-        payload = FIRST_PAIR(istore, IStorePair);
-        for (index = 0; index < istore->len; ++index)
-        {
-            position = tree_find(payload[index].key, tree);
-            if (position == NULL)
-            {
-                tree = tree_insert(tree, payload[index].key, payload[index].val);
-                ++n;
-            }
-            else
-                position->value = DirectFunctionCall2(int4pl, position->value, payload[index].val);
-        }
-    }
-
-    if (n == 0)
-        return 0;
-    pairs = palloc0(sizeof *pairs);
-    istore_pairs_init(pairs, n);
-    istore_tree_to_pairs(tree, pairs);
-    istore_make_empty(tree);
-
-    FINALIZE_ISTORE(out, pairs);
-    PG_RETURN_POINTER(out);
-}
-
 PG_FUNCTION_INFO_V1(istore_agg_finalfn);
 Datum
 istore_agg_finalfn(PG_FUNCTION_ARGS)

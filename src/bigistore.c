@@ -410,50 +410,6 @@ bigistore_from_intarray(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(result);
 }
 
-Datum
-array_to_bigistore(Datum *data, int count, bool *nulls)
-{
-    BigIStore   *out,
-             *bigistore;
-    AvlNode   *tree;
-    int       i,
-              n = 0 ,
-              index;
-    BigIStorePair   *payload;
-    BigIStorePairs  *pairs;
-    AvlNode     *position;
-
-    tree = NULL;
-
-    for (i = 0; i < count; ++i)
-    {
-        if (nulls[i])
-            continue;
-        bigistore = (BigIStore *) data[i];
-        payload = FIRST_PAIR(bigistore, BigIStorePair);
-        for (index = 0; index < bigistore->len; ++index)
-        {
-            position = tree_find(payload[index].key, tree);
-            if (position == NULL)
-            {
-                tree = tree_insert(tree, payload[index].key, payload[index].val);
-                ++n;
-            }
-            else
-                position->value = DirectFunctionCall2(int8pl, position->value, payload[index].val);
-        }
-    }
-    if (n == 0)
-        return 0;
-    pairs = palloc0(sizeof *pairs);
-    bigistore_pairs_init(pairs, n);
-    bigistore_tree_to_pairs(tree, pairs);
-    istore_make_empty(tree);
-
-    FINALIZE_BIGISTORE(out, pairs);
-    PG_RETURN_POINTER(out);
-}
-
 PG_FUNCTION_INFO_V1(bigistore_agg_finalfn);
 Datum
 bigistore_agg_finalfn(PG_FUNCTION_ARGS)
@@ -476,7 +432,7 @@ bigistore_agg_finalfn(PG_FUNCTION_ARGS)
     if (count == 0)
         PG_RETURN_NULL();
 
-    result = array_to_bigistore(data, count, nulls);
+    result = bigistore_array_sum(data, count, nulls);
 
     if (result == 0)
         PG_RETURN_NULL();
