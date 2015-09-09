@@ -57,9 +57,9 @@ CREATE FUNCTION divide(istore, integer)
     AS '$libdir/istore.so', 'istore_divide_integer'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION istore_from_array(integer[])
+CREATE FUNCTION istore(integer[])
     RETURNS istore
-    AS '$libdir/istore.so'
+    AS '$libdir/istore.so', 'istore_from_intarray'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION istore_agg_finalfn(internal)

@@ -116,9 +116,9 @@ CREATE FUNCTION divide(istore, integer)
     AS '$libdir/istore.so', 'istore_divide_integer'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION istore_from_array(integer[])
+CREATE FUNCTION istore(integer[])
     RETURNS istore
-    AS '$libdir/istore.so'
+    AS '$libdir/istore.so', 'istore_from_intarray'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION istore_agg_finalfn(internal)
@@ -348,9 +348,9 @@ CREATE FUNCTION divide(bigistore, bigint)
     AS '$libdir/istore.so', 'bigistore_divide_integer'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION bigistore_from_array(integer[])
+CREATE FUNCTION bigistore(integer[])
     RETURNS bigistore
-    AS '$libdir/istore.so'
+    AS '$libdir/istore.so', 'bigistore_from_intarray'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION bigistore_agg_finalfn(internal)

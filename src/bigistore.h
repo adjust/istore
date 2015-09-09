@@ -20,7 +20,7 @@ Datum bigistore_recv(PG_FUNCTION_ARGS);
 Datum bigistore_send(PG_FUNCTION_ARGS);
 Datum bigistore_array_add(PG_FUNCTION_ARGS);
 Datum bigistore_agg_finalfn(PG_FUNCTION_ARGS);
-Datum bigistore_from_array(PG_FUNCTION_ARGS);
+Datum bigistore_from_intarray(PG_FUNCTION_ARGS);
 Datum bigistore_multiply_integer(PG_FUNCTION_ARGS);
 Datum bigistore_multiply(PG_FUNCTION_ARGS);
 Datum bigistore_divide_integer(PG_FUNCTION_ARGS);

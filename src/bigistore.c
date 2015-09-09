@@ -340,9 +340,9 @@ bigistore_divide_integer(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(bigistore_apply_datum(is, int_arg, int8div));
 }
 
-PG_FUNCTION_INFO_V1(bigistore_from_array);
+PG_FUNCTION_INFO_V1(bigistore_from_intarray);
 Datum
-bigistore_from_array(PG_FUNCTION_ARGS)
+bigistore_from_intarray(PG_FUNCTION_ARGS)
 {
     BigIStore      *result;
     Datum          *i_data;

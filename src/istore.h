@@ -19,7 +19,7 @@ Datum istore_recv(PG_FUNCTION_ARGS);
 Datum istore_send(PG_FUNCTION_ARGS);
 Datum istore_array_add(PG_FUNCTION_ARGS);
 Datum istore_agg_finalfn(PG_FUNCTION_ARGS);
-Datum istore_from_array(PG_FUNCTION_ARGS);
+Datum istore_from_intarray(PG_FUNCTION_ARGS);
 Datum istore_multiply_integer(PG_FUNCTION_ARGS);
 Datum istore_multiply(PG_FUNCTION_ARGS);
 Datum istore_divide_integer(PG_FUNCTION_ARGS);

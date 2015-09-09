@@ -342,9 +342,9 @@ istore_divide_integer(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(istore_apply_datum(is, int_arg, int4div));
 }
 
-PG_FUNCTION_INFO_V1(istore_from_array);
+PG_FUNCTION_INFO_V1(istore_from_intarray);
 Datum
-istore_from_array(PG_FUNCTION_ARGS)
+istore_from_intarray(PG_FUNCTION_ARGS)
 {
     IStore    *result;
     Datum     *i_data;

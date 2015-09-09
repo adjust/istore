@@ -140,25 +140,25 @@ types.each do |type|
       end
 
       it 'should generate #{type} from array' do
-        query("SELECT istore_from_array(ARRAY[1])").should match \
+        query("SELECT #{type}(ARRAY[1])").should match \
         '"1"=>"1"'
-        query("SELECT istore_from_array(ARRAY[1,1,1,1])").should match \
+        query("SELECT #{type}(ARRAY[1,1,1,1])").should match \
         '"1"=>"4"'
-        query("SELECT istore_from_array(NULL)").should match nil
-        query("SELECT istore_from_array(ARRAY[1,2,3,4])").should match \
+        query("SELECT #{type}(NULL)").should match nil
+        query("SELECT #{type}(ARRAY[1,2,3,4])").should match \
         '"1"=>"1", "2"=>"1", "3"=>"1", "4"=>"1"'
-        query("SELECT istore_from_array(ARRAY[1,2,3,4,1,2,3,4])").should match \
+        query("SELECT #{type}(ARRAY[1,2,3,4,1,2,3,4])").should match \
         '"1"=>"2", "2"=>"2", "3"=>"2", "4"=>"2"'
-        query("SELECT istore_from_array(ARRAY[1,2,3,4,1,2,3,NULL])").should match \
+        query("SELECT #{type}(ARRAY[1,2,3,4,1,2,3,NULL])").should match \
         '"1"=>"2", "2"=>"2", "3"=>"2", "4"=>"1"'
-        query("SELECT istore_from_array(ARRAY[NULL,2,3,4,1,2,3,4])").should match \
+        query("SELECT #{type}(ARRAY[NULL,2,3,4,1,2,3,4])").should match \
         '"1"=>"1", "2"=>"2", "3"=>"2", "4"=>"2"'
-        query("SELECT istore_from_array(ARRAY[NULL,2,3,4,1,2,3,NULL])").should match \
+        query("SELECT #{type}(ARRAY[NULL,2,3,4,1,2,3,NULL])").should match \
         '"1"=>"1", "2"=>"2", "3"=>"2", "4"=>"1"'
-        query("SELECT istore_from_array(ARRAY[1,2,3,NULL,1,NULL,3,4,1,2,3])").should match \
+        query("SELECT #{type}(ARRAY[1,2,3,NULL,1,NULL,3,4,1,2,3])").should match \
         '"1"=>"3", "2"=>"2", "3"=>"3", "4"=>"1"'
-        query("SELECT istore_from_array(ARRAY[NULL,NULL,NULL,NULL]::integer[])").should match ""
-        query("SELECT istore_from_array(ARRAY[]::integer[])").should match ""
+        query("SELECT #{type}(ARRAY[NULL,NULL,NULL,NULL]::integer[])").should match ""
+        query("SELECT #{type}(ARRAY[]::integer[])").should match ""
       end
 
       it 'should sum up istores' do
