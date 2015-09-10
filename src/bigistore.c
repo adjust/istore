@@ -97,23 +97,32 @@ bigistore_apply_datum(BigIStore *arg1, Datum arg2, PGFunction applyfunc)
 }
 
 /*
- * special division operations that allows division by zero if nominator is zero
- * as well. Thus 0/0 becomes 0
+ * remove zero values from istore
  */
-PG_FUNCTION_INFO_V1(is_int8div);
+PG_FUNCTION_INFO_V1(bigistore_compact);
 Datum
-is_int8div(PG_FUNCTION_ARGS)
+bigistore_compact(PG_FUNCTION_ARGS)
 {
-    int64 arg1,
-          arg2;
+    BigIStore      *is,
+                   *result;
+    BigIStorePair  *pairs;
+    int          index;
+    BigIStorePairs *creator ;
 
-    arg1 = PG_GETARG_INT64(0);
-    arg2 = PG_GETARG_INT64(1);
-
-    if (arg1 == 0)
-        PG_RETURN_INT64(0);
-
-    PG_RETURN_INT64(DirectFunctionCall2(int8div, arg1, arg2));
+    is      = PG_GETARG_BIGIS(0);
+    pairs   = FIRST_PAIR(is, BigIStorePair);
+    index   = 0;
+    creator = NULL;
+    creator = palloc0(sizeof *creator);
+    bigistore_pairs_init(creator, is->len);
+    while (index < is->len)
+    {
+        if (pairs[index].val != 0)
+            bigistore_pairs_insert(creator, pairs[index].key, pairs[index].val);
+        ++index;
+    }
+    FINALIZE_BIGISTORE(result, creator);
+    PG_RETURN_POINTER(result);
 }
 
 /*
@@ -321,7 +330,7 @@ bigistore_divide(PG_FUNCTION_ARGS)
     is1     = PG_GETARG_BIGIS(0);
     is2     = PG_GETARG_BIGIS(1);
 
-    PG_RETURN_POINTER(bigistore_merge(is1, is2, is_int8div, NULL));
+    PG_RETURN_POINTER(bigistore_merge(is1, is2, int8div, NULL));
 }
 
 /*

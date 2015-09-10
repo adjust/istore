@@ -17,6 +17,11 @@ RETURNS SETOF record
 AS '$libdir/istore.so','bigistore_each'
 LANGUAGE C STRICT IMMUTABLE;
 
+CREATE FUNCTION compact(bigistore)
+    RETURNS bigistore
+    AS '$libdir/istore.so', 'bigistore_compact'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION add(bigistore, bigistore)
     RETURNS bigistore
     AS '$libdir/istore.so', 'bigistore_add'

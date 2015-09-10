@@ -32,6 +32,7 @@ Datum istore_seed(PG_FUNCTION_ARGS);
 Datum istore_val_larger(PG_FUNCTION_ARGS);
 Datum istore_val_smaller(PG_FUNCTION_ARGS);
 Datum istore_array_sum(Datum *data, int count, bool *nulls);
+Datum istore_compact(PG_FUNCTION_ARGS);
 
 Datum bigistore_out(PG_FUNCTION_ARGS);
 Datum bigistore_in(PG_FUNCTION_ARGS);
@@ -59,7 +60,7 @@ Datum bigistore_seed(PG_FUNCTION_ARGS);
 Datum bigistore_val_larger(PG_FUNCTION_ARGS);
 Datum bigistore_val_smaller(PG_FUNCTION_ARGS);
 Datum bigistore_array_sum(Datum *data, int count, bool *nulls);
-
+Datum bigistore_compact(PG_FUNCTION_ARGS);
 
 typedef struct {
     int32  key;

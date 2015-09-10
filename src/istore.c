@@ -99,23 +99,32 @@ istore_apply_datum(IStore *arg1, Datum arg2, PGFunction applyfunc)
 }
 
 /*
- * special division operations that allows division by zero if nominator is zero
- * as well. Thus 0/0 becomes 0
+ * remove zero values from istore
  */
-PG_FUNCTION_INFO_V1(is_int4div);
+PG_FUNCTION_INFO_V1(istore_compact);
 Datum
-is_int4div(PG_FUNCTION_ARGS)
+istore_compact(PG_FUNCTION_ARGS)
 {
-    int32 arg1,
-          arg2;
+    IStore      *is,
+                *result;
+    IStorePair  *pairs;
+    int          index;
+    IStorePairs *creator ;
 
-    arg1 = PG_GETARG_INT32(0);
-    arg2 = PG_GETARG_INT32(1);
-
-    if (arg1 == 0)
-        PG_RETURN_INT32(0);
-
-    PG_RETURN_INT32(DirectFunctionCall2(int4div, arg1, arg2));
+    is      = PG_GETARG_IS(0);
+    pairs   = FIRST_PAIR(is, IStorePair);
+    index   = 0;
+    creator = NULL;
+    creator = palloc0(sizeof *creator);
+    istore_pairs_init(creator, is->len);
+    while (index < is->len)
+    {
+        if (pairs[index].val != 0)
+            istore_pairs_insert(creator, pairs[index].key, pairs[index].val);
+        ++index;
+    }
+    FINALIZE_ISTORE(result, creator);
+    PG_RETURN_POINTER(result);
 }
 
 
@@ -324,7 +333,7 @@ istore_divide(PG_FUNCTION_ARGS)
     is1     = PG_GETARG_IS(0);
     is2     = PG_GETARG_IS(1);
 
-    PG_RETURN_POINTER(istore_merge(is1, is2, is_int4div, NULL));
+    PG_RETURN_POINTER(istore_merge(is1, is2, int4div, NULL));
 }
 
 /*

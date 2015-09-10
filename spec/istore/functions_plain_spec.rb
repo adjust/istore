@@ -46,6 +46,11 @@ types.each do |type|
         query("SELECT * FROM each(NULL::#{type})").should match []
       end
 
+      it 'should compact istores' do
+        query("SELECT compact('0=>2, 1=>2, 3=>0 ,2=>2'::#{type})").should match \
+        '"0"=>"2", "1"=>"2", "2"=>"2"'
+      end
+
       it 'should add istores' do
         query("SELECT add('1=>1, 2=>1'::#{type}, '1=>1, 2=>1'::#{type})").should match \
         '"1"=>"2", "2"=>"2"'
@@ -127,8 +132,6 @@ types.each do |type|
         query("SELECT divide('1=>1, 2=>1'::#{type}, '3=>0'::#{type})").should match ''
         query("SELECT divide('-1=>-1, 2=>1'::#{type}, -1)").should match \
           '"-1"=>"1", "2"=>"-1"'
-        query("SELECT divide('1=>1, 3=>0'::#{type}, '3=>0'::#{type})").should match \
-         '"3"=>"0"'
       end
 
       it 'should raise division by zero error' do
