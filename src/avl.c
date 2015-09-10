@@ -1,6 +1,11 @@
 #include "avl.h"
 
+#include "istore_common.h"
+#include "fmgr.h"
+
+
 #define COMPARE(_a,_b) ((_a == _b) ? 0 : ((_a < _b) ? -1 : 1))
+#define height(_p) ((_p == NULL) ? -1 : _p->height)
 
 AvlNode*
 istore_make_empty(AvlNode *t)

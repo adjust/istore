@@ -2,12 +2,8 @@
 #define ISTORE_AVL_H
 
 #include "postgres.h"
-#include "intutils.h"
-#include "istore_common.h"
-#include "fmgr.h"
 #include "utils/int8.h"
 
-#define height(_p) ((_p == NULL) ? -1 : _p->height)
 
 typedef struct AvlNode AvlNode;
 
