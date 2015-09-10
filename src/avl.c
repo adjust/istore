@@ -1,9 +1,7 @@
+#include "postgres.h"
 #include "avl.h"
 
-#include "istore_common.h"
-#include "fmgr.h"
-
-
+#define MAX(_a, _b) ((_a > _b) ? _a : _b)
 #define COMPARE(_a,_b) ((_a == _b) ? 0 : ((_a < _b) ? -1 : 1))
 #define height(_p) ((_p == NULL) ? -1 : _p->height)
 

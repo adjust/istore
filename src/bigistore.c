@@ -1,7 +1,9 @@
-#include "bigistore.h"
+#include "istore.h"
 #include "funcapi.h"
-#include "intutils.h"
-
+#include "utils/array.h"
+#include "utils/builtins.h"
+#include "utils/lsyscache.h"
+#include "access/htup_details.h"
 
 /*
  * combine two istores by applying PGFunction mergefunc on values where key match

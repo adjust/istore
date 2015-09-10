@@ -1,5 +1,5 @@
 #include "istore.h"
-#include "bigistore.h"
+#include "istore.h"
 
 Datum
 istore_array_sum(Datum *data, int count, bool *nulls)

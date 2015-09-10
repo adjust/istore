@@ -1,10 +1,8 @@
 #ifndef IS_PARSER_H
 #define IS_PARSER_H
 
+#include "postgres.h"
 #include "avl.h"
-#include <limits.h>
-#include "intutils.h"
-
 
 typedef struct ISParser {
     char    *begin;

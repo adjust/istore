@@ -1,4 +1,5 @@
 #include "is_parser.h"
+#include <limits.h>
 
 #define WKEY 0
 #define WVAL 1

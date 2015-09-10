@@ -1,5 +1,5 @@
 #include "istore.h"
-#include "bigistore.h"
+#include "istore.h"
 
 PG_FUNCTION_INFO_V1(bigistore_to_istore);
 Datum

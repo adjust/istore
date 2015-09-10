@@ -20,7 +20,7 @@
 #include "access/skey.h"
 
 #include "istore.h"
-#include "bigistore.h"
+#include "istore.h"
 
 
 /*

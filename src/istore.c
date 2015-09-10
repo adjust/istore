@@ -1,6 +1,9 @@
 #include "istore.h"
 #include "funcapi.h"
-#include "intutils.h"
+#include "utils/array.h"
+#include "utils/builtins.h"
+#include "utils/lsyscache.h"
+#include "access/htup_details.h"
 
 PG_MODULE_MAGIC;
 
