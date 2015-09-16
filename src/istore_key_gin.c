@@ -82,8 +82,6 @@ gin_extract_istore_key_query(PG_FUNCTION_ARGS)
 {
     Datum   query = PG_GETARG_DATUM(0);
     int32  *nentries = (int32 *) PG_GETARG_POINTER(1);
-    /* StrategyNumber strategy = PG_GETARG_UINT16(2); */
-    /* int32  *searchMode = (int32 *) PG_GETARG_POINTER(6); */
     Datum  *entries;
 
     *nentries = 1;
@@ -100,11 +98,6 @@ PG_FUNCTION_INFO_V1(gin_consistent_istore_key);
 Datum
 gin_consistent_istore_key(PG_FUNCTION_ARGS)
 {
-    /* bool   *check = (bool *) PG_GETARG_POINTER(0); */
-    /* StrategyNumber strategy = PG_GETARG_UINT16(1); */
-    /* IStore *query = PG_GETARG_IS(2); */
-    /* int32   nkeys = PG_GETARG_INT32(3); */
-    /* Pointer *extra_data = (Pointer *) PG_GETARG_POINTER(4); */
     bool   *recheck = (bool *) PG_GETARG_POINTER(5);
     bool    res = true;
 
