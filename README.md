@@ -123,7 +123,7 @@ accumulate(istore, integer)             | istore                    | for each k
 istore_seed(integer, integer, integer)  | istore                    | create an istore from first to second parameter with third parameter value  | istore_seed(2, 4, 5)                                          | "2"=>"5", "3"=>"5", "4"=>"5"
 istore_val_larger(istore, istore)       | istore                    | merge istores with larger values                                            | istore_val_larger('1=>4,2=>5'::istore, '1=>5,3=>6'::istore)   | "1"=>"5", "2"=>"5", "3"=>"6"
 istore_val_smaller(istore, istore)      | istore                    | merge istores with smaller values                                           | istore_val_smaller('1=>4,2=>5'::istore, '1=>5,3=>6'::istore)  | "1"=>"4", "2"=>"5", "3"=>"6"
-each(istore)                            | setof(key int, value int) | get istore's keys and values as a set                                       | each('1=>4,5=>10'::istore)                                    |
+each(istore)                            | setof(key int, value int) | get istore's keys and values as a set                                       | each('1=>4,5=>10'::istore)                                    | key \| value<br/> ----+-------<br/> 1 \|     4<br/> 5 \|    10
 
 ### istore Aggregate Functions
 
