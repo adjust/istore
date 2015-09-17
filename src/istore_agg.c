@@ -1,6 +1,9 @@
 #include "istore.h"
 #include "istore.h"
 
+/*
+ * summarize an array of istores
+ */
 Datum
 istore_array_sum(Datum *data, int count, bool *nulls)
 {
@@ -50,6 +53,9 @@ istore_array_sum(Datum *data, int count, bool *nulls)
     PG_RETURN_POINTER(out);
 }
 
+/*
+ * summarize an array of bigistores
+ */
 Datum
 bigistore_array_sum(Datum *data, int count, bool *nulls)
 {

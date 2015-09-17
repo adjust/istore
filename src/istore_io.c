@@ -1,3 +1,7 @@
+/*
+ * input and output functions for istore
+ */
+
 #include "istore.h"
 #include "is_parser.h"
 #include "libpq/pqformat.h"
@@ -116,6 +120,9 @@ istore_send(PG_FUNCTION_ARGS)
     PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }
 
+/*
+ * json representation of an istore
+ */
 PG_FUNCTION_INFO_V1(istore_to_json);
 Datum
 istore_to_json(PG_FUNCTION_ARGS)
@@ -266,6 +273,9 @@ bigistore_send(PG_FUNCTION_ARGS)
     PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }
 
+/*
+ * json representation of a bigistore
+ */
 PG_FUNCTION_INFO_V1(bigistore_to_json);
 Datum
 bigistore_to_json(PG_FUNCTION_ARGS)

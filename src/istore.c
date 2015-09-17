@@ -153,8 +153,6 @@ istore_sum_up(PG_FUNCTION_ARGS)
 }
 
 /*
- * Find a key in an istore
- *
  * Binary search the key in the istore.
  */
 IStorePair*
@@ -215,7 +213,7 @@ istore_fetchval(PG_FUNCTION_ARGS)
 }
 
 /*
- * Merge two istores
+ * Merge two istores by addition of values
  */
 PG_FUNCTION_INFO_V1(istore_add);
 Datum
@@ -249,8 +247,8 @@ istore_add_integer(PG_FUNCTION_ARGS)
 /*
  * Merge two istores by subtracting
  *
- * XXX Keys which doesn't exists on first istore is added to the results
- * without changing the values on the second istore.
+ * Keys which doesn't exists on first istore is added to the results
+ * a treated as if their value is zero
  */
 PG_FUNCTION_INFO_V1(istore_subtract);
 Datum
@@ -284,7 +282,7 @@ istore_subtract_integer(PG_FUNCTION_ARGS)
 /*
  * Multiply values of two istores
  *
- * The two istores should have the same keys.  The keys which exist on only
+ * The two istores should have the same keys. The keys which exist on only
  * one istore are omitted.
  */
 PG_FUNCTION_INFO_V1(istore_multiply);
@@ -319,10 +317,8 @@ istore_multiply_integer(PG_FUNCTION_ARGS)
 /*
  * Divide values of two istores
  *
- * XXX The values of the result are truncated.
- *
- * XXX The two istores should have the same keys.  The keys which exist on only
- * one istore is added to the result with NULL values.
+ * The two istores should have the same keys.  The keys which exist on only
+ * one istore are omitted.
  */
 PG_FUNCTION_INFO_V1(istore_divide);
 Datum
@@ -339,8 +335,6 @@ istore_divide(PG_FUNCTION_ARGS)
 
 /*
  * Divide values of an istore
- *
- * XXX The values of the result are truncated.
  */
 PG_FUNCTION_INFO_V1(istore_divide_integer);
 Datum
@@ -355,6 +349,9 @@ istore_divide_integer(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(istore_apply_datum(is, int_arg, int4div));
 }
 
+/*
+ * create an istore from an intarray by counting elements
+ */
 PG_FUNCTION_INFO_V1(istore_from_intarray);
 Datum
 istore_from_intarray(PG_FUNCTION_ARGS)
@@ -404,7 +401,18 @@ istore_from_intarray(PG_FUNCTION_ARGS)
     {
         if (nulls[i])
             continue;
-        key = DatumGetInt32(i_data[i]);
+        switch (i_eltype)
+        {
+            case INT2OID:
+                key = DatumGetInt16(i_data[i]);
+                break;
+            case INT4OID:
+                key = DatumGetInt32(i_data[i]);
+                break;
+            default:
+                elog(ERROR, "unsupported array type");
+        }
+
         position = is_tree_find(key, tree);
         if (position == NULL)
         {
@@ -425,6 +433,9 @@ istore_from_intarray(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(result);
 }
 
+/*
+ * sum aggregation final function
+ */
 PG_FUNCTION_INFO_V1(istore_agg_finalfn);
 Datum
 istore_agg_finalfn(PG_FUNCTION_ARGS)
@@ -455,6 +466,11 @@ istore_agg_finalfn(PG_FUNCTION_ARGS)
         return result;
 }
 
+/*
+ * istore from key and value intarrays
+ * bot arrays must have the same length, NULLs are omitted
+ * duplicate keys result in added values
+ */
 static Datum
 istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
 {
@@ -529,8 +545,29 @@ istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
     {
         if (nulls1[i] || nulls2[i])
             continue;
-        key      = DatumGetInt32(i_data1[i]);
-        value    = DatumGetInt32(i_data2[i]);
+        switch (i_eltype1)
+        {
+            case INT2OID:
+                key = DatumGetInt16(i_data1[i]);
+                break;
+            case INT4OID:
+                key = DatumGetInt32(i_data1[i]);
+                break;
+            default:
+                elog(ERROR, "unsupported array type");
+        }
+        switch (i_eltype2)
+        {
+            case INT2OID:
+                value = DatumGetInt16(i_data2[i]);
+                break;
+            case INT4OID:
+                value = DatumGetInt32(i_data2[i]);
+                break;
+            default:
+                elog(ERROR, "unsupported array type");
+        }
+
         position = is_tree_find(key, tree);
 
         if (position == NULL)
@@ -551,6 +588,9 @@ istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
     PG_RETURN_POINTER(out);
 }
 
+/*
+ * bigistore from key and value intarrays
+ */
 PG_FUNCTION_INFO_V1(istore_array_add);
 Datum
 istore_array_add(PG_FUNCTION_ARGS)
@@ -607,8 +647,9 @@ setup_firstcall(FuncCallContext *funcctx, IStore *is,
     MemoryContextSwitchTo(oldcontext);
 }
 
-
-
+/*
+ * return keys and values as a set
+ */
 PG_FUNCTION_INFO_V1(istore_each);
 Datum
 istore_each(PG_FUNCTION_ARGS)
@@ -648,6 +689,9 @@ istore_each(PG_FUNCTION_ARGS)
     SRF_RETURN_DONE(funcctx);
 }
 
+/*
+ * fill missing keys in a range
+ */
 PG_FUNCTION_INFO_V1(istore_fill_gaps);
 Datum
 istore_fill_gaps(PG_FUNCTION_ARGS)
@@ -696,6 +740,9 @@ istore_fill_gaps(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(result);
 }
 
+/*
+ * rolling sum over keys
+ */
 PG_FUNCTION_INFO_V1(istore_accumulate);
 Datum
 istore_accumulate(PG_FUNCTION_ARGS)
@@ -746,6 +793,9 @@ istore_accumulate(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(result);
 }
 
+/*
+ * construct a bigistore with a key range and a fixed value
+ */
 PG_FUNCTION_INFO_V1(istore_seed);
 Datum
 istore_seed(PG_FUNCTION_ARGS)

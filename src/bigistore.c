@@ -7,12 +7,12 @@
 #include "catalog/pg_type.h"
 
 /*
- * combine two istores by applying PGFunction mergefunc on values where key match
+ * combine two bigistores by applying PGFunction mergefunc on values where key match
  * if PGFunction miss1func is not NULL values for keys which doesn't exists on
  * first istore is added to the result by applying miss1func to the value
  * while values for keys which doesn't exists on second istore will be added without
  * change.
- * if PGFunction miss1func is NULL only the result will only contain matching keys
+ * if PGFunction miss1func is NULL the result will only contain matching keys
  */
 BigIStore*
 bigistore_merge(BigIStore *arg1, BigIStore *arg2, PGFunction mergefunc, PGFunction miss1func)
@@ -98,7 +98,7 @@ bigistore_apply_datum(BigIStore *arg1, Datum arg2, PGFunction applyfunc)
 }
 
 /*
- * remove zero values from istore
+ * remove zero values from bigistore
  */
 PG_FUNCTION_INFO_V1(bigistore_compact);
 Datum
@@ -127,7 +127,7 @@ bigistore_compact(PG_FUNCTION_ARGS)
 }
 
 /*
- * Sum the values of an bigistore
+ * Sum the values of a bigistore
  */
 PG_FUNCTION_INFO_V1(bigistore_sum_up);
 Datum
@@ -150,8 +150,6 @@ bigistore_sum_up(PG_FUNCTION_ARGS)
 }
 
 /*
- * Find a key in an bigistore
- *
  * Binary search the key in the bigistore.
  */
 BigIStorePair*
@@ -212,7 +210,7 @@ bigistore_fetchval(PG_FUNCTION_ARGS)
 }
 
 /*
- * Merge two bigistores
+ * Merge two bigistores by addition of values
  */
 PG_FUNCTION_INFO_V1(bigistore_add);
 Datum
@@ -228,7 +226,7 @@ bigistore_add(PG_FUNCTION_ARGS)
 }
 
 /*
- * Increment values of an bigistore
+ * Increment values of a bigistore
  */
 PG_FUNCTION_INFO_V1(bigistore_add_integer);
 Datum
@@ -246,8 +244,8 @@ bigistore_add_integer(PG_FUNCTION_ARGS)
 /*
  * Merge two bigistores by subtracting
  *
- * XXX Keys which doesn't exists on first bigistore is added to the results
- * without changing the values on the second bigistore.
+ * Keys which doesn't exists on first bigistore is added to the results
+ * a treated as if their value is zero
  */
 PG_FUNCTION_INFO_V1(bigistore_subtract);
 Datum
@@ -263,7 +261,7 @@ bigistore_subtract(PG_FUNCTION_ARGS)
 }
 
 /*
- * Decrement values of an bigistore
+ * Decrement values of a bigistore
  */
 PG_FUNCTION_INFO_V1(bigistore_subtract_integer);
 Datum
@@ -281,7 +279,7 @@ bigistore_subtract_integer(PG_FUNCTION_ARGS)
 /*
  * Multiply values of two bigistores
  *
- * The two bigistores should have the same keys.  The keys which exist on only
+ * The two bigistores should have the same keys. The keys which exist on only
  * one bigistore are omitted.
  */
 PG_FUNCTION_INFO_V1(bigistore_multiply);
@@ -298,7 +296,7 @@ bigistore_multiply(PG_FUNCTION_ARGS)
 }
 
 /*
- * Multiply values of an bigistore
+ * Multiply values of a bigistore
  */
 PG_FUNCTION_INFO_V1(bigistore_multiply_integer);
 Datum
@@ -316,10 +314,8 @@ bigistore_multiply_integer(PG_FUNCTION_ARGS)
 /*
  * Divide values of two bigistores
  *
- * XXX The values of the result are truncated.
- *
- * XXX The two bigistores should have the same keys.  The keys which exist on only
- * one bigistore is added to the result with NULL values.
+ * The two bigistores should have the same keys.  The keys which exist on only
+ * one bigistore are omitted.
  */
 PG_FUNCTION_INFO_V1(bigistore_divide);
 Datum
@@ -335,9 +331,7 @@ bigistore_divide(PG_FUNCTION_ARGS)
 }
 
 /*
- * Divide values of an bigistore
- *
- * XXX The values of the result are truncated.
+ * Divide values of a bigistore
  */
 PG_FUNCTION_INFO_V1(bigistore_divide_integer);
 Datum
@@ -352,6 +346,9 @@ bigistore_divide_integer(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(bigistore_apply_datum(is, int_arg, int8div));
 }
 
+/*
+ * create a bigistore from an intarray by counting elements
+ */
 PG_FUNCTION_INFO_V1(bigistore_from_intarray);
 Datum
 bigistore_from_intarray(PG_FUNCTION_ARGS)
@@ -401,7 +398,18 @@ bigistore_from_intarray(PG_FUNCTION_ARGS)
     {
         if (nulls[i])
             continue;
-        key = DatumGetInt32(i_data[i]);
+        switch (i_eltype)
+        {
+            case INT2OID:
+                key = DatumGetInt16(i_data[i]);
+                break;
+            case INT4OID:
+                key = DatumGetInt32(i_data[i]);
+                break;
+            default:
+                elog(ERROR, "unsupported array type");
+        }
+
         position = is_tree_find(key, tree);
         if (position == NULL)
         {
@@ -422,6 +430,9 @@ bigistore_from_intarray(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(result);
 }
 
+/*
+ * sum aggregation final function
+ */
 PG_FUNCTION_INFO_V1(bigistore_agg_finalfn);
 Datum
 bigistore_agg_finalfn(PG_FUNCTION_ARGS)
@@ -452,6 +463,11 @@ bigistore_agg_finalfn(PG_FUNCTION_ARGS)
         return result;
 }
 
+/*
+ * bigistore from key and value intarrays
+ * bot arrays must have the same length, NULLs are omitted
+ * duplicate keys result in added values
+ */
 static Datum
 bigistore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
 {
@@ -526,8 +542,33 @@ bigistore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
     {
         if (nulls1[i] || nulls2[i])
             continue;
-        key      = DatumGetInt32(i_data1[i]);
-        value    = DatumGetInt32(i_data2[i]);
+
+        switch (i_eltype1)
+        {
+            case INT2OID:
+                key = DatumGetInt16(i_data1[i]);
+                break;
+            case INT4OID:
+                key = DatumGetInt32(i_data1[i]);
+                break;
+            default:
+                elog(ERROR, "unsupported array type");
+        }
+        switch (i_eltype2)
+        {
+            case INT2OID:
+                value = DatumGetInt16(i_data2[i]);
+                break;
+            case INT4OID:
+                value = DatumGetInt32(i_data2[i]);
+                break;
+            case INT8OID:
+                value = DatumGetInt64(i_data2[i]);
+                break;
+            default:
+                elog(ERROR, "unsupported array type");
+        }
+
         position = is_tree_find(key, tree);
 
         if (position == NULL)
@@ -548,6 +589,9 @@ bigistore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
     PG_RETURN_POINTER(out);
 }
 
+/*
+ * bigistore from key and value intarrays
+ */
 PG_FUNCTION_INFO_V1(bigistore_array_add);
 Datum
 bigistore_array_add(PG_FUNCTION_ARGS)
@@ -575,7 +619,6 @@ bigistore_array_add(PG_FUNCTION_ARGS)
  * we stash a copy of the bigistore in the multi-call context in
  * case it was originally toasted.
  */
-
 static void
 setup_firstcall(FuncCallContext *funcctx, BigIStore *is,
                 FunctionCallInfoData *fcinfo)
@@ -604,8 +647,9 @@ setup_firstcall(FuncCallContext *funcctx, BigIStore *is,
     MemoryContextSwitchTo(oldcontext);
 }
 
-
-
+/*
+ * return keys and values as a set
+ */
 PG_FUNCTION_INFO_V1(bigistore_each);
 Datum
 bigistore_each(PG_FUNCTION_ARGS)
@@ -645,6 +689,9 @@ bigistore_each(PG_FUNCTION_ARGS)
     SRF_RETURN_DONE(funcctx);
 }
 
+/*
+ * fill missing keys in a range
+ */
 PG_FUNCTION_INFO_V1(bigistore_fill_gaps);
 Datum
 bigistore_fill_gaps(PG_FUNCTION_ARGS)
@@ -693,6 +740,9 @@ bigistore_fill_gaps(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(result);
 }
 
+/*
+ * rolling sum over keys
+ */
 PG_FUNCTION_INFO_V1(bigistore_accumulate);
 Datum
 bigistore_accumulate(PG_FUNCTION_ARGS)
@@ -743,6 +793,9 @@ bigistore_accumulate(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(result);
 }
 
+/*
+ * construct a bigistore with a key range and a fixed value
+ */
 PG_FUNCTION_INFO_V1(bigistore_seed);
 Datum
 bigistore_seed(PG_FUNCTION_ARGS)

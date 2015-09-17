@@ -1,6 +1,14 @@
+/*
+ * cast routines from istore to bigistore and vise versa
+ */
+
 #include "istore.h"
 #include "istore.h"
 
+/*
+ * cast bigistore to istore
+ * will raise an error if any values is larger than INT4MAX
+ */
 PG_FUNCTION_INFO_V1(bigistore_to_istore);
 Datum
 bigistore_to_istore(PG_FUNCTION_ARGS)
@@ -26,6 +34,9 @@ bigistore_to_istore(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(result);
 }
 
+/*
+ * cast istore to bigistore
+ */
 PG_FUNCTION_INFO_V1(istore_to_big_istore);
 Datum
 istore_to_big_istore(PG_FUNCTION_ARGS)

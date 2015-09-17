@@ -72,12 +72,17 @@ Datum bigistore_avals(PG_FUNCTION_ARGS);
 Datum bigistore_skeys(PG_FUNCTION_ARGS);
 Datum bigistore_svals(PG_FUNCTION_ARGS);
 
-
+/*
+ * a single key/value pair
+ */
 typedef struct {
     int32  key;
     int32  val;
 } IStorePair;
 
+/*
+ * collection of pairs
+ */
 typedef struct {
     IStorePair *pairs;
     size_t  size;
@@ -85,6 +90,9 @@ typedef struct {
     int     buflen;
 } IStorePairs;
 
+/*
+ * the istore
+ */
 typedef struct
 {
     int32 __varlen;
@@ -139,12 +147,21 @@ BigIStorePair* bigistore_find(BigIStore *is, int32 key);
 #define ISHDRSZ VARHDRSZ + sizeof(int32) + sizeof(int32)
 
 #define ISTORE_SIZE(x, _pairtype) (ISHDRSZ + x->len * sizeof(_pairtype))
+
+/*
+ * get the first pair of type
+ */
 #define FIRST_PAIR(x, _pairtype) ((_pairtype*)((char*) x + ISHDRSZ))
 
-
+/*
+ * get the istore
+ */
 #define PG_GETARG_IS(x) (IStore *)PG_DETOAST_DATUM(PG_GETARG_DATUM(x))
 #define PG_GETARG_BIGIS(x) (BigIStore *)PG_DETOAST_DATUM(PG_GETARG_DATUM(x))
 
+/*
+ * creates the internal representation from a pairs collection
+ */
 #define FINALIZE_ISTORE(_istore, _pairs)                                    \
     do {                                                                    \
         _istore = palloc0(ISHDRSZ + PAYLOAD_SIZE(_pairs, IStorePair));      \

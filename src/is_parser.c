@@ -35,7 +35,9 @@
     if (*_ptr == '"')      \
             _ptr++;
 
-
+/*
+ * parse cstring into an AVL tree
+ */
 AvlNode*
 is_parse(ISParser *parser)
 {

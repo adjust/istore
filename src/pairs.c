@@ -5,6 +5,10 @@
 static inline int digits32(int32 num);
 static inline int digits64(int64 num);
 
+/*
+ * adds a key/ value pair for each subnode to IStorePairs
+ * due to the nature of the AVL tree the pairs will be ordered by key
+ */
 void
 istore_tree_to_pairs(AvlNode *p, IStorePairs *pairs)
 {
@@ -15,6 +19,9 @@ istore_tree_to_pairs(AvlNode *p, IStorePairs *pairs)
     istore_tree_to_pairs(p->right, pairs);
 }
 
+/*
+ * initialize IStorePairs
+ */
 void
 istore_pairs_init(IStorePairs *pairs, size_t initial_size)
 {
@@ -24,6 +31,9 @@ istore_pairs_init(IStorePairs *pairs, size_t initial_size)
     pairs->buflen  = 0;
 }
 
+/*
+ * insert key value to IStorePairs
+ */
 void
 istore_pairs_insert(IStorePairs *pairs, int32 key, int32 val)
 {
@@ -48,6 +58,11 @@ istore_pairs_insert(IStorePairs *pairs, int32 key, int32 val)
     pairs->used++;
 }
 
+
+/*
+ * adds a key/ value pair for each subnode to BigIStorePairs
+ * due to the nature of the AVL tree the pairs will be ordered by key
+ */
 void
 bigistore_tree_to_pairs(AvlNode *p, BigIStorePairs *pairs)
 {
@@ -58,6 +73,10 @@ bigistore_tree_to_pairs(AvlNode *p, BigIStorePairs *pairs)
     bigistore_tree_to_pairs(p->right, pairs);
 }
 
+
+/*
+ * initialize BigIStorePairs
+ */
 void
 bigistore_pairs_init(BigIStorePairs *pairs, size_t initial_size)
 {
@@ -67,6 +86,11 @@ bigistore_pairs_init(BigIStorePairs *pairs, size_t initial_size)
     pairs->buflen  = 0;
 }
 
+
+
+/*
+ * insert key value to BigIStorePairs
+ */
 void
 bigistore_pairs_insert(BigIStorePairs *pairs, int32 key, int64 val)
 {
@@ -91,6 +115,9 @@ bigistore_pairs_insert(BigIStorePairs *pairs, int32 key, int64 val)
     pairs->used++;
 }
 
+/*
+ * return the number of digits
+ */
 static inline int
 digits32(int32 num)
 {
@@ -144,6 +171,9 @@ digits32(int32 num)
     }
 }
 
+/*
+ * return the number of digits
+ */
 static inline int
 digits64(int64 num)
 {
