@@ -302,6 +302,16 @@ types.each do |type|
         query("SELECT MIN(s) FROM (VALUES('1=>5, 2=>2, 3=>3'::#{type}),('1=>1, 2=>5, 3=>3'),('1=>1, 2=>4, 3=>5'))t(s)").should match \
         '"1"=>"1", "2"=>"2", "3"=>"3"'
       end
+
+      it 'should return keys as array' do
+        query("SELECT akeys('-5=>10, 0=>-5, 5=>0'::#{type})").should match '{-5,0,5}'
+        query("SELECT akeys(''::#{type})").should match '{}'
+      end
+
+      it 'should return values as array' do
+        query("SELECT avals('-5=>10, 0=>-5, 5=>0'::#{type})").should match '{10,-5,0}'
+        query("SELECT avals(''::#{type})").should match '{}'
+      end
     end
   end
 end

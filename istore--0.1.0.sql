@@ -133,7 +133,7 @@ CREATE FUNCTION istore_agg_finalfn(internal)
 
 CREATE FUNCTION istore_sum_up(istore)
     RETURNS bigint
-    AS '$libdir/istore.so'
+    AS '$libdir/istore.so', 'istore_sum_up'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION istore_array_add(integer[], integer[])
@@ -174,6 +174,16 @@ CREATE FUNCTION istore_val_larger(istore, istore)
 CREATE FUNCTION istore_val_smaller(istore, istore)
     RETURNS istore
     AS '$libdir/istore.so'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION akeys(istore)
+    RETURNS integer[]
+    AS '$libdir/istore.so' ,'istore_akeys'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION avals(istore)
+    RETURNS integer[]
+    AS '$libdir/istore.so' ,'istore_avals'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE AGGREGATE SUM (
@@ -383,6 +393,11 @@ CREATE FUNCTION bigistore(integer[], integer[])
     AS '$libdir/istore.so', 'bigistore_array_add'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION bigistore(integer[], bigint[])
+    RETURNS bigistore
+    AS '$libdir/istore.so', 'bigistore_array_add'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION fill_gaps(bigistore, integer, bigint DEFAULT 0)
     RETURNS bigistore
     AS '$libdir/istore.so', 'bigistore_fill_gaps'
@@ -412,6 +427,17 @@ CREATE FUNCTION bigistore_val_smaller(bigistore, bigistore)
     RETURNS bigistore
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION akeys(bigistore)
+    RETURNS integer[]
+    AS '$libdir/istore.so' ,'bigistore_akeys'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION avals(bigistore)
+    RETURNS bigint[]
+    AS '$libdir/istore.so' ,'bigistore_avals'
+    LANGUAGE C IMMUTABLE STRICT;
+
 
 CREATE AGGREGATE SUM (
     sfunc = array_agg_transfn,

@@ -4,6 +4,7 @@
 #include "utils/builtins.h"
 #include "utils/lsyscache.h"
 #include "access/htup_details.h"
+#include "catalog/pg_type.h"
 
 /*
  * combine two istores by applying PGFunction mergefunc on values where key match
@@ -812,3 +813,74 @@ bigistore_val_smaller(PG_FUNCTION_ARGS)
 
     PG_RETURN_POINTER(bigistore_merge(is1, is2, int8smaller, int8up));
 }
+
+/*
+ * return array of keys
+ */
+PG_FUNCTION_INFO_V1(bigistore_akeys);
+Datum
+bigistore_akeys(PG_FUNCTION_ARGS)
+{
+    BigIStore      *is;
+    BigIStorePair  *pairs;
+    Datum          *d;
+    ArrayType      *a;
+    int             index;
+
+    is     = PG_GETARG_BIGIS(0);
+    index  = 0;
+
+    if (is->len == 0)
+    {
+        a = construct_empty_array(INT4OID);
+        PG_RETURN_POINTER(a);
+    }
+
+    pairs = FIRST_PAIR(is, BigIStorePair);
+    d     = (Datum *) palloc(sizeof(Datum) * is->len);
+
+    while (index < is->len)
+    {
+        d[index] = pairs[index].key;
+        ++index;
+    }
+
+    a = construct_array(d, is->len, INT4OID, sizeof(int32), true, 'i');
+    PG_RETURN_POINTER(a);
+}
+
+/*
+ * return array of values
+ */
+PG_FUNCTION_INFO_V1(bigistore_avals);
+Datum
+bigistore_avals(PG_FUNCTION_ARGS)
+{
+    BigIStore      *is;
+    BigIStorePair  *pairs;
+    Datum          *d;
+    ArrayType      *a;
+    int             index;
+
+    is     = PG_GETARG_BIGIS(0);
+    index  = 0;
+
+    if (is->len == 0)
+    {
+        a = construct_empty_array(INT8OID);
+        PG_RETURN_POINTER(a);
+    }
+
+    pairs = FIRST_PAIR(is, BigIStorePair);
+    d     = (Datum *) palloc(sizeof(Datum) * is->len);
+
+    while (index < is->len)
+    {
+        d[index] = pairs[index].val;
+        ++index;
+    }
+
+    a = construct_array(d, is->len, INT8OID, sizeof(int64), FLOAT8PASSBYVAL, 'd');
+    PG_RETURN_POINTER(a);
+}
+

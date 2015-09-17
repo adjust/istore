@@ -4,6 +4,7 @@
 #include "utils/builtins.h"
 #include "utils/lsyscache.h"
 #include "access/htup_details.h"
+#include "catalog/pg_type.h"
 
 PG_MODULE_MAGIC;
 
@@ -814,4 +815,74 @@ istore_val_smaller(PG_FUNCTION_ARGS)
     is2     = PG_GETARG_IS(1);
 
     PG_RETURN_POINTER(istore_merge(is1, is2, int4smaller, int4up));
+}
+
+/*
+ * return array of keys
+ */
+PG_FUNCTION_INFO_V1(istore_akeys);
+Datum
+istore_akeys(PG_FUNCTION_ARGS)
+{
+    IStore      *is;
+    IStorePair  *pairs;
+    Datum       *d;
+    int          index;
+        ArrayType  *a;
+
+    is     = PG_GETARG_IS(0);
+    index  = 0;
+
+    if (is->len == 0)
+    {
+        a = construct_empty_array(INT4OID);
+        PG_RETURN_POINTER(a);
+    }
+
+    pairs = FIRST_PAIR(is, IStorePair);
+    d     = (Datum *) palloc(sizeof(Datum) * is->len);
+
+    while (index < is->len)
+    {
+        d[index] = pairs[index].key;
+        ++index;
+    }
+
+    a = construct_array(d, is->len, INT4OID, sizeof(int32), true, 'i');
+    PG_RETURN_POINTER(a);
+}
+
+/*
+ * return array of values
+ */
+PG_FUNCTION_INFO_V1(istore_avals);
+Datum
+istore_avals(PG_FUNCTION_ARGS)
+{
+    IStore      *is;
+    IStorePair  *pairs;
+    Datum       *d;
+    int          index;
+        ArrayType  *a;
+
+    is     = PG_GETARG_IS(0);
+    index  = 0;
+
+    if (is->len == 0)
+    {
+        a = construct_empty_array(INT4OID);
+        PG_RETURN_POINTER(a);
+    }
+
+    pairs = FIRST_PAIR(is, IStorePair);
+    d     = (Datum *) palloc(sizeof(Datum) * is->len);
+
+    while (index < is->len)
+    {
+        d[index] = pairs[index].val;
+        ++index;
+    }
+
+    a = construct_array(d, is->len, INT4OID, sizeof(int32), true, 'i');
+    PG_RETURN_POINTER(a);
 }
