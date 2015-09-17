@@ -312,6 +312,21 @@ types.each do |type|
         query("SELECT avals('-5=>10, 0=>-5, 5=>0'::#{type})").should match '{10,-5,0}'
         query("SELECT avals(''::#{type})").should match '{}'
       end
+      it 'should return keys as set' do
+        query("SELECT skeys('-5=>10, 0=>-5, 5=>0'::#{type})").should match \
+        [-5],
+        [0,],
+        [5]
+        query("SELECT skeys(''::#{type})").should match []
+      end
+
+      it 'should return values set array' do
+        query("SELECT svals('-5=>10, 0=>-5, 5=>0'::#{type})").should match \
+        [10],
+        [-5],
+        [0]
+        query("SELECT svals(''::#{type})").should match []
+      end
     end
   end
 end

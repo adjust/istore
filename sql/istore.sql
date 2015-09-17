@@ -127,6 +127,16 @@ CREATE FUNCTION avals(istore)
     AS '$libdir/istore.so' ,'istore_avals'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION skeys(istore)
+    RETURNS setof int
+    AS '$libdir/istore.so' ,'istore_skeys'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION svals(istore)
+    RETURNS setof int
+    AS '$libdir/istore.so' ,'istore_svals'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE AGGREGATE SUM (
     sfunc = array_agg_transfn,
     basetype = istore,

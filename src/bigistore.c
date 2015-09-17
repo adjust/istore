@@ -884,3 +884,62 @@ bigistore_avals(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(a);
 }
 
+/*
+ * return set of keys
+ */
+PG_FUNCTION_INFO_V1(bigistore_skeys);
+Datum
+bigistore_skeys(PG_FUNCTION_ARGS)
+{
+    BigIStore          *is;
+    FuncCallContext    *funcctx;
+    BigIStorePair      *pairs;
+    int                 i;
+
+    if (SRF_IS_FIRSTCALL())
+    {
+        is      = PG_GETARG_BIGIS(0);
+        funcctx = SRF_FIRSTCALL_INIT();
+        setup_firstcall(funcctx, is, NULL);
+    }
+
+    funcctx = SRF_PERCALL_SETUP();
+    is      = (BigIStore *) funcctx->user_fctx;
+    i       = funcctx->call_cntr;
+    pairs   = FIRST_PAIR(is, BigIStorePair);
+
+    if (i < is->len)
+        SRF_RETURN_NEXT(funcctx, Int32GetDatum(pairs[i].key));
+
+    SRF_RETURN_DONE(funcctx);
+}
+
+/*
+ * return set of values
+ */
+PG_FUNCTION_INFO_V1(bigistore_svals);
+Datum
+bigistore_svals(PG_FUNCTION_ARGS)
+{
+    BigIStore          *is;
+    FuncCallContext    *funcctx;
+    BigIStorePair      *pairs;
+    int                 i;
+
+    if (SRF_IS_FIRSTCALL())
+    {
+        is      = PG_GETARG_BIGIS(0);
+        funcctx = SRF_FIRSTCALL_INIT();
+        setup_firstcall(funcctx, is, NULL);
+    }
+
+    funcctx = SRF_PERCALL_SETUP();
+    is      = (BigIStore *) funcctx->user_fctx;
+    i       = funcctx->call_cntr;
+    pairs   = FIRST_PAIR(is, BigIStorePair);
+
+    if (i < is->len)
+        SRF_RETURN_NEXT(funcctx, Int64GetDatum(pairs[i].val));
+
+    SRF_RETURN_DONE(funcctx);
+}
