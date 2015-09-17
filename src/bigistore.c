@@ -402,10 +402,10 @@ bigistore_from_intarray(PG_FUNCTION_ARGS)
         if (nulls[i])
             continue;
         key = DatumGetInt32(i_data[i]);
-        position = tree_find(key, tree);
+        position = is_tree_find(key, tree);
         if (position == NULL)
         {
-            tree = tree_insert(tree, key, 1);
+            tree = is_tree_insert(tree, key, 1);
             ++s;
         }
         else
@@ -528,11 +528,11 @@ bigistore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
             continue;
         key      = DatumGetInt32(i_data1[i]);
         value    = DatumGetInt32(i_data2[i]);
-        position = tree_find(key, tree);
+        position = is_tree_find(key, tree);
 
         if (position == NULL)
         {
-            tree = tree_insert(tree, key, value);
+            tree = is_tree_insert(tree, key, value);
             ++n;
         }
         else

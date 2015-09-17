@@ -20,7 +20,7 @@ istore_make_empty(AvlNode *t)
 
 
 AvlNode*
-tree_find(int32 key, AvlNode *t)
+is_tree_find(int32 key, AvlNode *t)
 {
     int32 cmp;
 
@@ -29,9 +29,9 @@ tree_find(int32 key, AvlNode *t)
 
     cmp = COMPARE(key, t->key);
     if (cmp < 0)
-        return tree_find(key, t->left);
+        return is_tree_find(key, t->left);
     else if (cmp > 0)
-        return tree_find(key, t->right);
+        return is_tree_find(key, t->right);
     else
         return t;
 }
@@ -104,26 +104,26 @@ doubleRotateWithRight(AvlNode *k1)
 
 // return number of nodes
 int
-tree_length(AvlNode* t)
+is_tree_length(AvlNode* t)
 {
     int n;
     if(t == NULL)
         return 0;
-    n = tree_length(t->left);
+    n = is_tree_length(t->left);
     ++n;
-    n += tree_length(t->right);
+    n += is_tree_length(t->right);
     return n;
 }
 
 AvlNode*
-tree_insert(AvlNode *t, int32 key, int64 value)
+is_tree_insert(AvlNode *t, int32 key, int64 value)
 {
     if(t == NULL)
     {
         /* Create and return a one-node tree */
         t = palloc0(sizeof(struct AvlNode));
         if (t == NULL)
-            elog(ERROR, "AvlTree tree_insert: could not allocate memory");
+            elog(ERROR, "AvlTree is_tree_insert: could not allocate memory");
         else{
             t->key = key;
             t->value = value;
@@ -137,7 +137,7 @@ tree_insert(AvlNode *t, int32 key, int64 value)
         int32 cmp = COMPARE(key, t->key);
         if (cmp < 0)
         {
-            t->left = tree_insert(t->left, key, value);
+            t->left = is_tree_insert(t->left, key, value);
             if (height(t->left) - height(t->right) == 2)
             {
                 if (COMPARE(key, t->left->key) < 0)
@@ -148,7 +148,7 @@ tree_insert(AvlNode *t, int32 key, int64 value)
         }
         else if(cmp > 0)
         {
-            t->right = tree_insert(t->right, key, value);
+            t->right = is_tree_insert(t->right, key, value);
             if (height(t->right) - height(t->left) == 2)
             {
                 if (COMPARE(key, t->right->key) > 0 )

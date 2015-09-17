@@ -72,14 +72,9 @@ CREATE FUNCTION istore_agg_finalfn(internal)
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION istore_sum_up(istore)
+CREATE FUNCTION sum_up(istore)
     RETURNS bigint
     AS '$libdir/istore.so', 'istore_sum_up'
-    LANGUAGE C IMMUTABLE STRICT;
-
-CREATE FUNCTION istore_array_add(integer[], integer[])
-    RETURNS istore
-    AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION istore(integer[], integer[])

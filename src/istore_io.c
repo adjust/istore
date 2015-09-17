@@ -65,10 +65,10 @@ istore_in(PG_FUNCTION_ARGS)
         PG_RETURN_POINTER(out);
     }
 
-    tree = parse_istore(&parser);
+    tree = is_parse(&parser);
 
     pairs = palloc0(sizeof(IStorePairs));
-    n = tree_length(tree);
+    n = is_tree_length(tree);
     istore_pairs_init(pairs, n);
     istore_tree_to_pairs(tree, pairs);
     istore_make_empty(tree);
@@ -215,10 +215,10 @@ bigistore_in(PG_FUNCTION_ARGS)
         PG_RETURN_POINTER(out);
     }
 
-    tree = parse_istore(&parser);
+    tree = is_parse(&parser);
 
     pairs = palloc0(sizeof(BigIStorePairs));
-    n = tree_length(tree);
+    n = is_tree_length(tree);
     bigistore_pairs_init(pairs, n);
     bigistore_tree_to_pairs(tree, pairs);
     istore_make_empty(tree);

@@ -116,7 +116,7 @@ multiply(istore, integer)               | istore                    | multiply r
 divide(istore, istore)                  | istore                    | divide value of matching keys (missing key will be ignored)                 | divide('1=>4,2=>5'::istore, '1=>4,3=>6'::istore)              | "1"=>"1"
 divide(istore, integer)                 | istore                    | divide right operant to all values                                          | divide('1=>4,2=>5'::istore, '1=>4,3=>6'::istore)              | "1"=>"1"
 istore(integer[])                       | istore                    | construct an istore from an array by counting elements                      | istore(ARRAY[1,2,1,3,2,2])                                    | "1"=>"2", "2"=>"3", "3"=>"1"
-istore_sum_up(istore)                   | bigint                    | sum values of an istore                                                     | istore_sum_up('1=>4,2=>5'::istore)                            |  9
+sum_up(istore)                          | bigint                    | sum values of an istore                                                     | istore_sum_up('1=>4,2=>5'::istore)                            |  9
 istore(integer[], integer[])            | istore                    | construct an istore from separate key and value arrays                      | istore(ARRAY[1,2,3], ARRAY[4,5,6])                            | "1"=>"4", "2"=>"5", "3"=>"6"
 fill_gaps(istore, integer, integer)     | istore                    | fill missing istore keys upto second parameter with third parameter         | fill_gaps('1=>4,3=>10'::istore,4,2)                           | "0"=>"2", "1"=>"4", "2"=>"2", "3"=>"10", "4"=>"2"
 accumulate(istore)                      | istore                    | for each key calculate the rolling sum of values                            | accumulate('1=>4,3=>10'::istore)                              | "1"=>"4", "2"=>"4", "3"=>"14"
@@ -140,7 +140,6 @@ max(expression) | istore, bigistore   | same as argument type | merge across all
 istore has GIN index support for the ? operators For example:
 
     CREATE INDEX hidx ON testistore USING GIN (i);
-
 
 
 ### Authors

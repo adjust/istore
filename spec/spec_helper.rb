@@ -34,6 +34,10 @@ RSpec.configure do |config|
     [:bigistore, :istore]
   end
 
+  def val_type
+    {istore: 'int', bigistore: 'bigint'}
+  end
+
   def values
     {
       istore: {

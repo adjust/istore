@@ -11,7 +11,7 @@ typedef struct ISParser {
     AvlNode *tree;
 } ISParser;
 
-AvlNode* parse_istore(ISParser *parser);
+AvlNode* is_parse(ISParser *parser);
 
 #define EMPTY_ISTORE(_istore)          \
     do {                               \

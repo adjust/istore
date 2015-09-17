@@ -131,14 +131,9 @@ CREATE FUNCTION istore_agg_finalfn(internal)
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION istore_sum_up(istore)
+CREATE FUNCTION sum_up(istore)
     RETURNS bigint
     AS '$libdir/istore.so', 'istore_sum_up'
-    LANGUAGE C IMMUTABLE STRICT;
-
-CREATE FUNCTION istore_array_add(integer[], integer[])
-    RETURNS istore
-    AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION istore(integer[], integer[])
@@ -393,14 +388,9 @@ CREATE FUNCTION bigistore_agg_finalfn(internal)
     AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION istore_sum_up(bigistore)
+CREATE FUNCTION sum_up(bigistore)
     RETURNS bigint
     AS '$libdir/istore.so', 'bigistore_sum_up'
-    LANGUAGE C IMMUTABLE STRICT;
-
-CREATE FUNCTION bigistore_array_add(integer[], integer[])
-    RETURNS bigistore
-    AS '$libdir/istore.so'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION bigistore(integer[], integer[])
@@ -409,6 +399,11 @@ CREATE FUNCTION bigistore(integer[], integer[])
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION bigistore(integer[], bigint[])
+    RETURNS bigistore
+    AS '$libdir/istore.so', 'bigistore_array_add'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION istore(integer[], bigint[])
     RETURNS bigistore
     AS '$libdir/istore.so', 'bigistore_array_add'
     LANGUAGE C IMMUTABLE STRICT;
@@ -428,19 +423,19 @@ CREATE FUNCTION accumulate(bigistore, integer)
     AS '$libdir/istore.so', 'bigistore_accumulate'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION bigistore_seed(integer, integer, bigint)
+CREATE FUNCTION istore_seed(integer, integer, bigint)
     RETURNS bigistore
-    AS '$libdir/istore.so'
+    AS '$libdir/istore.so', 'bigistore_seed'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION bigistore_val_larger(bigistore, bigistore)
+CREATE FUNCTION istore_val_larger(bigistore, bigistore)
     RETURNS bigistore
-    AS '$libdir/istore.so'
+    AS '$libdir/istore.so', 'bigistore_val_larger'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION bigistore_val_smaller(bigistore, bigistore)
+CREATE FUNCTION istore_val_smaller(bigistore, bigistore)
     RETURNS bigistore
-    AS '$libdir/istore.so'
+    AS '$libdir/istore.so', 'bigistore_val_smaller'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION akeys(bigistore)
@@ -477,12 +472,12 @@ CREATE AGGREGATE SUM (
 );
 
 CREATE AGGREGATE MIN(bigistore) (
-    sfunc = bigistore_val_smaller,
+    sfunc = istore_val_smaller,
     stype = bigistore
 );
 
 CREATE AGGREGATE MAX(bigistore) (
-    sfunc = bigistore_val_larger,
+    sfunc = istore_val_larger,
     stype = bigistore
 );
 

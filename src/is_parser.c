@@ -37,7 +37,7 @@
 
 
 AvlNode*
-parse_istore(ISParser *parser)
+is_parse(ISParser *parser)
 {
     int32    key;
     int64    val;
@@ -94,7 +94,7 @@ parse_istore(ISParser *parser)
             GET_NUM(parser, val);
             SKIP_ESCAPED(parser->ptr);
             parser->state = WDEL;
-            parser->tree = tree_insert(parser->tree, key, val);
+            parser->tree = is_tree_insert(parser->tree, key, val);
         }
         else if (parser->state == WDEL)
         {

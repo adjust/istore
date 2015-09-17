@@ -165,10 +165,10 @@ types.each do |type|
       end
 
       it 'should sum up istores' do
-        query("SELECT istore_sum_up('1=>1'::#{type})").should match 1
-        query("SELECT istore_sum_up(NULL::#{type})").should match nil
-        query("SELECT istore_sum_up('1=>1, 2=>1'::#{type})").should match 2
-        query("SELECT istore_sum_up('1=>1 ,2=>-1, 1=>1'::#{type})").should match 1
+        query("SELECT sum_up('1=>1'::#{type})").should match 1
+        query("SELECT sum_up(NULL::#{type})").should match nil
+        query("SELECT sum_up('1=>1, 2=>1'::#{type})").should match 2
+        query("SELECT sum_up('1=>1 ,2=>-1, 1=>1'::#{type})").should match 1
       end
 
       it 'should sum istores from table' do
@@ -193,9 +193,6 @@ types.each do |type|
       end
 
       it 'should return istores from arrays' do
-        query("SELECT istore_array_add(Array[5,3,4,5], Array[1,2,3,4])").should match \
-          '"3"=>"2", "4"=>"3", "5"=>"5"'
-
         query("SELECT #{type}(Array[5,3,4,5], Array[1,2,3,4])").should match \
           '"3"=>"2", "4"=>"3", "5"=>"5"'
 
@@ -269,14 +266,14 @@ types.each do |type|
       end
 
       it 'should seed an #{type} from integer' do
-        query("SELECT istore_seed(2,5,8)").should match \
+        query("SELECT istore_seed(2,5,8::#{val_type[type]})").should match \
           '"2"=>"8", "3"=>"8", "4"=>"8", "5"=>"8"'
-        query("SELECT istore_seed(2,5,NULL)").should match nil
-        query("SELECT istore_seed(2,5,0)").should match \
+        query("SELECT istore_seed(2,5,NULL::#{val_type[type]})").should match nil
+        query("SELECT istore_seed(2,5,0::#{val_type[type]})").should match \
           '"2"=>"0", "3"=>"0", "4"=>"0", "5"=>"0"'
-        query("SELECT istore_seed(2,2,8)").should match \
+        query("SELECT istore_seed(2,2,8::#{val_type[type]})").should match \
           '"2"=>"8"'
-        expect{query("SELECT istore_seed(2,0,8)")}.to throw_error 'parameter upto must be >= from'
+        expect{query("SELECT istore_seed(2,0,8::#{val_type[type]})")}.to throw_error 'parameter upto must be >= from'
         end
 
       it 'should throw an error if negativ seed span' do
@@ -284,12 +281,12 @@ types.each do |type|
       end
 
       it 'should merge istores by larger keys' do
-        query("SELECT istore_val_larger('1=>1,2=>1,3=>3', '1=>2,3=>1,4=>1')").should match \
+        query("SELECT istore_val_larger('1=>1,2=>1,3=>3'::#{type}, '1=>2,3=>1,4=>1')").should match \
         '"1"=>"2", "2"=>"1", "3"=>"3", "4"=>"1"'
       end
 
       it 'should merge istores by smaller keys' do
-        query("SELECT istore_val_smaller('1=>1,2=>1,3=>3', '1=>2,3=>1,4=>1')").should match \
+        query("SELECT istore_val_smaller('1=>1,2=>1,3=>3'::#{type}, '1=>2,3=>1,4=>1')").should match \
         '"1"=>"1", "2"=>"1", "3"=>"1", "4"=>"1"'
       end
 

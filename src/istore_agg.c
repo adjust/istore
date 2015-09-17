@@ -27,10 +27,10 @@ istore_array_sum(Datum *data, int count, bool *nulls)
         payload = FIRST_PAIR(istore, IStorePair);
         for (index = 0; index < istore->len; ++index)
         {
-            position = tree_find(payload[index].key, tree);
+            position = is_tree_find(payload[index].key, tree);
             if (position == NULL)
             {
-                tree = tree_insert(tree, payload[index].key, payload[index].val);
+                tree = is_tree_insert(tree, payload[index].key, payload[index].val);
                 ++n;
             }
             else{
@@ -76,10 +76,10 @@ bigistore_array_sum(Datum *data, int count, bool *nulls)
         payload = FIRST_PAIR(istore, BigIStorePair);
         for (index = 0; index < istore->len; ++index)
         {
-            position = tree_find(payload[index].key, tree);
+            position = is_tree_find(payload[index].key, tree);
             if (position == NULL)
             {
-                tree = tree_insert(tree, payload[index].key, payload[index].val);
+                tree = is_tree_insert(tree, payload[index].key, payload[index].val);
                 ++n;
             }
             else{
