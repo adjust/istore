@@ -8,7 +8,7 @@ e.g.
 
     "-5"=>"-25", "0"=>"10", "5"=>"0", "100"=>"30"`
 
-On istore both key and value are represented and stored as integer. The extension
+On istore both keys and values are represented and stored as integer. The extension
 comes with two types `istore` and `bigistore` the former having `int` and the
 latter `bigint` as values, keys are `int` for both.
 
