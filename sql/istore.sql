@@ -137,6 +137,11 @@ CREATE FUNCTION svals(istore)
     AS '$libdir/istore.so' ,'istore_svals'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION istore_to_json(istore)
+RETURNS json
+AS '$libdir/istore.so', 'istore_to_json'
+LANGUAGE C IMMUTABLE STRICT;
+
 CREATE AGGREGATE SUM (
     sfunc = array_agg_transfn,
     basetype = istore,

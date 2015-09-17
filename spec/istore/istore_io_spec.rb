@@ -29,6 +29,11 @@ types.each do |type|
         query("SELECT * FROM istore_io").should match ''
       end
 
+      it 'should turn istore to json' do
+        query("SELECT istore_to_json(#{sample[type]}::#{type})").should match \
+        %{{"#{values[:istore][:low]}": 10, "-10": #{values[type][:low]}, "0": 5, "10": #{values[type][:high]}, "#{values[:istore][:high]}": 10}}
+      end
+
       describe 'invalid input' do
         it 'should report invalid value input' do
           expect{query("SELECT '2=>4, 1=>foo, 5=>17'::#{type}")}.to throw_error "invalid input syntax for istore: \"2=>4, 1=>foo, 5=>17\""

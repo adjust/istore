@@ -142,6 +142,11 @@ CREATE FUNCTION svals(bigistore)
     AS '$libdir/istore.so' ,'bigistore_svals'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION istore_to_json(bigistore)
+RETURNS json
+AS '$libdir/istore.so', 'bigistore_to_json'
+LANGUAGE C IMMUTABLE STRICT;
+
 
 CREATE AGGREGATE SUM (
     sfunc = array_agg_transfn,

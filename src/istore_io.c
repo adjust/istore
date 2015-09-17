@@ -3,7 +3,6 @@
 #include "libpq/pqformat.h"
 #include "utils/builtins.h"
 
-
 PG_FUNCTION_INFO_V1(istore_out);
 Datum
 istore_out(PG_FUNCTION_ARGS)
@@ -115,6 +114,41 @@ istore_send(PG_FUNCTION_ARGS)
         pq_sendint(&buf, val, 4);
     }
     PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+}
+
+PG_FUNCTION_INFO_V1(istore_to_json);
+Datum
+istore_to_json(PG_FUNCTION_ARGS)
+{
+    IStore         *is = PG_GETARG_IS(0);
+    IStorePair     *pairs;
+    char           *buf;
+    int             i;
+    StringInfoData  dst;
+
+    if (is->len == 0)
+        PG_RETURN_TEXT_P(cstring_to_text_with_len("{}", 2));
+
+    buf = palloc(sizeof(char) * 20);
+    pairs   = FIRST_PAIR(is, IStorePair);
+    initStringInfo(&dst);
+    appendStringInfoChar(&dst, '{');
+
+    for (i = 0; i < is->len; i++)
+    {
+        appendStringInfoString(&dst, "\"");
+        pg_ltoa(pairs[i].key, buf);
+        appendStringInfoString(&dst, buf);
+        appendStringInfoString(&dst, "\"");
+        appendStringInfoString(&dst, ": ");
+        pg_ltoa(pairs[i].val, buf);
+        appendStringInfoString(&dst, buf);
+        if (i + 1 != is->len)
+            appendStringInfoString(&dst, ", ");
+    }
+    appendStringInfoChar(&dst, '}');
+
+    PG_RETURN_TEXT_P(cstring_to_text(dst.data));
 }
 
 PG_FUNCTION_INFO_V1(bigistore_out);
@@ -230,4 +264,39 @@ bigistore_send(PG_FUNCTION_ARGS)
         pq_sendint64(&buf, val);
     }
     PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+}
+
+PG_FUNCTION_INFO_V1(bigistore_to_json);
+Datum
+bigistore_to_json(PG_FUNCTION_ARGS)
+{
+    BigIStore      *is = PG_GETARG_BIGIS(0);
+    BigIStorePair  *pairs;
+    char           *buf;
+    int             i;
+    StringInfoData  dst;
+
+    if (is->len == 0)
+        PG_RETURN_TEXT_P(cstring_to_text_with_len("{}", 2));
+
+    buf = palloc(sizeof(char) * 20);
+    pairs   = FIRST_PAIR(is, BigIStorePair);
+    initStringInfo(&dst);
+    appendStringInfoChar(&dst, '{');
+
+    for (i = 0; i < is->len; i++)
+    {
+        appendStringInfoString(&dst, "\"");
+        pg_ltoa(pairs[i].key, buf);
+        appendStringInfoString(&dst, buf);
+        appendStringInfoString(&dst, "\"");
+        appendStringInfoString(&dst, ": ");
+        pg_lltoa(pairs[i].val, buf);
+        appendStringInfoString(&dst, buf);
+        if (i + 1 != is->len)
+            appendStringInfoString(&dst, ", ");
+    }
+    appendStringInfoChar(&dst, '}');
+
+    PG_RETURN_TEXT_P(cstring_to_text(dst.data));
 }
