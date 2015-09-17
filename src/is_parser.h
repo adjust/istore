@@ -1,5 +1,5 @@
-#ifndef IS_PARSER_H
-#define IS_PARSER_H
+#ifndef ISTORE_PARSER_H
+#define ISTORE_PARSER_H
 
 #include "postgres.h"
 #include "avl.h"
@@ -22,4 +22,4 @@ AvlNode* is_parse(ISParser *parser);
     } while(0)
 
 
-#endif // IS_PARSER_H
+#endif // ISTORE_PARSER_H
