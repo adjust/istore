@@ -6,7 +6,9 @@ supports operators like + and aggregates like SUM.
 The textual representation of an istore is the same as for hstore
 e.g.
 
-    "-5"=>"-25", "0"=>"10", "5"=>"0", "100"=>"30"`
+```
+"-5"=>"-25", "0"=>"10", "5"=>"0", "100"=>"30"
+```
 
 On istore both keys and values are represented and stored as integer. The extension
 comes with two types `istore` and `bigistore` the former having `int` and the
@@ -20,67 +22,68 @@ Think of it as showing distributions of whatever can be represented as integer.
 Say you have an event log table where you'd aggregate events with some id  and
 segmentation by date.
 
-```pgsql
-    CREATE TABLE event_log AS
-    SELECT
-      d::date as date,
-      j as segment,
-      i as id, (random()*1000)::int as count,
-      (random()*100000)::int as revenues
-    FROM
-      generate_series(1,50) i,
-      generate_series(1,1000) j,
-      generate_series(current_date - 99, current_date, '1 day') d;
+```
+CREATE TABLE event_log AS
+SELECT
+  d::date as date,
+  j as segment,
+  i as id, (random()*1000)::int as count,
+  (random()*100000)::int as revenues
+FROM
+  generate_series(1,50) i,
+  generate_series(1,1000) j,
+  generate_series(current_date - 99, current_date, '1 day') d;
 ```
 
 Using istore you would use the id as key and count / revenues as values.
 
-```pgsql
-    CREATE TABLE event_log2 AS
-    SELECT
-      date,
-      segment,
-      istore(array_agg(id), array_agg(count)) as counts,
-      istore(array_agg(id), array_agg(revenues)) as revenues
-    FROM event_log
-    GROUP BY date, segment;
+```
+CREATE TABLE istore_event_log AS
+SELECT
+  date,
+  segment,
+  istore(array_agg(id), array_agg(count)) as counts,
+  istore(array_agg(id), array_agg(revenues)) as revenues
+FROM event_log
+GROUP BY date, segment;
 ```
 
 To summarize the count for a specific `id` you would write
 
 ```
-    istore_test=# SELECT SUM(counts->35) from event_log2 ;
-       sum
-    ----------
-     50213687
-    (1 row)
+istore_test=# SELECT SUM(counts->35) from istore_event_log ;
+    sum
+----------
+  50213687
+(1 row)
 
-    Time: 29,032 ms
+Time: 29,032 ms
+```
 
 instead of
 
-    istore_test=# SELECT SUM(count) from event_log where id = 35;
-       sum
-    ----------
-     50213687
-    (1 row)
+```
+istore_test=# SELECT SUM(count) from event_log where id = 35;
+    sum
+----------
+  50213687
+(1 row)
 
-    Time: 374,806 ms
+Time: 374,806 ms
 ```
 
 Where you can already see the performance benefit.
 
-Which is mostly due to the reduce io.
+Which is mostly due to the reduced IO.
 
-```pgsql
-    SELECT pg_size_pretty(pg_table_size('event_log')) as "without istore", pg_size_pretty(pg_table_size('event_log2')) as "with istore";
-     without istore | with istore
-    ----------------+-------------
-     249 MB         | 87 MB
+```
+SELECT pg_size_pretty(pg_table_size('event_log')) as "without istore", pg_size_pretty(pg_table_size('istore_event_log')) as "with istore";
+  without istore | with istore
+----------------+-------------
+  249 MB         | 87 MB
 ```
 
 ### istore Operators
-
 
 Operator              | Description                                                           | Example                                   | Result
 ---------             | -----------                                                           | -------                                   | ------
@@ -116,7 +119,7 @@ multiply(istore, integer)               | istore                    | multiply r
 divide(istore, istore)                  | istore                    | divide value of matching keys (missing key will be ignored)                 | divide('1=>4,2=>5'::istore, '1=>4,3=>6'::istore)              | "1"=>"1"
 divide(istore, integer)                 | istore                    | divide right operant to all values                                          | divide('1=>4,2=>5'::istore, '1=>4,3=>6'::istore)              | "1"=>"1"
 istore(integer[])                       | istore                    | construct an istore from an array by counting elements                      | istore(ARRAY[1,2,1,3,2,2])                                    | "1"=>"2", "2"=>"3", "3"=>"1"
-sum_up(istore)                          | bigint                    | sum values of an istore                                                     | istore_sum_up('1=>4,2=>5'::istore)                            |  9
+sum_up(istore)                          | bigint                    | sum values of an istore                                                     | sum_up('1=>4,2=>5'::istore)                            |  9
 istore(integer[], integer[])            | istore                    | construct an istore from separate key and value arrays                      | istore(ARRAY[1,2,3], ARRAY[4,5,6])                            | "1"=>"4", "2"=>"5", "3"=>"6"
 fill_gaps(istore, integer, integer)     | istore                    | fill missing istore keys upto second parameter with third parameter         | fill_gaps('1=>4,3=>10'::istore,4,2)                           | "0"=>"2", "1"=>"4", "2"=>"2", "3"=>"10", "4"=>"2"
 accumulate(istore)                      | istore                    | for each key calculate the rolling sum of values                            | accumulate('1=>4,3=>10'::istore)                              | "1"=>"4", "2"=>"4", "3"=>"14"
@@ -134,13 +137,13 @@ sum(expression) | istore, bigistore   | bigistore             | sum of expressio
 min(expression) | istore, bigistore   | same as argument type | merge across all input values by selecting minimum keys value
 max(expression) | istore, bigistore   | same as argument type | merge across all input values by selecting maximum keys value
 
-
 ### Indexes
 
 istore has GIN index support for the ? operators For example:
 
-    CREATE INDEX hidx ON testistore USING GIN (i);
-
+```
+CREATE INDEX hidx ON testistore USING GIN (i);
+```
 
 ### Authors
 
