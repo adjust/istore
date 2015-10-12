@@ -150,6 +150,7 @@ get_device_type_string(uint8 num)
         case 160:  return create_string(CONST_STRING("server"));
         case 180:  return create_string(CONST_STRING("simulator"));
         case 200: return create_string(CONST_STRING("tablet"));
+        case 220: return create_string(CONST_STRING("tv"));
         case 255: return create_string(CONST_STRING("unknown"));
         default: elog(ERROR, "unknown device_type num");
     }
@@ -169,6 +170,7 @@ get_device_type_length(uint8 num)
         case 160:  return (CONST_STRING_LENGTH("server"));
         case 180:  return (CONST_STRING_LENGTH("simulator"));
         case 200: return (CONST_STRING_LENGTH("tablet"));
+        case 220: return (CONST_STRING_LENGTH("tv"));
         case 255: return (CONST_STRING_LENGTH("unknown"));
         default: elog(ERROR, "unknown device_type num");
     }
@@ -199,7 +201,7 @@ get_device_type_num(char *str)
         case 'm': return check_device_type_num(str, 100);
         case 'p': return get_device_type_num_p(str);
         case 's': return get_device_type_num_s(str);
-        case 't': return check_device_type_num(str, 200);
+        case 't': return get_device_type_num_t(str);
         case 'u': return check_device_type_num(str, 255);
         default : return 0;
     }
@@ -221,6 +223,16 @@ get_device_type_num_s(char *str)
     switch (str[1]) {
         case 'e': return check_device_type_num(str, 160);
         case 'i': return check_device_type_num(str, 180);
+        default : return 0;
+    }
+}
+
+uint8
+get_device_type_num_t(char *str)
+{
+    switch (str[1]) {
+        case 'a': return check_device_type_num(str, 200);
+        case 'v': return check_device_type_num(str, 220);
         default : return 0;
     }
 }

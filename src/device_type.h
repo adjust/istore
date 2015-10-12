@@ -35,6 +35,7 @@ Datum hashdevice_type(PG_FUNCTION_ARGS);
 uint8 get_device_type_num(char *str);
 uint8 get_device_type_num_p(char *str);
 uint8 get_device_type_num_s(char *str);
+uint8 get_device_type_num_t(char *str);
 
 char * get_device_type_string(uint8 num);
 int get_device_type_length(uint8 num);
