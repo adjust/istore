@@ -1,21 +1,21 @@
 CREATE FUNCTION istore_in(cstring)
     RETURNS istore
-    AS '$libdir/istore.so'
+    AS 'istore'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION istore_out(istore)
     RETURNS cstring
-    AS '$libdir/istore.so'
+    AS 'istore'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION istore_send(istore)
     RETURNS bytea
-    AS '$libdir/istore.so'
+    AS 'istore'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION istore_recv(internal)
     RETURNS istore
-    AS '$libdir/istore.so'
+    AS 'istore'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE TYPE istore (
@@ -28,22 +28,22 @@ CREATE TYPE istore (
 
 CREATE FUNCTION bigistore_in(cstring)
     RETURNS bigistore
-    AS '$libdir/istore.so'
+    AS 'istore'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION bigistore_out(bigistore)
     RETURNS cstring
-    AS '$libdir/istore.so'
+    AS 'istore'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION bigistore_send(bigistore)
     RETURNS bytea
-    AS '$libdir/istore.so'
+    AS 'istore'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION bigistore_recv(internal)
     RETURNS bigistore
-    AS '$libdir/istore.so'
+    AS 'istore'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE TYPE bigistore (

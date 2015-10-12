@@ -2,149 +2,149 @@
 
 CREATE FUNCTION exist(bigistore, integer)
     RETURNS boolean
-    AS '$libdir/istore.so', 'bigistore_exist'
+    AS 'istore', 'bigistore_exist'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION fetchval(bigistore, integer)
     RETURNS integer
-    AS '$libdir/istore.so', 'bigistore_fetchval'
+    AS 'istore', 'bigistore_fetchval'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION each(IN is bigistore,
     OUT key integer,
     OUT value bigint)
 RETURNS SETOF record
-AS '$libdir/istore.so','bigistore_each'
+AS 'istore','bigistore_each'
 LANGUAGE C STRICT IMMUTABLE;
 
 CREATE FUNCTION compact(bigistore)
     RETURNS bigistore
-    AS '$libdir/istore.so', 'bigistore_compact'
+    AS 'istore', 'bigistore_compact'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION add(bigistore, bigistore)
     RETURNS bigistore
-    AS '$libdir/istore.so', 'bigistore_add'
+    AS 'istore', 'bigistore_add'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION add(bigistore, bigint)
     RETURNS bigistore
-    AS '$libdir/istore.so', 'bigistore_add_integer'
+    AS 'istore', 'bigistore_add_integer'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION subtract(bigistore, bigistore)
     RETURNS bigistore
-    AS '$libdir/istore.so', 'bigistore_subtract'
+    AS 'istore', 'bigistore_subtract'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION subtract(bigistore, bigint)
     RETURNS bigistore
-    AS '$libdir/istore.so', 'bigistore_subtract_integer'
+    AS 'istore', 'bigistore_subtract_integer'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION multiply(bigistore, bigistore)
     RETURNS bigistore
-    AS '$libdir/istore.so', 'bigistore_multiply'
+    AS 'istore', 'bigistore_multiply'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION multiply(bigistore, bigint)
     RETURNS bigistore
-    AS '$libdir/istore.so', 'bigistore_multiply_integer'
+    AS 'istore', 'bigistore_multiply_integer'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION divide(bigistore, bigistore)
     RETURNS bigistore
-    AS '$libdir/istore.so', 'bigistore_divide'
+    AS 'istore', 'bigistore_divide'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION divide(bigistore, bigint)
     RETURNS bigistore
-    AS '$libdir/istore.so', 'bigistore_divide_integer'
+    AS 'istore', 'bigistore_divide_integer'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION bigistore(integer[])
     RETURNS bigistore
-    AS '$libdir/istore.so', 'bigistore_from_intarray'
+    AS 'istore', 'bigistore_from_intarray'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION bigistore_agg_finalfn(internal)
     RETURNS bigistore
-    AS '$libdir/istore.so'
+    AS 'istore'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION sum_up(bigistore)
     RETURNS bigint
-    AS '$libdir/istore.so', 'bigistore_sum_up'
+    AS 'istore', 'bigistore_sum_up'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION bigistore(integer[], integer[])
     RETURNS bigistore
-    AS '$libdir/istore.so', 'bigistore_array_add'
+    AS 'istore', 'bigistore_array_add'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION bigistore(integer[], bigint[])
     RETURNS bigistore
-    AS '$libdir/istore.so', 'bigistore_array_add'
+    AS 'istore', 'bigistore_array_add'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION istore(integer[], bigint[])
     RETURNS bigistore
-    AS '$libdir/istore.so', 'bigistore_array_add'
+    AS 'istore', 'bigistore_array_add'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION fill_gaps(bigistore, integer, bigint DEFAULT 0)
     RETURNS bigistore
-    AS '$libdir/istore.so', 'bigistore_fill_gaps'
+    AS 'istore', 'bigistore_fill_gaps'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION accumulate(bigistore)
     RETURNS bigistore
-    AS '$libdir/istore.so', 'bigistore_accumulate'
+    AS 'istore', 'bigistore_accumulate'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION accumulate(bigistore, integer)
     RETURNS bigistore
-    AS '$libdir/istore.so', 'bigistore_accumulate'
+    AS 'istore', 'bigistore_accumulate'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION istore_seed(integer, integer, bigint)
     RETURNS bigistore
-    AS '$libdir/istore.so', 'bigistore_seed'
+    AS 'istore', 'bigistore_seed'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION istore_val_larger(bigistore, bigistore)
     RETURNS bigistore
-    AS '$libdir/istore.so', 'bigistore_val_larger'
+    AS 'istore', 'bigistore_val_larger'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION istore_val_smaller(bigistore, bigistore)
     RETURNS bigistore
-    AS '$libdir/istore.so', 'bigistore_val_smaller'
+    AS 'istore', 'bigistore_val_smaller'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION akeys(bigistore)
     RETURNS integer[]
-    AS '$libdir/istore.so' ,'bigistore_akeys'
+    AS 'istore' ,'bigistore_akeys'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION avals(bigistore)
     RETURNS bigint[]
-    AS '$libdir/istore.so' ,'bigistore_avals'
+    AS 'istore' ,'bigistore_avals'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION skeys(bigistore)
     RETURNS setof integer
-    AS '$libdir/istore.so' ,'bigistore_skeys'
+    AS 'istore' ,'bigistore_skeys'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION svals(bigistore)
     RETURNS setof bigint
-    AS '$libdir/istore.so' ,'bigistore_svals'
+    AS 'istore' ,'bigistore_svals'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION istore_to_json(bigistore)
 RETURNS json
-AS '$libdir/istore.so', 'bigistore_to_json'
+AS 'istore', 'bigistore_to_json'
 LANGUAGE C IMMUTABLE STRICT;
 
 
@@ -227,7 +227,7 @@ CREATE OPERATOR / (
 
 CREATE FUNCTION gin_extract_bigistore_key(internal, internal)
 RETURNS internal
-AS '$libdir/istore.so'
+AS 'istore'
 LANGUAGE C IMMUTABLE STRICT;
 
 CREATE OPERATOR CLASS bigistore_key_ops
