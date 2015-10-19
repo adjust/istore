@@ -56,6 +56,12 @@ SELECT 'tablet'::device_type;
  tablet
 (1 row)
 
+SELECT 'tv'::device_type;
+ device_type 
+-------------
+ tv
+(1 row)
+
 SELECT 'unknown'::device_type;
  device_type 
 -------------

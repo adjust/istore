@@ -11,5 +11,6 @@ SELECT 'phone'::device_type;
 SELECT 'server'::device_type;
 SELECT 'simulator'::device_type;
 SELECT 'tablet'::device_type;
+SELECT 'tv'::device_type;
 SELECT 'unknown'::device_type;
 ROLLBACK;
