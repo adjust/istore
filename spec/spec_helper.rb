@@ -29,6 +29,45 @@ RSpec.configure do |config|
 
   config.include(Dumbo::Test::Helper)
   config.include(Dumbo::Matchers)
+
+  def types
+    [:bigistore, :istore]
+  end
+
+  def val_type
+    {istore: 'int', bigistore: 'bigint'}
+  end
+
+  def values
+    {
+      istore: {
+        low: -2147483647,
+        neg: -5,
+        pos: 5,
+        high: 2147483647
+      },
+      bigistore: {
+        low: -9223372036854775807,
+        neg: -5,
+        pos: 5,
+        high: 9223372036854775806
+      }
+    }
+  end
+
+  def sample
+    {
+      istore: "'-2147483647 => 10, -10 => -2147483647, 0 => 5, 10 => 2147483647, 2147483647 => 10'",
+      bigistore: "'-2147483647 => 10, -10 => -9223372036854775807, 0 => 5, 10 => 9223372036854775806, 2147483647 => 10'",
+    }
+  end
+
+  def sample_out
+    {
+      istore: %{"-2147483647"=>"10", "-10"=>"-2147483647", "0"=>"5", "10"=>"2147483647", "2147483647"=>"10"},
+      bigistore: %{"-2147483647"=>"10", "-10"=>"-9223372036854775807", "0"=>"5", "10"=>"9223372036854775806", "2147483647"=>"10"},
+    }
+  end
 end
 
 require 'dumbo/test/regression_helper' if ENV['DUMBO_REGRESSION']
