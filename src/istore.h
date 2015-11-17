@@ -106,7 +106,19 @@ typedef struct {
 } BigIStorePair;
 
 typedef struct {
-    BigIStorePair *pairs;
+	int32 *key;
+	int64 *val;
+} BigAIStorePair;
+
+
+typedef struct {
+
+//	  Need to implement this BigIStorePair as
+	  //int32 *key;
+	  //int64 *val;
+	BigAIStorePair *AKeyVal;
+	//BigIStorePair *pairs;
+
     size_t  size;
     int     used;
     int     buflen;
@@ -146,12 +158,15 @@ BigIStorePair* bigistore_find(BigIStore *is, int32 key);
 #define PAYLOAD_SIZE(_pairs, _pairtype) (_pairs->used * sizeof(_pairtype))
 #define ISHDRSZ VARHDRSZ + sizeof(int32) + sizeof(int32)
 
+#define BISHDRSZ VARHDRSZ + sizeof(int32*) + sizeof(int64*)
+
 #define ISTORE_SIZE(x, _pairtype) (ISHDRSZ + x->len * sizeof(_pairtype))
 
 /*
  * get the first pair of type
  */
 #define FIRST_PAIR(x, _pairtype) ((_pairtype*)((char*) x + ISHDRSZ))
+#define BFIRST_PAIR(x, _pairtype) ((_pairtype*)((char*) x + BISHDRSZ))
 
 /*
  * get the istore
@@ -175,13 +190,13 @@ BigIStorePair* bigistore_find(BigIStore *is, int32 key);
 
 #define FINALIZE_BIGISTORE(_istore, _pairs)                                 \
     do {                                                                    \
-        _istore = palloc0(ISHDRSZ + PAYLOAD_SIZE(_pairs, BigIStorePair));   \
+        _istore = palloc0(ISHDRSZ + PAYLOAD_SIZE(_pairs, BigAIStorePair));   \
         _istore->buflen = _pairs->buflen;                                   \
         _istore->len    = _pairs->used;                                     \
-        SET_VARSIZE(_istore, ISHDRSZ + PAYLOAD_SIZE(_pairs, BigIStorePair));\
-        memcpy(FIRST_PAIR(_istore, BigIStorePair), _pairs->pairs,           \
-               PAYLOAD_SIZE(_pairs, BigIStorePair));                        \
-        pfree(_pairs->pairs);                                               \
+        SET_VARSIZE(_istore, ISHDRSZ + PAYLOAD_SIZE(_pairs, BigAIStorePair));\
+        memcpy(FIRST_PAIR(_istore, BigAIStorePair), _pairs->AKeyVal,           \
+               PAYLOAD_SIZE(_pairs, BigAIStorePair));                        \
+        pfree(_pairs->AKeyVal);                                               \
     } while(0)
 
 

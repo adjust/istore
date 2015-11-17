@@ -45,6 +45,7 @@ istore_out(PG_FUNCTION_ARGS)
         *walk++ = ' ';
 
     }
+
     // replace trailing ", " with terminating null
     --walk;
     *--walk = '\0';
@@ -166,7 +167,7 @@ bigistore_out(PG_FUNCTION_ARGS)
     int            i;
     char          *out,
                   *walk;
-    BigIStorePair *pairs;
+    BigAIStorePair *pairs;
 
     in = PG_GETARG_BIGIS(0);
 
@@ -177,21 +178,22 @@ bigistore_out(PG_FUNCTION_ARGS)
     }
 
     out = palloc0(in->buflen + 1);
-    pairs = FIRST_PAIR(in, BigIStorePair);
+
+    pairs = FIRST_PAIR(in, BigAIStorePair);
     walk = out;
 
     for (i = 0; i<in->len; ++i)
     {
         *walk++ = '"';
-        pg_lltoa(pairs[i].key, walk);
-        while (*++walk != '\0') ;
+        pg_lltoa(pairs->key[i], walk);
+        while (*++walk != '\0');
 
         *walk++ = '"';
         *walk++ = '=';
         *walk++ = '>';
         *walk++ = '"';
-        pg_lltoa(pairs[i].val, walk);
-        while (*++walk != '\0') ;
+        pg_lltoa(pairs->val[i], walk);
+        while (*++walk != '\0');
 
         *walk++ = '"';
         *walk++ = ',';
@@ -258,15 +260,15 @@ Datum
 bigistore_send(PG_FUNCTION_ARGS)
 {
     BigIStore *in = PG_GETARG_BIGIS(0);
-    BigIStorePair *pairs= FIRST_PAIR(in, BigIStorePair);
+    BigAIStorePair *pairs= FIRST_PAIR(in, BigAIStorePair);
     int i = 0;
     StringInfoData buf;
     pq_begintypsend(&buf);
     pq_sendint(&buf, in->len, 4);
     for (; i < in->len; ++i)
     {
-        int32 key = pairs[i].key;
-        int64 val = pairs[i].val;
+        int32 key = pairs->key[i];
+        int64 val = pairs->val[i];
         pq_sendint(&buf, key, 4);
         pq_sendint64(&buf, val);
     }
@@ -281,7 +283,7 @@ Datum
 bigistore_to_json(PG_FUNCTION_ARGS)
 {
     BigIStore      *is = PG_GETARG_BIGIS(0);
-    BigIStorePair  *pairs;
+    BigAIStorePair  *pairs;
     char           *buf;
     int             i;
     StringInfoData  dst;
@@ -290,18 +292,18 @@ bigistore_to_json(PG_FUNCTION_ARGS)
         PG_RETURN_TEXT_P(cstring_to_text_with_len("{}", 2));
 
     buf = palloc(sizeof(char) * 20);
-    pairs   = FIRST_PAIR(is, BigIStorePair);
+    pairs   = FIRST_PAIR(is, BigAIStorePair);
     initStringInfo(&dst);
     appendStringInfoChar(&dst, '{');
 
     for (i = 0; i < is->len; i++)
     {
         appendStringInfoString(&dst, "\"");
-        pg_ltoa(pairs[i].key, buf);
+        pg_ltoa(pairs->key[i], buf);
         appendStringInfoString(&dst, buf);
         appendStringInfoString(&dst, "\"");
         appendStringInfoString(&dst, ": ");
-        pg_lltoa(pairs[i].val, buf);
+        pg_lltoa(pairs->val[i], buf);
         appendStringInfoString(&dst, buf);
         if (i + 1 != is->len)
             appendStringInfoString(&dst, ", ");

@@ -50,7 +50,8 @@ is_parse(ISParser *parser)
 
     while(1)
     {
-        if (parser->state == WKEY)
+
+    	if (parser->state == WKEY)
         {
             SKIP_SPACES(parser->ptr);
             SKIP_ESCAPED(parser->ptr);
