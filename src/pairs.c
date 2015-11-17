@@ -80,10 +80,14 @@ bigistore_tree_to_pairs(AvlNode *p, BigIStorePairs *pairs)
 void
 bigistore_pairs_init(BigIStorePairs *pairs, size_t initial_size)
 {
-    pairs->pairs   = palloc0(initial_size * sizeof(BigIStorePair));
+    //pairs->pairs   = palloc0(initial_size * sizeof(BigIStorePair));
     pairs->used    = 0;
     pairs->size    = initial_size;
     pairs->buflen  = 0;
+
+    pairs->AKeyVal	= palloc0(initial_size * sizeof(BigAIStorePair));
+    pairs->AKeyVal->key	= palloc0(initial_size * sizeof(int32));
+    pairs->AKeyVal->val = palloc0(initial_size * sizeof(int64));
 }
 
 
@@ -96,19 +100,33 @@ bigistore_pairs_insert(BigIStorePairs *pairs, int32 key, int64 val)
 {
     if (pairs->size == pairs->used) {
         if (pairs->used == PAIRS_MAX(BigIStorePair))
-            elog(ERROR, "bigistore can't have more than %lu keys", PAIRS_MAX(BigIStorePair));
+            elog(ERROR, "bigistore can't have more than %lu keys", PAIRS_MAX(BigAIStorePair));
 
         pairs->size *= 2;
         // overflow check pairs->size should have been grown but not exceed PAIRS_MAX(BigIStorePair)
-        if (pairs->size < pairs->used || pairs->size > PAIRS_MAX(BigIStorePair))
-            pairs->size = PAIRS_MAX(BigIStorePair);
+        if (pairs->size < pairs->used || pairs->size > PAIRS_MAX(BigAIStorePair))
+            pairs->size = PAIRS_MAX(BigAIStorePair);
 
-        pairs->pairs = repalloc(pairs->pairs, pairs->size * sizeof(BigIStorePair));
+        //pairs->AKeyVal = repalloc(pairs->AKeyVal, pairs->size * sizeof(BigAIStorePair));
+
+        pairs->AKeyVal->key = repalloc(pairs->AKeyVal->key, pairs->size * sizeof(int32));
+        pairs->AKeyVal->val = repalloc(pairs->AKeyVal->val, pairs->size * sizeof(int64));
+        //pairs->key = repalloc(pairs->key, pairs->size * sizeof(int32));
+        //pairs->val = repalloc(pairs->key, pairs->size * sizeof(int64));
     }
 
-    pairs->pairs[pairs->used].key  = key;
-    pairs->pairs[pairs->used].val  = val;
-    pairs->buflen += digits64(key) + digits64(val) + BUFLEN_OFFSET;
+    //pairs->pairs[pairs->used].key  = key;
+    //pairs->pairs[pairs->used].val  = val;
+
+    //pairs->key[pairs->used] = key;
+    //pairs->val[pairs->used] = val;
+
+    pairs->AKeyVal->key[pairs->used] = key;
+    pairs->AKeyVal->val[pairs->used] = val;
+
+    // I think, key should have digits32 here. Hence changing it.
+    //
+    pairs->buflen += digits32(key) + digits64(val) + BUFLEN_OFFSET;
 
     if (pairs->buflen < 0)
         elog(ERROR, "bigistore buffer overflow");
