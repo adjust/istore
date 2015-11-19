@@ -1,0 +1,1 @@
+SELECT a * b IS NULL as mul FROM is_bench;

@@ -1,0 +1,1 @@
+SELECT a * c IS NULL as muli FROM is_bench;
