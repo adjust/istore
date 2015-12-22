@@ -147,8 +147,10 @@ istore_sum_up(PG_FUNCTION_ARGS)
     index  = 0;
 
     while (index < is->len){
-        result = DirectFunctionCall2(int4pl, result, pairs[index++].val);
+        result = DirectFunctionCall2(int84pl, result, pairs[index].val);
+        index++;
     }
+
     PG_RETURN_INT64(result);
 }
 

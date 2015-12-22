@@ -2,34 +2,63 @@ PATH
   remote: /Users/manu/Projekte/adeven/dumbo
   specs:
     dumbo (0.0.4)
+      activerecord
+      activesupport
       bundler (~> 1.5)
       erubis
       pg (> 0.17)
-      pg_spec
       rake
+      rspec (~> 3.0.0)
       thor
 
 GEM
   remote: https://rubygems.org/
   specs:
+    activemodel (4.2.4)
+      activesupport (= 4.2.4)
+      builder (~> 3.1)
+    activerecord (4.2.4)
+      activemodel (= 4.2.4)
+      activesupport (= 4.2.4)
+      arel (~> 6.0)
+    activesupport (4.2.4)
+      i18n (~> 0.7)
+      json (~> 1.7, >= 1.7.7)
+      minitest (~> 5.1)
+      thread_safe (~> 0.3, >= 0.3.4)
+      tzinfo (~> 1.1)
+    arel (6.0.3)
+    builder (3.2.2)
     coderay (1.1.0)
+    diff-lcs (1.2.5)
     erubis (2.7.0)
+    i18n (0.7.0)
+    json (1.8.3)
     method_source (0.8.2)
-    minitest (5.8.1)
+    minitest (5.8.3)
     pg (0.18.3)
-    pg_spec (0.0.1)
-      bundler (~> 1.5)
-      minitest (~> 5.8.0)
-      pg (> 0.17)
-      pry
-      rake
     pry (0.9.12.6)
       coderay (~> 1.0)
       method_source (~> 0.8)
       slop (~> 3.4)
     rake (10.4.2)
+    rspec (3.0.0)
+      rspec-core (~> 3.0.0)
+      rspec-expectations (~> 3.0.0)
+      rspec-mocks (~> 3.0.0)
+    rspec-core (3.0.4)
+      rspec-support (~> 3.0.0)
+    rspec-expectations (3.0.4)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.0.0)
+    rspec-mocks (3.0.4)
+      rspec-support (~> 3.0.0)
+    rspec-support (3.0.4)
     slop (3.5.0)
     thor (0.19.1)
+    thread_safe (0.3.5)
+    tzinfo (1.2.2)
+      thread_safe (~> 0.1)
 
 PLATFORMS
   ruby

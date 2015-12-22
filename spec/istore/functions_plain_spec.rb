@@ -324,6 +324,25 @@ types.each do |type|
         [0]
         query("SELECT svals(''::#{type})").should match []
       end
+
+      it 'should sum up istores' do
+        query("SELECT sum_up('10=>5, 15=>10'::istore)").should match 15
+      end
+      it 'should sum up istores with big numbers' do
+        query("SELECT sum_up('10=>2000000000, 15=>1000000000'::istore)").should match 3000000000
+      end
+
+      it 'should sum up bigistores' do
+        query("SELECT sum_up('10=>5, 15=>10'::bigistore)").should match 15
+      end
+
+      it 'should sum up istores with negative values' do
+        query("SELECT sum_up('10=>5, 15=>-10'::istore)").should match -5
+      end
+
+      it 'should sum up bigistores with negative values' do
+        query("SELECT sum_up('10=>5, 15=>-10'::bigistore)").should match -5
+      end
     end
   end
 end

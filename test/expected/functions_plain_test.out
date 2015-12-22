@@ -852,6 +852,61 @@ SELECT svals(''::bigistore);
 
 ROLLBACK;
 BEGIN;
+-- bigistore functions should sum up istores;
+-- ./spec/istore/functions_plain_spec.rb:328;
+CREATE EXTENSION istore;
+SELECT sum_up('10=>5, 15=>10'::istore);
+ sum_up 
+--------
+     15
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- bigistore functions should sum up istores with big numbers;
+-- ./spec/istore/functions_plain_spec.rb:331;
+CREATE EXTENSION istore;
+SELECT sum_up('10=>2000000000, 15=>1000000000'::istore);
+   sum_up   
+------------
+ 3000000000
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- bigistore functions should sum up bigistores;
+-- ./spec/istore/functions_plain_spec.rb:335;
+CREATE EXTENSION istore;
+SELECT sum_up('10=>5, 15=>10'::bigistore);
+ sum_up 
+--------
+     15
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- bigistore functions should sum up istores with negative values;
+-- ./spec/istore/functions_plain_spec.rb:339;
+CREATE EXTENSION istore;
+SELECT sum_up('10=>5, 15=>-10'::istore);
+ sum_up 
+--------
+     -5
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- bigistore functions should sum up bigistores with negative values;
+-- ./spec/istore/functions_plain_spec.rb:343;
+CREATE EXTENSION istore;
+SELECT sum_up('10=>5, 15=>-10'::bigistore);
+ sum_up 
+--------
+     -5
+(1 row)
+
+ROLLBACK;
+BEGIN;
 -- istore functions should find keys with exists;
 -- ./spec/istore/functions_plain_spec.rb:10;
 CREATE EXTENSION istore;
@@ -1702,5 +1757,60 @@ SELECT svals(''::istore);
  svals 
 -------
 (0 rows)
+
+ROLLBACK;
+BEGIN;
+-- istore functions should sum up istores;
+-- ./spec/istore/functions_plain_spec.rb:328;
+CREATE EXTENSION istore;
+SELECT sum_up('10=>5, 15=>10'::istore);
+ sum_up 
+--------
+     15
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- istore functions should sum up istores with big numbers;
+-- ./spec/istore/functions_plain_spec.rb:331;
+CREATE EXTENSION istore;
+SELECT sum_up('10=>2000000000, 15=>1000000000'::istore);
+   sum_up   
+------------
+ 3000000000
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- istore functions should sum up bigistores;
+-- ./spec/istore/functions_plain_spec.rb:335;
+CREATE EXTENSION istore;
+SELECT sum_up('10=>5, 15=>10'::bigistore);
+ sum_up 
+--------
+     15
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- istore functions should sum up istores with negative values;
+-- ./spec/istore/functions_plain_spec.rb:339;
+CREATE EXTENSION istore;
+SELECT sum_up('10=>5, 15=>-10'::istore);
+ sum_up 
+--------
+     -5
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- istore functions should sum up bigistores with negative values;
+-- ./spec/istore/functions_plain_spec.rb:343;
+CREATE EXTENSION istore;
+SELECT sum_up('10=>5, 15=>-10'::bigistore);
+ sum_up 
+--------
+     -5
+(1 row)
 
 ROLLBACK;
