@@ -758,8 +758,8 @@ bigistore_accumulate(PG_FUNCTION_ARGS)
             index2    = 0;
     size_t  size      = 0;
     int32   start_key = 0,
-            sum       = 0,
             end_key   = -1;
+    int64   sum       = 0;
 
     if (PG_ARGISNULL(0))
         PG_RETURN_NULL();
