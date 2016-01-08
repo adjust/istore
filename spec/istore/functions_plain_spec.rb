@@ -265,6 +265,11 @@ types.each do |type|
           '"-5"=>"5", "-4"=>"5", "-3"=>"5", "-2"=>"5", "-1"=>"5", "0"=>"5", "1"=>"5", "2"=>"5"'
       end
 
+      it 'should accumulate big numbers' do
+        query("SELECT accumulate('0=>20000000000, 1=>10000000000, 3=>10000000000'::bigistore, 4)").should match \
+          '"0"=>"20000000000", "1"=>"30000000000", "2"=>"30000000000", "3"=>"40000000000", "4"=>"40000000000"'
+      end
+
       it 'should seed an #{type} from integer' do
         query("SELECT istore_seed(2,5,8::#{val_type[type]})").should match \
           '"2"=>"8", "3"=>"8", "4"=>"8", "5"=>"8"'
