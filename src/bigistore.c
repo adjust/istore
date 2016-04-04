@@ -137,15 +137,28 @@ bigistore_sum_up(PG_FUNCTION_ARGS)
     BigIStorePair  *pairs;
     int64           result;
     int             index ;
+    int32           end_key;
 
     is     = PG_GETARG_BIGIS(0);
     pairs  = FIRST_PAIR(is, BigIStorePair);
     result = 0;
     index  = 0;
 
-    while (index < is->len){
-        result = DirectFunctionCall2(int8pl,result, pairs[index++].val);
+    if (is->len == 0)
+        PG_RETURN_INT64(0);
+
+    if (PG_NARGS() == 1)
+    {
+        while (index < is->len )
+            result = DirectFunctionCall2(int8pl, result, pairs[index++].val);
     }
+    else
+    {
+        end_key = PG_GETARG_INT32(1) > pairs[is->len -1].key ? pairs[is->len -1].key : PG_GETARG_INT32(1);
+        while (index < is->len && pairs[index].key <= end_key)
+            result = DirectFunctionCall2(int8pl, result, pairs[index++].val);
+    }    
+
     PG_RETURN_INT64(result);
 }
 

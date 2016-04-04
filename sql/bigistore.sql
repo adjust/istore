@@ -77,6 +77,11 @@ CREATE FUNCTION sum_up(bigistore)
     AS 'istore', 'bigistore_sum_up'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION sum_up(bigistore, integer)
+    RETURNS bigint
+    AS 'istore', 'bigistore_sum_up'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION bigistore(integer[], integer[])
     RETURNS bigistore
     AS 'istore', 'bigistore_array_add'
