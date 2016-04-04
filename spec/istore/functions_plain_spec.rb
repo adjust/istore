@@ -168,6 +168,7 @@ types.each do |type|
         query("SELECT sum_up('1=>1'::#{type})").should match 1
         query("SELECT sum_up(NULL::#{type})").should match nil
         query("SELECT sum_up('1=>1, 2=>1'::#{type})").should match 2
+        query("SELECT sum_up('1=>1, 5=>1, 3=> 4'::#{type}, 3)").should match 5
         query("SELECT sum_up('1=>1 ,2=>-1, 1=>1'::#{type})").should match 1
       end
 
@@ -333,6 +334,7 @@ types.each do |type|
       it 'should sum up istores' do
         query("SELECT sum_up('10=>5, 15=>10'::istore)").should match 15
       end
+      
       it 'should sum up istores with big numbers' do
         query("SELECT sum_up('10=>2000000000, 15=>1000000000'::istore)").should match 3000000000
       end

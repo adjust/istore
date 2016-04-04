@@ -77,6 +77,11 @@ CREATE FUNCTION sum_up(istore)
     AS 'istore', 'istore_sum_up'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION sum_up(istore, integer)
+    RETURNS bigint
+    AS 'istore', 'istore_sum_up'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION istore(integer[], integer[])
     RETURNS istore
     AS 'istore', 'istore_array_add'
