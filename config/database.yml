@@ -15,17 +15,14 @@
 # min_messages: warning
 
 postgres: &postgres
-  adapter: postgresql
-  encoding: utf8
-  pool: 5
-  username: postgres
-  password:
+  client_encoding: utf8
+  user: postgres
   host: localhost
 
 development:
   <<: *postgres
-  database: istore_development
+  dbname: istore_development
 
 test:
   <<: *postgres
-  database: istore_test
+  dbname: istore_test

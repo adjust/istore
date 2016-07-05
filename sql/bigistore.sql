@@ -67,11 +67,6 @@ CREATE FUNCTION bigistore(integer[])
     AS 'istore', 'bigistore_from_intarray'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION bigistore_agg_finalfn(internal)
-    RETURNS bigistore
-    AS 'istore'
-    LANGUAGE C IMMUTABLE STRICT;
-
 CREATE FUNCTION sum_up(bigistore)
     RETURNS bigint
     AS 'istore', 'bigistore_sum_up'
@@ -152,22 +147,40 @@ RETURNS json
 AS 'istore', 'bigistore_to_json'
 LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION istore_sum_transfn(internal, bigistore)
+    RETURNS internal
+    AS 'istore' ,'bigistore_sum_transfn'
+    LANGUAGE C IMMUTABLE;
+
+CREATE FUNCTION istore_min_transfn(internal, bigistore)
+    RETURNS internal
+    AS 'istore' ,'bigistore_min_transfn'
+    LANGUAGE C IMMUTABLE;
+
+CREATE FUNCTION istore_max_transfn(internal, bigistore)
+    RETURNS internal
+    AS 'istore' ,'bigistore_max_transfn'
+    LANGUAGE C IMMUTABLE;
 
 CREATE AGGREGATE SUM (
-    sfunc = array_agg_transfn,
+    sfunc = istore_sum_transfn,
     basetype = bigistore,
     stype = internal,
     finalfunc = bigistore_agg_finalfn
 );
 
-CREATE AGGREGATE MIN(bigistore) (
-    sfunc = istore_val_smaller,
-    stype = bigistore
+CREATE AGGREGATE MIN (
+    sfunc = istore_min_transfn,
+    basetype = bigistore,
+    stype = internal,
+    finalfunc = bigistore_agg_finalfn
 );
 
-CREATE AGGREGATE MAX(bigistore) (
-    sfunc = istore_val_larger,
-    stype = bigistore
+CREATE AGGREGATE MAX (
+    sfunc = istore_max_transfn,
+    basetype = bigistore,
+    stype = internal,
+    finalfunc = bigistore_agg_finalfn
 );
 
 CREATE OPERATOR -> (

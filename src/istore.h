@@ -12,7 +12,6 @@ Datum istore_recv(PG_FUNCTION_ARGS);
 Datum istore_send(PG_FUNCTION_ARGS);
 Datum istore_to_json(PG_FUNCTION_ARGS);
 Datum istore_array_add(PG_FUNCTION_ARGS);
-Datum istore_agg_finalfn(PG_FUNCTION_ARGS);
 Datum istore_from_intarray(PG_FUNCTION_ARGS);
 Datum istore_multiply_integer(PG_FUNCTION_ARGS);
 Datum istore_multiply(PG_FUNCTION_ARGS);
@@ -32,12 +31,13 @@ Datum istore_accumulate(PG_FUNCTION_ARGS);
 Datum istore_seed(PG_FUNCTION_ARGS);
 Datum istore_val_larger(PG_FUNCTION_ARGS);
 Datum istore_val_smaller(PG_FUNCTION_ARGS);
-Datum istore_array_sum(Datum *data, int count, bool *nulls);
 Datum istore_compact(PG_FUNCTION_ARGS);
 Datum istore_akeys(PG_FUNCTION_ARGS);
 Datum istore_avals(PG_FUNCTION_ARGS);
 Datum istore_skeys(PG_FUNCTION_ARGS);
 Datum istore_svals(PG_FUNCTION_ARGS);
+Datum istore_sum_transfn(PG_FUNCTION_ARGS);
+Datum istore_sum_finalfn(PG_FUNCTION_ARGS);
 
 Datum bigistore_out(PG_FUNCTION_ARGS);
 Datum bigistore_in(PG_FUNCTION_ARGS);
@@ -45,7 +45,6 @@ Datum bigistore_recv(PG_FUNCTION_ARGS);
 Datum bigistore_send(PG_FUNCTION_ARGS);
 Datum bigistore_to_json(PG_FUNCTION_ARGS);
 Datum bigistore_array_add(PG_FUNCTION_ARGS);
-Datum bigistore_agg_finalfn(PG_FUNCTION_ARGS);
 Datum bigistore_from_intarray(PG_FUNCTION_ARGS);
 Datum bigistore_multiply_integer(PG_FUNCTION_ARGS);
 Datum bigistore_multiply(PG_FUNCTION_ARGS);
@@ -65,12 +64,12 @@ Datum bigistore_accumulate(PG_FUNCTION_ARGS);
 Datum bigistore_seed(PG_FUNCTION_ARGS);
 Datum bigistore_val_larger(PG_FUNCTION_ARGS);
 Datum bigistore_val_smaller(PG_FUNCTION_ARGS);
-Datum bigistore_array_sum(Datum *data, int count, bool *nulls);
 Datum bigistore_compact(PG_FUNCTION_ARGS);
 Datum bigistore_akeys(PG_FUNCTION_ARGS);
 Datum bigistore_avals(PG_FUNCTION_ARGS);
 Datum bigistore_skeys(PG_FUNCTION_ARGS);
 Datum bigistore_svals(PG_FUNCTION_ARGS);
+Datum bigistore_sum_transfn(PG_FUNCTION_ARGS);
 
 /*
  * a single key/value pair
@@ -126,6 +125,8 @@ IStore* istore_apply_datum(IStore *arg1, Datum arg2, PGFunction applyfunc);
 BigIStore* bigistore_merge(BigIStore *arg1, BigIStore *arg2, PGFunction mergefunc, PGFunction miss1func);
 BigIStore* bigistore_apply_datum(BigIStore *arg1, Datum arg2, PGFunction applyfunc);
 
+void istore_copy_and_add_buflen(IStore *istore, BigIStorePair *pairs);
+void bigistore_add_buflen(BigIStore *istore);
 void istore_pairs_init(IStorePairs *pairs, size_t initial_size);
 void istore_pairs_insert(IStorePairs *pairs, int32 key, int32 val);
 int  istore_pairs_cmp(const void *a, const void *b);
