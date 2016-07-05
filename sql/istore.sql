@@ -137,16 +137,26 @@ CREATE FUNCTION svals(istore)
     AS 'istore' ,'istore_svals'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION istore_sum_transfn(internal, istore)
+    RETURNS internal
+    AS 'istore' ,'istore_sum_transfn'
+    LANGUAGE C IMMUTABLE;
+
+CREATE FUNCTION istore_sum_finalfn(internal)
+    RETURNS istore
+    AS 'istore' ,'istore_sum_finalfn'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION istore_to_json(istore)
 RETURNS json
 AS 'istore', 'istore_to_json'
 LANGUAGE C IMMUTABLE STRICT;
 
 CREATE AGGREGATE SUM (
-    sfunc = array_agg_transfn,
+    sfunc = istore_sum_transfn,
     basetype = istore,
     stype = internal,
-    finalfunc = istore_agg_finalfn
+    finalfunc = istore_sum_finalfn
 );
 
 CREATE AGGREGATE MIN(istore) (

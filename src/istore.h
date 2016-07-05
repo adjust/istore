@@ -38,6 +38,8 @@ Datum istore_akeys(PG_FUNCTION_ARGS);
 Datum istore_avals(PG_FUNCTION_ARGS);
 Datum istore_skeys(PG_FUNCTION_ARGS);
 Datum istore_svals(PG_FUNCTION_ARGS);
+Datum istore_sum_transfn(PG_FUNCTION_ARGS);
+Datum istore_sum_finalfn(PG_FUNCTION_ARGS);
 
 Datum bigistore_out(PG_FUNCTION_ARGS);
 Datum bigistore_in(PG_FUNCTION_ARGS);
@@ -126,6 +128,7 @@ IStore* istore_apply_datum(IStore *arg1, Datum arg2, PGFunction applyfunc);
 BigIStore* bigistore_merge(BigIStore *arg1, BigIStore *arg2, PGFunction mergefunc, PGFunction miss1func);
 BigIStore* bigistore_apply_datum(BigIStore *arg1, Datum arg2, PGFunction applyfunc);
 
+void istore_add_buflen(IStore *istore);
 void istore_pairs_init(IStorePairs *pairs, size_t initial_size);
 void istore_pairs_insert(IStorePairs *pairs, int32 key, int32 val);
 int  istore_pairs_cmp(const void *a, const void *b);

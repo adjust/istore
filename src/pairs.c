@@ -5,6 +5,25 @@
 static inline int digits32(int32 num);
 static inline int digits64(int64 num);
 
+
+
+/*
+ * add buflen to istore
+ */
+void
+istore_add_buflen(IStore *istore) 
+{
+    IStorePair  *pairs;
+
+    pairs  = FIRST_PAIR(istore, IStorePair);
+    
+    for(int i = 0; i < istore->len; i++)
+        istore->buflen += digits32(pairs[i].key) + digits32(pairs[i].val) + BUFLEN_OFFSET;   
+
+    if (istore->buflen < 0)
+        elog(ERROR, "istore buffer overflow");
+}
+
 /*
  * adds a key/ value pair for each subnode to IStorePairs
  * due to the nature of the AVL tree the pairs will be ordered by key
