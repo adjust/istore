@@ -146,7 +146,7 @@ istore_sum_up(PG_FUNCTION_ARGS)
     pairs  = FIRST_PAIR(is, IStorePair);
     result = 0;
     index  = 0;
-    
+
     if (is->len == 0)
         PG_RETURN_INT64(0);
 
@@ -154,13 +154,13 @@ istore_sum_up(PG_FUNCTION_ARGS)
     {
         while (index < is->len )
             result = DirectFunctionCall2(int84pl, result, pairs[index++].val);
-    } 
-    else 
+    }
+    else
     {
         end_key = PG_GETARG_INT32(1) > pairs[is->len -1].key ? pairs[is->len -1].key : PG_GETARG_INT32(1);
-        while (index < is->len && pairs[index].key <= end_key)
+        while (pairs[index].key <= end_key)
             result = DirectFunctionCall2(int84pl, result, pairs[index++].val);
-    }    
+    }
 
     PG_RETURN_INT64(result);
 }
