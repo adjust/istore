@@ -3,7 +3,7 @@
 typedef struct{
     size_t  size;
     int     used;
-    IStorePair pairs[0];
+    BigIStorePair pairs[0];
 } ISAggState;
 
 
@@ -16,8 +16,8 @@ istore_sum_transfn(PG_FUNCTION_ARGS)
                    old_context;
     ISAggState       *state;
     IStore        *istore;
-    IStorePair    *pairs1,
-                  *pairs2;
+    IStorePair    *pairs2;
+    BigIStorePair *pairs1;
     int            index1 = 0,
                    index2 = 0;
     
@@ -32,7 +32,7 @@ istore_sum_transfn(PG_FUNCTION_ARGS)
         PG_RETURN_NULL();
 
     if (state == NULL)
-        state =  (ISAggState *) MemoryContextAllocZero(agg_context, sizeof(ISAggState) + 10 * sizeof(IStorePair));
+        state =  (ISAggState *) MemoryContextAllocZero(agg_context, sizeof(ISAggState) + 10 * sizeof(BigIStorePair));
     
     if PG_ARGISNULL(1)
         PG_RETURN_POINTER(state);
@@ -58,17 +58,23 @@ istore_sum_transfn(PG_FUNCTION_ARGS)
             if (state->size < state->used + i)
             {
                 state->size  = state->size * 2 > state->used + i ? state->size * 2 : state->used + i;
-                state        = repalloc(state, sizeof(ISAggState) + state->size * sizeof(IStorePair));
+                state        = repalloc(state, sizeof(ISAggState) + state->size * sizeof(BigIStorePair));
                 pairs1       = state->pairs;
             }
 
             // move data i steps forward from index1 
-            memmove(pairs1+index1+i,pairs1+index1, (state->used - index1) * sizeof(IStorePair));
+            memmove(pairs1+index1+i,pairs1+index1, (state->used - index1) * sizeof(BigIStorePair));
             // copy data 
             state->used += i;
-            memcpy(pairs1+index1,pairs2+index2, i * sizeof(IStorePair) );
-            index1+=i;
-            index2+=i;                    
+            // memcpy(pairs1+index1,pairs2+index2, i * sizeof(IStorePair) );
+            for (int j=0; j<i; j++)
+            {
+                pairs1[index1].key = pairs2[index2].key;
+                pairs1[index1].val = pairs2[index2].val;
+                index1++;
+                index2++;                    
+            }
+
         }
         else
         {
@@ -93,7 +99,14 @@ istore_sum_transfn(PG_FUNCTION_ARGS)
             MemoryContextSwitchTo(old_context);
         }
         state->used += left;
-        memcpy(pairs1+index1,pairs2+index2, left * sizeof(IStorePair) );
+        // memcpy(pairs1+index1,pairs2+index2, left * sizeof(IStorePair) );
+        for (int j=0; j<left; j++)
+        {
+            pairs1[index1].key = pairs2[index2].key;
+            pairs1[index1].val = pairs2[index2].val;
+            index1++;
+            index2++;                    
+        }
     }
 
 
@@ -104,20 +117,20 @@ PG_FUNCTION_INFO_V1(istore_sum_finalfn);
 Datum
 istore_sum_finalfn(PG_FUNCTION_ARGS)
 {
-    ISAggState     *state;
+    ISAggState  *state;
     IStore      *istore;
 
     if( PG_ARGISNULL(0))
         PG_RETURN_NULL();
 
     state       = (ISAggState *) PG_GETARG_POINTER(0);
-    istore      = (IStore *)(palloc0(ISHDRSZ + state->used * sizeof(IStorePair)));
+    istore      = (IStore *)(palloc0(ISHDRSZ + state->used * sizeof(BigIStorePair)));
     istore->len = state->used;
     
-    memcpy(FIRST_PAIR(istore, IStorePair), state->pairs, state->used * sizeof(IStorePair));
+    memcpy(FIRST_PAIR(istore, BigIStorePair), state->pairs, state->used * sizeof(BigIStorePair));
     istore_add_buflen(istore);  
        
-    SET_VARSIZE(istore, ISHDRSZ + state->used * sizeof(IStorePair));
+    SET_VARSIZE(istore, ISHDRSZ + state->used * sizeof(BigIStorePair));
 
     PG_RETURN_POINTER(istore);
 }

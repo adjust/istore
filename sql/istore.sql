@@ -143,7 +143,7 @@ CREATE FUNCTION istore_sum_transfn(internal, istore)
     LANGUAGE C IMMUTABLE;
 
 CREATE FUNCTION istore_sum_finalfn(internal)
-    RETURNS istore
+    RETURNS bigistore
     AS 'istore' ,'istore_sum_finalfn'
     LANGUAGE C IMMUTABLE STRICT;
 
