@@ -92,11 +92,9 @@ istore_sum_transfn(PG_FUNCTION_ARGS)
     {
         if (state->size <= state->used + left)
         {
-            old_context = MemoryContextSwitchTo(agg_context);
             state->size = state->size * 2 > state->used + left ? state->size * 2 : state->used + left;   
-            state       = repalloc(state, sizeof(ISAggState) + state->size * sizeof(IStorePair));
+            state       = repalloc(state, sizeof(ISAggState) + state->size * sizeof(BigIStorePair));
             pairs1      = state->pairs;
-            MemoryContextSwitchTo(old_context);
         }
         state->used += left;
         // memcpy(pairs1+index1,pairs2+index2, left * sizeof(IStorePair) );
@@ -125,8 +123,8 @@ istore_sum_finalfn(PG_FUNCTION_ARGS)
 
     state       = (ISAggState *) PG_GETARG_POINTER(0);
     istore      = (IStore *)(palloc0(ISHDRSZ + state->used * sizeof(BigIStorePair)));
-    istore->len = state->used;
-    
+    istore->len = state->used;   
+
     memcpy(FIRST_PAIR(istore, BigIStorePair), state->pairs, state->used * sizeof(BigIStorePair));
     istore_add_buflen(istore);  
        
