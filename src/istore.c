@@ -447,39 +447,6 @@ istore_from_intarray(PG_FUNCTION_ARGS)
 }
 
 /*
- * sum aggregation final function
- */
-PG_FUNCTION_INFO_V1(istore_agg_finalfn);
-Datum
-istore_agg_finalfn(PG_FUNCTION_ARGS)
-{
-    Datum            result;
-    ArrayBuildState *input;
-    Datum           *data;
-    bool            *nulls;
-    int              count;
-
-    if (PG_ARGISNULL(0))
-        PG_RETURN_NULL();
-    Assert(AggCheckCallContext(fcinfo, NULL));
-
-    input = (ArrayBuildState *) PG_GETARG_POINTER(0);
-    count = input->nelems;
-    nulls = input->dnulls;
-    data  = input->dvalues;
-
-    if (count == 0)
-        PG_RETURN_NULL();
-
-    result = istore_array_sum(data, count, nulls);
-
-    if (result == 0)
-        PG_RETURN_NULL();
-    else
-        return result;
-}
-
-/*
  * istore from key and value intarrays
  * bot arrays must have the same length, NULLs are omitted
  * duplicate keys result in added values

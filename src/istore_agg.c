@@ -131,28 +131,6 @@ istore_sum_transfn(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(state);
 }
 
-PG_FUNCTION_INFO_V1(istore_sum_finalfn);
-Datum
-istore_sum_finalfn(PG_FUNCTION_ARGS)
-{
-    ISAggState  *state;
-    BigIStore   *istore;
-
-    if( PG_ARGISNULL(0))
-        PG_RETURN_NULL();
-
-    state       = (ISAggState *) PG_GETARG_POINTER(0);
-    istore      = (BigIStore *)(palloc0(ISHDRSZ + state->used * sizeof(BigIStorePair)));
-    istore->len = state->used;   
-
-    memcpy(FIRST_PAIR(istore, BigIStorePair), state->pairs, state->used * sizeof(BigIStorePair));
-    bigistore_add_buflen(istore);  
-       
-    SET_VARSIZE(istore, ISHDRSZ + state->used * sizeof(BigIStorePair));
-
-    PG_RETURN_POINTER(istore);
-}
-
 /*
  * SUM(bigistore) aggregate funtion
  */
@@ -266,106 +244,31 @@ bigistore_sum_transfn(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(state);
 }
 
-/*
- * summarize an array of istores
- */
-Datum
-istore_array_sum(Datum *data, int count, bool *nulls)
-{
-    BigIStore       *out;
-    IStore          *istore;
-    AvlNode         *tree;
-    IStorePair      *payload;
-    BigIStorePairs  *pairs;
-    AvlNode         *position;
-    int              i,
-                     n,
-                     index;
-
-
-    tree = NULL;
-    n    = 0;
-
-    for (i = 0; i < count; ++i)
-    {
-        if (nulls[i])
-            continue;
-
-        istore = (IStore *) data[i];
-        payload = FIRST_PAIR(istore, IStorePair);
-        for (index = 0; index < istore->len; ++index)
-        {
-            position = is_tree_find(payload[index].key, tree);
-            if (position == NULL)
-            {
-                tree = is_tree_insert(tree, payload[index].key, payload[index].val);
-                ++n;
-            }
-            else{
-                position->value += payload[index].val;
-            }
-        }
-    }
-
-    if (n == 0)
-        return 0;
-    pairs = palloc0(sizeof *pairs);
-    bigistore_pairs_init(pairs, n);
-    bigistore_tree_to_pairs(tree, pairs);
-    istore_make_empty(tree);
-
-    FINALIZE_BIGISTORE(out, pairs);
-    PG_RETURN_POINTER(out);
-}
 
 /*
- * summarize an array of bigistores
+ * Final function for SUM(istore/bigistore)
+ * Both transition function return the same transition type 
+ * and both Aggregates return bigistore so only one finalfunction
+ * is needed here
  */
+PG_FUNCTION_INFO_V1(istore_sum_finalfn);
 Datum
-bigistore_array_sum(Datum *data, int count, bool *nulls)
+istore_sum_finalfn(PG_FUNCTION_ARGS)
 {
-    BigIStore       *out;
-    BigIStore       *istore;
-    AvlNode         *tree;
-    BigIStorePair   *payload;
-    BigIStorePairs  *pairs;
-    AvlNode         *position;
-    int              i,
-                     n,
-                     index;
+    ISAggState  *state;
+    BigIStore   *istore;
 
+    if( PG_ARGISNULL(0))
+        PG_RETURN_NULL();
 
-    tree = NULL;
-    n    = 0;
+    state       = (ISAggState *) PG_GETARG_POINTER(0);
+    istore      = (BigIStore *)(palloc0(ISHDRSZ + state->used * sizeof(BigIStorePair)));
+    istore->len = state->used;   
 
-    for (i = 0; i < count; ++i)
-    {
-        if (nulls[i])
-            continue;
+    memcpy(FIRST_PAIR(istore, BigIStorePair), state->pairs, state->used * sizeof(BigIStorePair));
+    bigistore_add_buflen(istore);  
+       
+    SET_VARSIZE(istore, ISHDRSZ + state->used * sizeof(BigIStorePair));
 
-        istore = (BigIStore *) data[i];
-        payload = FIRST_PAIR(istore, BigIStorePair);
-        for (index = 0; index < istore->len; ++index)
-        {
-            position = is_tree_find(payload[index].key, tree);
-            if (position == NULL)
-            {
-                tree = is_tree_insert(tree, payload[index].key, payload[index].val);
-                ++n;
-            }
-            else{
-                position->value = DirectFunctionCall2(int8pl, position->value, payload[index].val);
-            }
-        }
-    }
-
-    if (n == 0)
-        return 0;
-    pairs = palloc0(sizeof *pairs);
-    bigistore_pairs_init(pairs, n);
-    bigistore_tree_to_pairs(tree, pairs);
-    istore_make_empty(tree);
-
-    FINALIZE_BIGISTORE(out, pairs);
-    PG_RETURN_POINTER(out);
+    PG_RETURN_POINTER(istore);
 }

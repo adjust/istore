@@ -67,11 +67,6 @@ CREATE FUNCTION bigistore(integer[])
     AS 'istore', 'bigistore_from_intarray'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION bigistore_agg_finalfn(internal)
-    RETURNS bigistore
-    AS 'istore'
-    LANGUAGE C IMMUTABLE STRICT;
-
 CREATE FUNCTION sum_up(bigistore)
     RETURNS bigint
     AS 'istore', 'bigistore_sum_up'

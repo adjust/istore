@@ -12,7 +12,6 @@ Datum istore_recv(PG_FUNCTION_ARGS);
 Datum istore_send(PG_FUNCTION_ARGS);
 Datum istore_to_json(PG_FUNCTION_ARGS);
 Datum istore_array_add(PG_FUNCTION_ARGS);
-Datum istore_agg_finalfn(PG_FUNCTION_ARGS);
 Datum istore_from_intarray(PG_FUNCTION_ARGS);
 Datum istore_multiply_integer(PG_FUNCTION_ARGS);
 Datum istore_multiply(PG_FUNCTION_ARGS);
@@ -32,7 +31,6 @@ Datum istore_accumulate(PG_FUNCTION_ARGS);
 Datum istore_seed(PG_FUNCTION_ARGS);
 Datum istore_val_larger(PG_FUNCTION_ARGS);
 Datum istore_val_smaller(PG_FUNCTION_ARGS);
-Datum istore_array_sum(Datum *data, int count, bool *nulls);
 Datum istore_compact(PG_FUNCTION_ARGS);
 Datum istore_akeys(PG_FUNCTION_ARGS);
 Datum istore_avals(PG_FUNCTION_ARGS);
@@ -47,7 +45,6 @@ Datum bigistore_recv(PG_FUNCTION_ARGS);
 Datum bigistore_send(PG_FUNCTION_ARGS);
 Datum bigistore_to_json(PG_FUNCTION_ARGS);
 Datum bigistore_array_add(PG_FUNCTION_ARGS);
-Datum bigistore_agg_finalfn(PG_FUNCTION_ARGS);
 Datum bigistore_from_intarray(PG_FUNCTION_ARGS);
 Datum bigistore_multiply_integer(PG_FUNCTION_ARGS);
 Datum bigistore_multiply(PG_FUNCTION_ARGS);
@@ -67,12 +64,12 @@ Datum bigistore_accumulate(PG_FUNCTION_ARGS);
 Datum bigistore_seed(PG_FUNCTION_ARGS);
 Datum bigistore_val_larger(PG_FUNCTION_ARGS);
 Datum bigistore_val_smaller(PG_FUNCTION_ARGS);
-Datum bigistore_array_sum(Datum *data, int count, bool *nulls);
 Datum bigistore_compact(PG_FUNCTION_ARGS);
 Datum bigistore_akeys(PG_FUNCTION_ARGS);
 Datum bigistore_avals(PG_FUNCTION_ARGS);
 Datum bigistore_skeys(PG_FUNCTION_ARGS);
 Datum bigistore_svals(PG_FUNCTION_ARGS);
+Datum bigistore_sum_transfn(PG_FUNCTION_ARGS);
 
 /*
  * a single key/value pair
