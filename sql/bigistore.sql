@@ -152,12 +152,16 @@ RETURNS json
 AS 'istore', 'bigistore_to_json'
 LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION istore_sum_transfn(internal, bigistore)
+    RETURNS internal
+    AS 'istore' ,'bigistore_sum_transfn'
+    LANGUAGE C IMMUTABLE;
 
 CREATE AGGREGATE SUM (
-    sfunc = array_agg_transfn,
+    sfunc = istore_sum_transfn,
     basetype = bigistore,
     stype = internal,
-    finalfunc = bigistore_agg_finalfn
+    finalfunc = istore_sum_finalfn
 );
 
 CREATE AGGREGATE MIN(bigistore) (

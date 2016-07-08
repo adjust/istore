@@ -11,14 +11,14 @@ static inline int digits64(int64 num);
  * add buflen to istore
  */
 void
-istore_add_buflen(IStore *istore) 
+bigistore_add_buflen(BigIStore *istore) 
 {
-    IStorePair  *pairs;
+    BigIStorePair  *pairs;
 
-    pairs  = FIRST_PAIR(istore, IStorePair);
+    pairs  = FIRST_PAIR(istore, BigIStorePair);
     
     for(int i = 0; i < istore->len; i++)
-        istore->buflen += digits32(pairs[i].key) + digits32(pairs[i].val) + BUFLEN_OFFSET;   
+        istore->buflen += digits32(pairs[i].key) + digits64(pairs[i].val) + BUFLEN_OFFSET;   
 
     if (istore->buflen < 0)
         elog(ERROR, "istore buffer overflow");
