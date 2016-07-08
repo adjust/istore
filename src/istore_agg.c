@@ -12,9 +12,8 @@ Datum
 istore_sum_transfn(PG_FUNCTION_ARGS)
 {
     
-    MemoryContext  agg_context,
-                   old_context;
-    ISAggState       *state;
+    MemoryContext  agg_context;
+    ISAggState    *state;
     IStore        *istore;
     IStorePair    *pairs2;
     BigIStorePair *pairs1;
@@ -24,12 +23,12 @@ istore_sum_transfn(PG_FUNCTION_ARGS)
 
     if (!AggCheckCallContext(fcinfo, &agg_context))
         elog(ERROR, "aggregate function called in non-aggregate context");
-
     
+    if (PG_ARGISNULL(1) && PG_ARGISNULL(0))
+        PG_RETURN_NULL();
+
     state       = PG_ARGISNULL(0) ? NULL : (ISAggState *) PG_GETARG_POINTER(0);
 
-    if (PG_ARGISNULL(1) && state == NULL)
-        PG_RETURN_NULL();
 
     if (state == NULL)
         state =  (ISAggState *) MemoryContextAllocZero(agg_context, sizeof(ISAggState) + 10 * sizeof(BigIStorePair));
@@ -79,26 +78,43 @@ istore_sum_transfn(PG_FUNCTION_ARGS)
         else
         {
             // identity add
-            pairs1[index1].val += pairs2[index2].val;
-                    
+            // pairs1[index1].val += pairs2[index2].val;
+            /*
+             * Overflow check.  If the inputs are of different signs then their sum
+             * cannot overflow.  If the inputs are of the same sign, their sum had
+             * better be that sign too.
+             */
+            #define SAMESIGN(a,b)   (((a) < 0) == ((b) < 0))
+            
+            if (SAMESIGN(pairs1[index1].val, pairs2[index2].val)){
+                pairs1[index1].val += pairs2[index2].val;
+                if(!SAMESIGN(pairs1[index1].val, pairs2[index2].val))
+                    ereport(ERROR,
+                            (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
+                            errmsg("bigint out of range")));
+            }
+            else
+            {
+                pairs1[index1].val += pairs2[index2].val;        
+            }
             ++index1;
             ++index2;
         }
     }
 
     // append any leftovers
-    int left = istore->len - index2;
-    if ( left > 0 )
+    int i = istore->len - index2;
+    if ( i > 0 )
     {
-        if (state->size <= state->used + left)
+        if (state->size <= state->used + i)
         {
-            state->size = state->size * 2 > state->used + left ? state->size * 2 : state->used + left;   
+            state->size = state->size * 2 > state->used + i ? state->size * 2 : state->used + i;   
             state       = repalloc(state, sizeof(ISAggState) + state->size * sizeof(BigIStorePair));
             pairs1      = state->pairs;
         }
-        state->used += left;
-        // memcpy(pairs1+index1,pairs2+index2, left * sizeof(IStorePair) );
-        for (int j=0; j<left; j++)
+        state->used += i;
+        // memcpy(pairs1+index1,pairs2+index2, i * sizeof(IStorePair) );
+        for (int j=0; j<i; j++)
         {
             pairs1[index1].key = pairs2[index2].key;
             pairs1[index1].val = pairs2[index2].val;
