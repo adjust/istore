@@ -41,15 +41,16 @@ istore_sum_transfn(PG_FUNCTION_ARGS)
     pairs2  = FIRST_PAIR(istore, IStorePair);
     while (index1 < state->used && index2 < istore->len)
     {
-        if (pairs1[index1].key < pairs2[index2].key)
+        if (pairs1->key < pairs2->key)
         {
             // do nothing keep state
+            ++pairs1;
             ++index1;
         }
-        else if (pairs1[index1].key > pairs2[index2].key)
+        else if (pairs1->key > pairs2->key)
         {
             int i = 1;
-            while(index2 + i < istore->len && pairs1[index1].key > pairs2[index2 + i].key){
+            while(index2 + i < istore->len && pairs1->key > pairs2[i].key){
                 ++i;
             }
 
@@ -58,21 +59,23 @@ istore_sum_transfn(PG_FUNCTION_ARGS)
             {
                 state->size  = state->size * 2 > state->used + i ? state->size * 2 : state->used + i;
                 state        = repalloc(state, sizeof(ISAggState) + state->size * sizeof(BigIStorePair));
-                pairs1       = state->pairs;
+                pairs1       = state->pairs+index1;
             }
 
             // move data i steps forward from index1 
-            memmove(pairs1+index1+i,pairs1+index1, (state->used - index1) * sizeof(BigIStorePair));
+            memmove(pairs1+i,pairs1, (state->used - index1) * sizeof(BigIStorePair));
             // copy data 
             state->used += i;
             // memcpy(pairs1+index1,pairs2+index2, i * sizeof(IStorePair) );
             for (int j=0; j<i; j++)
             {
-                pairs1[index1].key = pairs2[index2].key;
-                pairs1[index1].val = pairs2[index2].val;
-                index1++;
-                index2++;                    
+                pairs1->key = pairs2->key;
+                pairs1->val = pairs2->val;
+                ++pairs1;                    
+                ++pairs2;                    
             }
+            index1+=i;
+            index2+=i;
 
         }
         else
@@ -86,19 +89,21 @@ istore_sum_transfn(PG_FUNCTION_ARGS)
              */
             #define SAMESIGN(a,b)   (((a) < 0) == ((b) < 0))
             
-            if (SAMESIGN(pairs1[index1].val, pairs2[index2].val)){
-                pairs1[index1].val += pairs2[index2].val;
-                if(!SAMESIGN(pairs1[index1].val, pairs2[index2].val))
+            if (SAMESIGN(pairs1->val, pairs2->val)){
+                pairs1->val += pairs2->val;
+                if(!SAMESIGN(pairs1->val, pairs2->val))
                     ereport(ERROR,
                             (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
                             errmsg("bigint out of range")));
             }
             else
             {
-                pairs1[index1].val += pairs2[index2].val;        
+                pairs1->val += pairs2->val;        
             }
             ++index1;
             ++index2;
+            ++pairs1;                    
+            ++pairs2;                    
         }
     }
 
@@ -110,16 +115,16 @@ istore_sum_transfn(PG_FUNCTION_ARGS)
         {
             state->size = state->size * 2 > state->used + i ? state->size * 2 : state->used + i;   
             state       = repalloc(state, sizeof(ISAggState) + state->size * sizeof(BigIStorePair));
-            pairs1      = state->pairs;
+            pairs1      = state->pairs+index1;
         }
         state->used += i;
         // memcpy(pairs1+index1,pairs2+index2, i * sizeof(IStorePair) );
         for (int j=0; j<i; j++)
         {
-            pairs1[index1].key = pairs2[index2].key;
-            pairs1[index1].val = pairs2[index2].val;
-            index1++;
-            index2++;                    
+            pairs1->key = pairs2->key;
+            pairs1->val = pairs2->val;
+            ++pairs1;
+            ++pairs2;                    
         }
     }
 
