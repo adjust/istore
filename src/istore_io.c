@@ -129,25 +129,23 @@ istore_to_json(PG_FUNCTION_ARGS)
 {
     IStore         *is = PG_GETARG_IS(0);
     IStorePair     *pairs;
-    char           *buf;
     int             i;
     StringInfoData  dst;
 
     if (is->len == 0)
         PG_RETURN_TEXT_P(cstring_to_text_with_len("{}", 2));
 
-    buf = palloc(sizeof(char) * 12);
     pairs   = FIRST_PAIR(is, IStorePair);
     initStringInfo(&dst);
     appendStringInfoChar(&dst, '{');
 
     for (i = 0; i < is->len; i++)
     {
+        char            buf[12];
         appendStringInfoString(&dst, "\"");
         pg_ltoa(pairs[i].key, buf);
         appendStringInfoString(&dst, buf);
-        appendStringInfoString(&dst, "\"");
-        appendStringInfoString(&dst, ": ");
+        appendStringInfoString(&dst, "\": ");
         pg_ltoa(pairs[i].val, buf);
         appendStringInfoString(&dst, buf);
         if (i + 1 != is->len)
@@ -282,25 +280,24 @@ bigistore_to_json(PG_FUNCTION_ARGS)
 {
     BigIStore      *is = PG_GETARG_BIGIS(0);
     BigIStorePair  *pairs;
-    char           *buf;
     int             i;
     StringInfoData  dst;
 
     if (is->len == 0)
         PG_RETURN_TEXT_P(cstring_to_text_with_len("{}", 2));
 
-    buf = palloc(sizeof(char) * (25+1));
     pairs   = FIRST_PAIR(is, BigIStorePair);
     initStringInfo(&dst);
     appendStringInfoChar(&dst, '{');
 
     for (i = 0; i < is->len; i++)
     {
+        char            buf[25 + 1];
+
         appendStringInfoString(&dst, "\"");
         pg_ltoa(pairs[i].key, buf);
         appendStringInfoString(&dst, buf);
-        appendStringInfoString(&dst, "\"");
-        appendStringInfoString(&dst, ": ");
+        appendStringInfoString(&dst, "\": ");
         pg_lltoa(pairs[i].val, buf);
         appendStringInfoString(&dst, buf);
         if (i + 1 != is->len)
