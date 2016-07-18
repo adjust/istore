@@ -17,6 +17,49 @@ RETURNS SETOF record
 AS 'istore','bigistore_each'
 LANGUAGE C STRICT IMMUTABLE;
 
+CREATE FUNCTION join(IN a bigistore, IN b bigistore,
+    OUT key integer,
+    OUT value1 bigint,
+    OUT value2 bigint
+    )
+RETURNS SETOF record
+AS 'istore','join'
+LANGUAGE C STRICT IMMUTABLE;
+
+CREATE FUNCTION join(IN a bigistore, IN b bigistore, IN c bigistore,
+    OUT key integer,
+    OUT value1 bigint,
+    OUT value2 bigint,
+    OUT value3 bigint
+    )
+RETURNS SETOF record
+AS 'istore','join'
+LANGUAGE C STRICT IMMUTABLE;
+
+CREATE FUNCTION join(IN a bigistore, IN b bigistore, IN c bigistore, IN d bigistore,
+    OUT key integer,
+    OUT value1 bigint,
+    OUT value2 bigint,
+    OUT value3 bigint,
+    OUT value4 bigint
+    )
+RETURNS SETOF record
+AS 'istore','join'
+LANGUAGE C STRICT IMMUTABLE;
+
+CREATE FUNCTION join(IN a bigistore, IN b bigistore, IN c bigistore, IN d bigistore, IN e bigistore,
+    OUT key integer,
+    OUT value1 bigint,
+    OUT value2 bigint,
+    OUT value3 bigint,
+    OUT value4 bigint,
+    OUT value5 bigint
+    )
+RETURNS SETOF record
+AS 'istore','join'
+LANGUAGE C STRICT IMMUTABLE;
+
+
 CREATE FUNCTION compact(bigistore)
     RETURNS bigistore
     AS 'istore', 'bigistore_compact'
