@@ -157,7 +157,7 @@ bigistore_sum_up(PG_FUNCTION_ARGS)
         end_key = PG_GETARG_INT32(1) > pairs[is->len -1].key ? pairs[is->len -1].key : PG_GETARG_INT32(1);
         while (index < is->len && pairs[index].key <= end_key)
             result = DirectFunctionCall2(int8pl, result, pairs[index++].val);
-    }    
+    }
 
     PG_RETURN_INT64(result);
 }
@@ -668,6 +668,147 @@ bigistore_each(PG_FUNCTION_ARGS)
 
     SRF_RETURN_DONE(funcctx);
 }
+
+#define MAX_IS_JOIN_ALLOWED 5
+
+/* join_fctx structure kept between SRF calls */
+typedef struct join_fctx
+{
+    int32           num; /* number of istores */
+    int32           len[MAX_IS_JOIN_ALLOWED]; /* len of istores */
+    int32           off[MAX_IS_JOIN_ALLOWED]; /* offset between istores in pairs */
+    BigIStorePair   pairs[0];
+} join_fctx;
+
+/*
+ * return values per key  for multiple bigistores as a set
+ */
+PG_FUNCTION_INFO_V1(join);
+Datum
+join(PG_FUNCTION_ARGS)
+{
+
+    FuncCallContext *funcctx;
+    BigIStore       *is[MAX_IS_JOIN_ALLOWED];
+    int              numpairs=0;
+    MemoryContext    oldcontext;
+    join_fctx       *fctx;
+
+    if (PG_NARGS() > MAX_IS_JOIN_ALLOWED)
+        elog(ERROR, "not more than %d istores can be joined", MAX_IS_JOIN_ALLOWED);
+
+    /* stuff done only on the first call of the function */
+    if (SRF_IS_FIRSTCALL())
+    {
+        /* get all pairs */
+        for(int n=0; n<PG_NARGS(); n++){
+            is[n]      = PG_GETARG_BIGIS(n);
+            numpairs  += is[n]->len;
+        }
+
+        /* create a function context for cross-call persistence */
+        funcctx = SRF_FIRSTCALL_INIT();
+
+        /* switch to memory context appropriate for multiple function calls */
+        oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+        fctx    = (join_fctx *) palloc0(sizeof(join_fctx) + numpairs * sizeof(BigIStorePair));
+
+        fctx->num      = PG_NARGS();
+
+        /* copy pairs into fctx->pairs and setup offsets and len*/
+        int off = 0;
+        for(int n=0; n<PG_NARGS(); n++){
+            fctx->len[n] = is[n]->len;
+            fctx->off[n] = off;
+            memcpy(fctx->pairs + off, FIRST_PAIR(is[n], BigIStorePair), is[n]->len * sizeof(BigIStorePair));
+            off += is[n]->len;
+        }
+
+        funcctx->user_fctx = fctx;
+
+        if (fcinfo)
+        {
+            TupleDesc   tupdesc;
+
+            /* Build a tuple descriptor for our result type */
+            if (get_call_result_type(fcinfo, NULL, &tupdesc) != TYPEFUNC_COMPOSITE)
+                elog(ERROR, "return type must be a row type");
+
+            funcctx->tuple_desc = BlessTupleDesc(tupdesc);
+        }
+
+        MemoryContextSwitchTo(oldcontext);
+    }
+
+
+    /* per call stuff */
+
+    funcctx = SRF_PERCALL_SETUP();
+    fctx    = (join_fctx *) funcctx->user_fctx;
+
+    HeapTuple   tuple;
+    Datum       res,
+                dvalues[MAX_IS_JOIN_ALLOWED+1];
+    bool        nulls[MAX_IS_JOIN_ALLOWED+1];
+    memset(nulls,false,(MAX_IS_JOIN_ALLOWED+1) * sizeof(bool));
+
+    int32 current_key;
+
+    int  ll = 0;
+    nulls[0] = true;  /* no key set yet */
+
+    for(int n = 0; n < fctx->num; n++){
+        ll += fctx->len[n];
+        if (fctx->off[n] >= ll){
+            nulls[n+1] = true;
+            continue;
+        }
+        else
+        {
+            /* set the first valid key as the working key */
+            if (nulls[0]){
+                nulls[0] = false;
+                current_key = fctx->pairs[fctx->off[n]].key;
+            }
+        }
+
+        /* we key matches take it */
+        if(current_key == fctx->pairs[fctx->off[n]].key)
+        {
+            dvalues[n+1] = Int64GetDatum(fctx->pairs[fctx->off[n]].val);
+            fctx->off[n]++;
+        }
+        /* if current_key is to big, all already set non null values must be reset */
+        else if(current_key > fctx->pairs[fctx->off[n]].key)
+        {
+            current_key = fctx->pairs[fctx->off[n]].key;
+            dvalues[n+1]  = Int64GetDatum(fctx->pairs[fctx->off[n]].val);
+            fctx->off[n]++;
+            /* set all we have seen so far to NULL*/
+            for(int j = 0; j < n; j++)
+                if(!nulls[j+1])
+                {
+                    fctx->off[j]--;
+                    nulls[j+1] = true;
+                }
+        }
+        else /* just wait for the next round this one is null*/
+        {
+            nulls[n+1] = true;
+        }
+    }
+    /* if we did not find any key we're done */
+    if(nulls[0])
+    {
+        SRF_RETURN_DONE(funcctx);
+    }
+
+    dvalues[0] = Int32GetDatum(current_key);
+    tuple      = heap_form_tuple(funcctx->tuple_desc, dvalues, nulls);
+    res        = HeapTupleGetDatum(tuple);
+    SRF_RETURN_NEXT(funcctx, PointerGetDatum(res));
+}
+
 
 /*
  * fill missing keys in a range
