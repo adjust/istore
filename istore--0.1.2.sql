@@ -56,7 +56,7 @@ CREATE TYPE bigistore (
     SEND    = bigistore_send,
     STORAGE = EXTENDED
 );
- 
+
 --source file sql/istore.sql
 
 CREATE FUNCTION exist(istore, integer)
@@ -196,9 +196,19 @@ CREATE FUNCTION istore_sum_transfn(internal, istore)
     AS 'istore' ,'istore_sum_transfn'
     LANGUAGE C IMMUTABLE;
 
-CREATE FUNCTION istore_sum_finalfn(internal)
+CREATE FUNCTION istore_min_transfn(internal, istore)
+    RETURNS internal
+    AS 'istore'
+    LANGUAGE C IMMUTABLE;
+
+CREATE FUNCTION istore_max_transfn(internal, istore)
+    RETURNS internal
+    AS 'istore'
+    LANGUAGE C IMMUTABLE;
+
+CREATE FUNCTION istore_agg_finalfn(internal)
     RETURNS bigistore
-    AS 'istore' ,'istore_sum_finalfn'
+    AS 'istore' ,'istore_agg_finalfn_pairs'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION istore_to_json(istore)
@@ -210,17 +220,21 @@ CREATE AGGREGATE SUM (
     sfunc = istore_sum_transfn,
     basetype = istore,
     stype = internal,
-    finalfunc = istore_sum_finalfn
+    finalfunc = istore_agg_finalfn
 );
 
-CREATE AGGREGATE MIN(istore) (
-    sfunc = istore_val_smaller,
-    stype = istore
+CREATE AGGREGATE MIN (
+    sfunc = istore_min_transfn,
+    basetype = istore,
+    stype = internal,
+    finalfunc = istore_agg_finalfn
 );
 
-CREATE AGGREGATE MAX(istore) (
-    sfunc = istore_val_larger,
-    stype = istore
+CREATE AGGREGATE MAX (
+    sfunc = istore_max_transfn,
+    basetype = istore,
+    stype = internal,
+    finalfunc = istore_agg_finalfn
 );
 
 CREATE OPERATOR -> (
@@ -308,7 +322,7 @@ AS
     FUNCTION 3 gin_extract_istore_key_query(internal, internal, int2, internal, internal),
     FUNCTION 4 gin_consistent_istore_key(internal, int2, internal, int4, internal, internal),
     STORAGE  integer;
- 
+
 --source file sql/casts.sql
 
 CREATE FUNCTION istore(bigistore)
@@ -323,7 +337,7 @@ CREATE FUNCTION bigistore(istore)
 
 CREATE CAST (istore as bigistore) WITH FUNCTION bigistore(istore) AS IMPLICIT;
 CREATE CAST (bigistore as istore) WITH FUNCTION istore(bigistore) AS ASSIGNMENT;
- 
+
 --source file sql/bigistore.sql
 
 CREATE FUNCTION exist(bigistore, integer)
@@ -478,21 +492,35 @@ CREATE FUNCTION istore_sum_transfn(internal, bigistore)
     AS 'istore' ,'bigistore_sum_transfn'
     LANGUAGE C IMMUTABLE;
 
+CREATE FUNCTION istore_min_transfn(internal, bigistore)
+    RETURNS internal
+    AS 'istore' ,'bigistore_min_transfn'
+    LANGUAGE C IMMUTABLE;
+
+CREATE FUNCTION istore_max_transfn(internal, bigistore)
+    RETURNS internal
+    AS 'istore' ,'bigistore_max_transfn'
+    LANGUAGE C IMMUTABLE;
+
 CREATE AGGREGATE SUM (
     sfunc = istore_sum_transfn,
     basetype = bigistore,
     stype = internal,
-    finalfunc = istore_sum_finalfn
+    finalfunc = istore_agg_finalfn
 );
 
-CREATE AGGREGATE MIN(bigistore) (
-    sfunc = istore_val_smaller,
-    stype = bigistore
+CREATE AGGREGATE MIN (
+    sfunc = istore_min_transfn,
+    basetype = bigistore,
+    stype = internal,
+    finalfunc = istore_agg_finalfn
 );
 
-CREATE AGGREGATE MAX(bigistore) (
-    sfunc = istore_val_larger,
-    stype = bigistore
+CREATE AGGREGATE MAX (
+    sfunc = istore_max_transfn,
+    basetype = bigistore,
+    stype = internal,
+    finalfunc = istore_agg_finalfn
 );
 
 CREATE OPERATOR -> (
@@ -569,4 +597,4 @@ AS
     FUNCTION 3 gin_extract_istore_key_query(internal, internal, int2, internal, internal),
     FUNCTION 4 gin_consistent_istore_key(internal, int2, internal, int4, internal, internal),
     STORAGE  integer;
- 
+

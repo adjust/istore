@@ -152,21 +152,35 @@ CREATE FUNCTION istore_sum_transfn(internal, bigistore)
     AS 'istore' ,'bigistore_sum_transfn'
     LANGUAGE C IMMUTABLE;
 
+CREATE FUNCTION istore_min_transfn(internal, bigistore)
+    RETURNS internal
+    AS 'istore' ,'bigistore_min_transfn'
+    LANGUAGE C IMMUTABLE;
+
+CREATE FUNCTION istore_max_transfn(internal, bigistore)
+    RETURNS internal
+    AS 'istore' ,'bigistore_max_transfn'
+    LANGUAGE C IMMUTABLE;
+
 CREATE AGGREGATE SUM (
     sfunc = istore_sum_transfn,
     basetype = bigistore,
     stype = internal,
-    finalfunc = istore_sum_finalfn
+    finalfunc = istore_agg_finalfn
 );
 
-CREATE AGGREGATE MIN(bigistore) (
-    sfunc = istore_val_smaller,
-    stype = bigistore
+CREATE AGGREGATE MIN (
+    sfunc = istore_min_transfn,
+    basetype = bigistore,
+    stype = internal,
+    finalfunc = istore_agg_finalfn
 );
 
-CREATE AGGREGATE MAX(bigistore) (
-    sfunc = istore_val_larger,
-    stype = bigistore
+CREATE AGGREGATE MAX (
+    sfunc = istore_max_transfn,
+    basetype = bigistore,
+    stype = internal,
+    finalfunc = istore_agg_finalfn
 );
 
 CREATE OPERATOR -> (

@@ -19,6 +19,408 @@ state_init(MemoryContext agg_context)
 }
 
 /*
+ * MIN(istore) aggregate funtion
+ */
+PG_FUNCTION_INFO_V1(istore_min_transfn);
+Datum
+istore_min_transfn(PG_FUNCTION_ARGS)
+{
+
+    MemoryContext  agg_context;
+    ISAggState    *state;
+    IStore        *istore;
+    IStorePair    *pairs2;
+    BigIStorePair *pairs1;
+    int            index1 = 0,
+                   index2 = 0;
+
+
+    if (!AggCheckCallContext(fcinfo, &agg_context))
+        elog(ERROR, "aggregate function called in non-aggregate context");
+
+    if (PG_ARGISNULL(1) && PG_ARGISNULL(0))
+        PG_RETURN_NULL();
+
+    state = PG_ARGISNULL(0) ? state_init(agg_context) : (ISAggState *) PG_GETARG_POINTER(0);
+
+    if (PG_ARGISNULL(1))
+        PG_RETURN_POINTER(state);
+
+    istore = PG_GETARG_IS(1);
+    pairs1 = state->pairs;
+    pairs2 = FIRST_PAIR(istore, IStorePair);
+    while (index1 < state->used && index2 < istore->len)
+    {
+        if (pairs1->key < pairs2->key)
+        {
+            // do nothing keep state
+            ++pairs1;
+            ++index1;
+        }
+        else if (pairs1->key > pairs2->key)
+        {
+            int i = 1;
+            while(index2 + i < istore->len && pairs1->key > pairs2[i].key){
+                ++i;
+            }
+
+            // ensure array is big enough
+            if (state->size < state->used + i)
+            {
+                state->size  = state->size * 2 > state->used + i ? state->size * 2 : state->used + i;
+                state        = repalloc(state, sizeof(ISAggState) + state->size * sizeof(BigIStorePair));
+                pairs1       = state->pairs+index1;
+            }
+
+            // move data i steps forward from index1
+            memmove(pairs1+i,pairs1, (state->used - index1) * sizeof(BigIStorePair));
+            // copy data
+            state->used += i;
+            // we can't use memcpy here as pairs1 and pairs2 differ in type
+            for (int j=0; j<i; j++)
+            {
+                pairs1->key = pairs2->key;
+                pairs1->val = pairs2->val;
+                ++pairs1;
+                ++pairs2;
+            }
+            index1+=i;
+            index2+=i;
+
+        }
+        else
+        {
+            // identical keys add values
+            pairs1->val = MIN(pairs2->val, pairs1->val);
+
+            ++index1;
+            ++index2;
+            ++pairs1;
+            ++pairs2;
+        }
+    }
+
+    // append any leftovers
+    int i = istore->len - index2;
+    if ( i > 0 )
+    {
+        if (state->size <= state->used + i)
+        {
+            state->size = state->size * 2 > state->used + i ? state->size * 2 : state->used + i;
+            state       = repalloc(state, sizeof(ISAggState) + state->size * sizeof(BigIStorePair));
+            pairs1      = state->pairs+index1;
+        }
+        state->used += i;
+        // we can't use memcpy here as pairs1 and pairs2 differ in type
+        for (int j=0; j<i; j++)
+        {
+            pairs1->key = pairs2->key;
+            pairs1->val = pairs2->val;
+            ++pairs1;
+            ++pairs2;
+        }
+    }
+
+    PG_RETURN_POINTER(state);
+}
+
+/*
+ * MIN(bigistore) aggregate funtion
+ */
+PG_FUNCTION_INFO_V1(bigistore_min_transfn);
+Datum
+bigistore_min_transfn(PG_FUNCTION_ARGS)
+{
+
+    MemoryContext  agg_context;
+    ISAggState    *state;
+    BigIStore     *istore;
+    BigIStorePair *pairs1,
+                  *pairs2;
+    int            index1 = 0,
+                   index2 = 0;
+
+
+    if (!AggCheckCallContext(fcinfo, &agg_context))
+        elog(ERROR, "aggregate function called in non-aggregate context");
+
+    if (PG_ARGISNULL(1) && PG_ARGISNULL(0))
+        PG_RETURN_NULL();
+
+    state       = PG_ARGISNULL(0) ? state_init(agg_context) : (ISAggState *) PG_GETARG_POINTER(0);
+
+    if PG_ARGISNULL(1)
+        PG_RETURN_POINTER(state);
+
+    istore  = PG_GETARG_BIGIS(1);
+    pairs1  = state->pairs;
+    pairs2  = FIRST_PAIR(istore, BigIStorePair);
+    while (index1 < state->used && index2 < istore->len)
+    {
+        if (pairs1->key < pairs2->key)
+        {
+            // do nothing keep state
+            ++pairs1;
+            ++index1;
+        }
+        else if (pairs1->key > pairs2->key)
+        {
+            int i = 1;
+            while(index2 + i < istore->len && pairs1->key > pairs2[i].key){
+                ++i;
+            }
+
+            // ensure array is big enough
+            if (state->size < state->used + i)
+            {
+                state->size  = state->size * 2 > state->used + i ? state->size * 2 : state->used + i;
+                state        = repalloc(state, sizeof(ISAggState) + state->size * sizeof(BigIStorePair));
+                pairs1       = state->pairs+index1;
+            }
+
+            // move data i steps forward from index1
+            memmove(pairs1+i,pairs1, (state->used - index1) * sizeof(BigIStorePair));
+
+            // copy data
+            state->used += i;
+            memcpy(pairs1,pairs2, i * sizeof(BigIStorePair) );
+            pairs1 += i;
+            pairs2 += i;
+            index1+=i;
+            index2+=i;
+
+        }
+        else
+        {
+            // identical keys add values
+            pairs1->val = MIN(pairs1->val, pairs2->val);
+
+            ++index1;
+            ++index2;
+            ++pairs1;
+            ++pairs2;
+        }
+    }
+
+    // append any leftovers
+    int i = istore->len - index2;
+    if ( i > 0 )
+    {
+        if (state->size <= state->used + i)
+        {
+            state->size = state->size * 2 > state->used + i ? state->size * 2 : state->used + i;
+            state       = repalloc(state, sizeof(ISAggState) + state->size * sizeof(BigIStorePair));
+            pairs1      = state->pairs+index1;
+        }
+        state->used += i;
+        memcpy(pairs1,pairs2, i * sizeof(BigIStorePair) );
+    }
+
+    PG_RETURN_POINTER(state);
+}
+
+/*
+ * MAX(istore) aggregate funtion
+ */
+PG_FUNCTION_INFO_V1(istore_max_transfn);
+Datum
+istore_max_transfn(PG_FUNCTION_ARGS)
+{
+
+    MemoryContext  agg_context;
+    ISAggState    *state;
+    IStore        *istore;
+    IStorePair    *pairs2;
+    BigIStorePair *pairs1;
+    int            index1 = 0,
+                   index2 = 0;
+
+
+    if (!AggCheckCallContext(fcinfo, &agg_context))
+        elog(ERROR, "aggregate function called in non-aggregate context");
+
+    if (PG_ARGISNULL(1) && PG_ARGISNULL(0))
+        PG_RETURN_NULL();
+
+    state = PG_ARGISNULL(0) ? state_init(agg_context) : (ISAggState *) PG_GETARG_POINTER(0);
+
+    if (PG_ARGISNULL(1))
+        PG_RETURN_POINTER(state);
+
+    istore = PG_GETARG_IS(1);
+    pairs1 = state->pairs;
+    pairs2 = FIRST_PAIR(istore, IStorePair);
+    while (index1 < state->used && index2 < istore->len)
+    {
+        if (pairs1->key < pairs2->key)
+        {
+            // do nothing keep state
+            ++pairs1;
+            ++index1;
+        }
+        else if (pairs1->key > pairs2->key)
+        {
+            int i = 1;
+            while(index2 + i < istore->len && pairs1->key > pairs2[i].key){
+                ++i;
+            }
+
+            // ensure array is big enough
+            if (state->size < state->used + i)
+            {
+                state->size  = state->size * 2 > state->used + i ? state->size * 2 : state->used + i;
+                state        = repalloc(state, sizeof(ISAggState) + state->size * sizeof(BigIStorePair));
+                pairs1       = state->pairs+index1;
+            }
+
+            // move data i steps forward from index1
+            memmove(pairs1+i,pairs1, (state->used - index1) * sizeof(BigIStorePair));
+            // copy data
+            state->used += i;
+            // we can't use memcpy here as pairs1 and pairs2 differ in type
+            for (int j=0; j<i; j++)
+            {
+                pairs1->key = pairs2->key;
+                pairs1->val = pairs2->val;
+                ++pairs1;
+                ++pairs2;
+            }
+            index1+=i;
+            index2+=i;
+
+        }
+        else
+        {
+            // identical keys add values
+            pairs1->val = MAX(pairs2->val, pairs1->val);
+
+            ++index1;
+            ++index2;
+            ++pairs1;
+            ++pairs2;
+        }
+    }
+
+    // append any leftovers
+    int i = istore->len - index2;
+    if ( i > 0 )
+    {
+        if (state->size <= state->used + i)
+        {
+            state->size = state->size * 2 > state->used + i ? state->size * 2 : state->used + i;
+            state       = repalloc(state, sizeof(ISAggState) + state->size * sizeof(BigIStorePair));
+            pairs1      = state->pairs+index1;
+        }
+        state->used += i;
+        // we can't use memcpy here as pairs1 and pairs2 differ in type
+        for (int j=0; j<i; j++)
+        {
+            pairs1->key = pairs2->key;
+            pairs1->val = pairs2->val;
+            ++pairs1;
+            ++pairs2;
+        }
+    }
+
+    PG_RETURN_POINTER(state);
+}
+
+/*
+ * MAX(bigistore) aggregate funtion
+ */
+PG_FUNCTION_INFO_V1(bigistore_max_transfn);
+Datum
+bigistore_max_transfn(PG_FUNCTION_ARGS)
+{
+
+    MemoryContext  agg_context;
+    ISAggState    *state;
+    BigIStore     *istore;
+    BigIStorePair *pairs1,
+                  *pairs2;
+    int            index1 = 0,
+                   index2 = 0;
+
+
+    if (!AggCheckCallContext(fcinfo, &agg_context))
+        elog(ERROR, "aggregate function called in non-aggregate context");
+
+    if (PG_ARGISNULL(1) && PG_ARGISNULL(0))
+        PG_RETURN_NULL();
+
+    state       = PG_ARGISNULL(0) ? state_init(agg_context) : (ISAggState *) PG_GETARG_POINTER(0);
+
+    if PG_ARGISNULL(1)
+        PG_RETURN_POINTER(state);
+
+    istore  = PG_GETARG_BIGIS(1);
+    pairs1  = state->pairs;
+    pairs2  = FIRST_PAIR(istore, BigIStorePair);
+    while (index1 < state->used && index2 < istore->len)
+    {
+        if (pairs1->key < pairs2->key)
+        {
+            // do nothing keep state
+            ++pairs1;
+            ++index1;
+        }
+        else if (pairs1->key > pairs2->key)
+        {
+            int i = 1;
+            while(index2 + i < istore->len && pairs1->key > pairs2[i].key){
+                ++i;
+            }
+
+            // ensure array is big enough
+            if (state->size < state->used + i)
+            {
+                state->size  = state->size * 2 > state->used + i ? state->size * 2 : state->used + i;
+                state        = repalloc(state, sizeof(ISAggState) + state->size * sizeof(BigIStorePair));
+                pairs1       = state->pairs+index1;
+            }
+
+            // move data i steps forward from index1
+            memmove(pairs1+i,pairs1, (state->used - index1) * sizeof(BigIStorePair));
+
+            // copy data
+            state->used += i;
+            memcpy(pairs1,pairs2, i * sizeof(BigIStorePair) );
+            pairs1 += i;
+            pairs2 += i;
+            index1+=i;
+            index2+=i;
+
+        }
+        else
+        {
+            // identical keys add values
+            pairs1->val = MAX(pairs1->val, pairs2->val);
+
+            ++index1;
+            ++index2;
+            ++pairs1;
+            ++pairs2;
+        }
+    }
+
+    // append any leftovers
+    int i = istore->len - index2;
+    if ( i > 0 )
+    {
+        if (state->size <= state->used + i)
+        {
+            state->size = state->size * 2 > state->used + i ? state->size * 2 : state->used + i;
+            state       = repalloc(state, sizeof(ISAggState) + state->size * sizeof(BigIStorePair));
+            pairs1      = state->pairs+index1;
+        }
+        state->used += i;
+        memcpy(pairs1,pairs2, i * sizeof(BigIStorePair) );
+    }
+
+    PG_RETURN_POINTER(state);
+}
+
+/*
  * SUM(istore) aggregate funtion
  */
 PG_FUNCTION_INFO_V1(istore_sum_transfn);
@@ -253,9 +655,9 @@ bigistore_sum_transfn(PG_FUNCTION_ARGS)
  * and both Aggregates return bigistore so only one finalfunction
  * is needed here.
  */
-PG_FUNCTION_INFO_V1(istore_sum_finalfn);
+PG_FUNCTION_INFO_V1(istore_agg_finalfn_pairs);
 Datum
-istore_sum_finalfn(PG_FUNCTION_ARGS)
+istore_agg_finalfn_pairs(PG_FUNCTION_ARGS)
 {
     ISAggState  *state;
     BigIStore   *istore;
