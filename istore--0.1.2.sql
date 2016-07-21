@@ -207,7 +207,7 @@ CREATE FUNCTION istore_max_transfn(internal, istore)
     LANGUAGE C IMMUTABLE;
 
 CREATE FUNCTION istore_agg_finalfn(internal)
-    RETURNS bigistore
+    RETURNS istore
     AS 'istore' ,'istore_agg_finalfn_pairs'
     LANGUAGE C IMMUTABLE STRICT;
 
@@ -216,11 +216,16 @@ RETURNS json
 AS 'istore', 'istore_to_json'
 LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION bigistore_agg_finalfn(internal)
+    RETURNS bigistore
+    AS 'istore' ,'bigistore_agg_finalfn_pairs'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE AGGREGATE SUM (
     sfunc = istore_sum_transfn,
     basetype = istore,
     stype = internal,
-    finalfunc = istore_agg_finalfn
+    finalfunc = bigistore_agg_finalfn
 );
 
 CREATE AGGREGATE MIN (
@@ -506,21 +511,21 @@ CREATE AGGREGATE SUM (
     sfunc = istore_sum_transfn,
     basetype = bigistore,
     stype = internal,
-    finalfunc = istore_agg_finalfn
+    finalfunc = bigistore_agg_finalfn
 );
 
 CREATE AGGREGATE MIN (
     sfunc = istore_min_transfn,
     basetype = bigistore,
     stype = internal,
-    finalfunc = istore_agg_finalfn
+    finalfunc = bigistore_agg_finalfn
 );
 
 CREATE AGGREGATE MAX (
     sfunc = istore_max_transfn,
     basetype = bigistore,
     stype = internal,
-    finalfunc = istore_agg_finalfn
+    finalfunc = bigistore_agg_finalfn
 );
 
 CREATE OPERATOR -> (

@@ -125,6 +125,7 @@ IStore* istore_apply_datum(IStore *arg1, Datum arg2, PGFunction applyfunc);
 BigIStore* bigistore_merge(BigIStore *arg1, BigIStore *arg2, PGFunction mergefunc, PGFunction miss1func);
 BigIStore* bigistore_apply_datum(BigIStore *arg1, Datum arg2, PGFunction applyfunc);
 
+void istore_copy_and_add_buflen(IStore *istore, BigIStorePair *pairs);
 void bigistore_add_buflen(BigIStore *istore);
 void istore_pairs_init(IStorePairs *pairs, size_t initial_size);
 void istore_pairs_insert(IStorePairs *pairs, int32 key, int32 val);

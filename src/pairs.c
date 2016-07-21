@@ -5,20 +5,37 @@
 static inline int digits32(int32 num);
 static inline int digits64(int64 num);
 
-
-
 /*
  * add buflen to istore
  */
 void
-bigistore_add_buflen(BigIStore *istore) 
+istore_copy_and_add_buflen(IStore *istore, BigIStorePair *src_pairs)
+{
+    IStorePair *dest_pairs = FIRST_PAIR(istore, IStorePair);
+
+    for (int i = 0; i < istore->len; ++i)
+    {
+        dest_pairs[i].key = src_pairs[i].key;
+        dest_pairs[i].val = src_pairs[i].val;
+        istore->buflen += digits32(dest_pairs[i].key) + digits32(dest_pairs[i].val) + BUFLEN_OFFSET;
+    }
+
+    if (istore->buflen < 0)
+        elog(ERROR, "istore buffer overflow");
+}
+
+/*
+ * add buflen to bigistore
+ */
+void
+bigistore_add_buflen(BigIStore *istore)
 {
     BigIStorePair  *pairs;
 
     pairs  = FIRST_PAIR(istore, BigIStorePair);
-    
+
     for(int i = 0; i < istore->len; i++)
-        istore->buflen += digits32(pairs[i].key) + digits64(pairs[i].val) + BUFLEN_OFFSET;   
+        istore->buflen += digits32(pairs[i].key) + digits64(pairs[i].val) + BUFLEN_OFFSET;
 
     if (istore->buflen < 0)
         elog(ERROR, "istore buffer overflow");

@@ -166,21 +166,21 @@ CREATE AGGREGATE SUM (
     sfunc = istore_sum_transfn,
     basetype = bigistore,
     stype = internal,
-    finalfunc = istore_agg_finalfn
+    finalfunc = bigistore_agg_finalfn
 );
 
 CREATE AGGREGATE MIN (
     sfunc = istore_min_transfn,
     basetype = bigistore,
     stype = internal,
-    finalfunc = istore_agg_finalfn
+    finalfunc = bigistore_agg_finalfn
 );
 
 CREATE AGGREGATE MAX (
     sfunc = istore_max_transfn,
     basetype = bigistore,
     stype = internal,
-    finalfunc = istore_agg_finalfn
+    finalfunc = bigistore_agg_finalfn
 );
 
 CREATE OPERATOR -> (

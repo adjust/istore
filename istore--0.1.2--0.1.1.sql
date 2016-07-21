@@ -4,7 +4,7 @@ CREATE OR REPLACE FUNCTION bigistore_agg_finalfn(internal)
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE OR REPLACE FUNCTION istore_agg_finalfn(internal)
-    RETURNS bigistore
+    RETURNS istore
     AS 'istore'
     LANGUAGE C IMMUTABLE STRICT;
 

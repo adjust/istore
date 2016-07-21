@@ -1,9 +1,15 @@
 ----functions----
 CREATE OR REPLACE FUNCTION istore_agg_finalfn(internal)
- RETURNS bigistore
+ RETURNS istore
  LANGUAGE c
  IMMUTABLE STRICT
 AS 'istore', $function$istore_agg_finalfn_pairs$function$;
+
+CREATE OR REPLACE FUNCTION bigistore_agg_finalfn(internal)
+ RETURNS bigistore
+ LANGUAGE c
+ IMMUTABLE STRICT
+AS 'istore', $function$bigistore_agg_finalfn_pairs$function$;
 
 CREATE OR REPLACE FUNCTION istore_max_transfn(internal, bigistore)
  RETURNS internal
@@ -51,7 +57,7 @@ DROP AGGREGATE IF EXISTS sum (bigistore);
 CREATE AGGREGATE sum(bigistore) (
   SFUNC = public.istore_sum_transfn,
   STYPE = internal,
-  FINALFUNC = istore_agg_finalfn
+  FINALFUNC = bigistore_agg_finalfn
 );
 
 ----
@@ -59,7 +65,7 @@ DROP AGGREGATE IF EXISTS sum (istore);
 CREATE AGGREGATE sum(istore) (
   SFUNC = public.istore_sum_transfn,
   STYPE = internal,
-  FINALFUNC = istore_agg_finalfn
+  FINALFUNC = bigistore_agg_finalfn
 );
 
 ----
@@ -86,7 +92,7 @@ CREATE AGGREGATE MIN (
     sfunc = istore_min_transfn,
     basetype = bigistore,
     stype = internal,
-    finalfunc = istore_agg_finalfn
+    finalfunc = bigistore_agg_finalfn
 );
 
 ----
@@ -95,7 +101,5 @@ CREATE AGGREGATE MAX (
     sfunc = istore_max_transfn,
     basetype = bigistore,
     stype = internal,
-    finalfunc = istore_agg_finalfn
+    finalfunc = bigistore_agg_finalfn
 );
-
-DROP FUNCTION IF EXISTS bigistore_agg_finalfn(internal);
