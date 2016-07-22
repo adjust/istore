@@ -343,6 +343,12 @@ RETURNS SETOF record
 AS 'istore','bigistore_each'
 LANGUAGE C STRICT IMMUTABLE;
 
+CREATE FUNCTION mjoin(VARIADIC istores bigistore[])
+RETURNS SETOF record
+AS 'istore','mjoin'
+LANGUAGE C STRICT IMMUTABLE;
+
+
 CREATE FUNCTION join(IN a bigistore, IN b bigistore,
     OUT key integer,
     OUT value1 bigint,
