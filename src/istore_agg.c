@@ -6,29 +6,19 @@
 #define BIG_ISTORE 1
 #define ISTORE 0
 
-#define RETURN_AGG_TRANSFN(_istore, _agg)                                                        \
+#define INIT_AGG_STATE(_state)                                                                 \
     do {                                                                                         \
         MemoryContext  agg_context;                                                              \
-        ISAggState    *state;                                                                    \
                                                                                                  \
         if (!AggCheckCallContext(fcinfo, &agg_context))                                          \
             elog(ERROR, "aggregate function called in non-aggregate context");                   \
                                                                                                  \
         if (PG_ARGISNULL(1) && PG_ARGISNULL(0)) PG_RETURN_NULL();                                \
                                                                                                  \
-        state = PG_ARGISNULL(0) ? state_init(agg_context) : (ISAggState *) PG_GETARG_POINTER(0); \
+        _state = PG_ARGISNULL(0) ? state_init(agg_context) : (ISAggState *) PG_GETARG_POINTER(0);\
                                                                                                  \
-        if (PG_ARGISNULL(1)) PG_RETURN_POINTER(state);                                           \
+        if (PG_ARGISNULL(1)) PG_RETURN_POINTER(_state);                                          \
                                                                                                  \
-        switch (_istore)                                                                         \
-        {                                                                                        \
-            case BIG_ISTORE:                                                                     \
-                PG_RETURN_POINTER(bigistore_agg_internal(state, PG_GETARG_BIGIS(1), _agg));      \
-            case ISTORE:                                                                         \
-                PG_RETURN_POINTER(istore_agg_internal(state, PG_GETARG_IS(1), _agg));            \
-            default:                                                                             \
-                elog(ERROR, "unexpected istore type passed.");                                   \
-        }                                                                                        \
     } while(0)
 
 typedef struct {
@@ -273,7 +263,10 @@ PG_FUNCTION_INFO_V1(istore_min_transfn);
 Datum
 istore_min_transfn(PG_FUNCTION_ARGS)
 {
-    RETURN_AGG_TRANSFN(ISTORE, AGG_MIN);
+    ISAggState    *state;
+    INIT_AGG_STATE(state);
+
+    PG_RETURN_POINTER(istore_agg_internal(state, PG_GETARG_IS(1), AGG_MIN));
 }
 
 /*
@@ -283,7 +276,9 @@ PG_FUNCTION_INFO_V1(bigistore_min_transfn);
 Datum
 bigistore_min_transfn(PG_FUNCTION_ARGS)
 {
-    RETURN_AGG_TRANSFN(BIG_ISTORE, AGG_MIN);
+    ISAggState    *state;
+    INIT_AGG_STATE(state);
+    PG_RETURN_POINTER(bigistore_agg_internal(state, PG_GETARG_BIGIS(1), AGG_MIN));
 }
 
 /*
@@ -293,7 +288,10 @@ PG_FUNCTION_INFO_V1(istore_max_transfn);
 Datum
 istore_max_transfn(PG_FUNCTION_ARGS)
 {
-    RETURN_AGG_TRANSFN(ISTORE, AGG_MAX);
+    ISAggState    *state;
+    INIT_AGG_STATE(state);
+    PG_RETURN_POINTER(istore_agg_internal(state, PG_GETARG_IS(1), AGG_MAX));
+
 }
 
 /*
@@ -303,7 +301,10 @@ PG_FUNCTION_INFO_V1(bigistore_max_transfn);
 Datum
 bigistore_max_transfn(PG_FUNCTION_ARGS)
 {
-    RETURN_AGG_TRANSFN(BIG_ISTORE, AGG_MAX);
+    ISAggState    *state;
+    INIT_AGG_STATE(state);
+    PG_RETURN_POINTER(bigistore_agg_internal(state, PG_GETARG_BIGIS(1), AGG_MAX));
+
 }
 
 /*
@@ -313,7 +314,10 @@ PG_FUNCTION_INFO_V1(istore_sum_transfn);
 Datum
 istore_sum_transfn(PG_FUNCTION_ARGS)
 {
-    RETURN_AGG_TRANSFN(ISTORE, AGG_SUM);
+    ISAggState    *state;
+    INIT_AGG_STATE(state);
+    PG_RETURN_POINTER(istore_agg_internal(state, PG_GETARG_IS(1), AGG_SUM));
+
 }
 
 /*
@@ -323,7 +327,10 @@ PG_FUNCTION_INFO_V1(bigistore_sum_transfn);
 Datum
 bigistore_sum_transfn(PG_FUNCTION_ARGS)
 {
-    RETURN_AGG_TRANSFN(BIG_ISTORE, AGG_SUM);
+    ISAggState    *state;
+    INIT_AGG_STATE(state);
+    PG_RETURN_POINTER(bigistore_agg_internal(state, PG_GETARG_BIGIS(1), AGG_SUM));
+
 }
 
 /*
