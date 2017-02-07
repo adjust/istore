@@ -1,7 +1,3 @@
-BEGIN;
--- bigistore gin access should do index scan using gin;
--- ./spec/istore/istore_key_gin_spec.rb:23;
-CREATE EXTENSION istore;
 CREATE TABLE t AS
 SELECT string_agg(j::text || '=>0', ',')::bigistore AS s
 FROM
@@ -15,8 +11,6 @@ EXPLAIN (COSTS OFF) SELECT * FROM t WHERE s ? 3;;
 RESET enable_seqscan;;
 ROLLBACK;
 BEGIN;
--- bigistore gin access should find the matching rows for key 300;
--- ./spec/istore/istore_key_gin_spec.rb:31;
 CREATE EXTENSION istore;
 CREATE TABLE t AS
 SELECT string_agg(j::text || '=>0', ',')::bigistore AS s
@@ -31,8 +25,6 @@ SELECT * FROM t WHERE s ? 300;;
 RESET enable_seqscan;;
 ROLLBACK;
 BEGIN;
--- bigistore gin access should find the matching rows for key 600;
--- ./spec/istore/istore_key_gin_spec.rb:40;
 CREATE EXTENSION istore;
 CREATE TABLE t AS
 SELECT string_agg(j::text || '=>0', ',')::bigistore AS s
@@ -47,8 +39,6 @@ SELECT * FROM t WHERE s ? 600;;
 RESET enable_seqscan;;
 ROLLBACK;
 BEGIN;
--- bigistore gin access should find the matching rows for key 900;
--- ./spec/istore/istore_key_gin_spec.rb:49;
 CREATE EXTENSION istore;
 CREATE TABLE t AS
 SELECT string_agg(j::text || '=>0', ',')::bigistore AS s
@@ -63,8 +53,6 @@ SELECT * FROM t WHERE s ? 900;;
 RESET enable_seqscan;;
 ROLLBACK;
 BEGIN;
--- istore gin access should do index scan using gin;
--- ./spec/istore/istore_key_gin_spec.rb:23;
 CREATE EXTENSION istore;
 CREATE TABLE t AS
 SELECT string_agg(j::text || '=>0', ',')::istore AS s
@@ -79,8 +67,6 @@ EXPLAIN (COSTS OFF) SELECT * FROM t WHERE s ? 3;;
 RESET enable_seqscan;;
 ROLLBACK;
 BEGIN;
--- istore gin access should find the matching rows for key 300;
--- ./spec/istore/istore_key_gin_spec.rb:31;
 CREATE EXTENSION istore;
 CREATE TABLE t AS
 SELECT string_agg(j::text || '=>0', ',')::istore AS s
@@ -95,8 +81,6 @@ SELECT * FROM t WHERE s ? 300;;
 RESET enable_seqscan;;
 ROLLBACK;
 BEGIN;
--- istore gin access should find the matching rows for key 600;
--- ./spec/istore/istore_key_gin_spec.rb:40;
 CREATE EXTENSION istore;
 CREATE TABLE t AS
 SELECT string_agg(j::text || '=>0', ',')::istore AS s
@@ -111,8 +95,6 @@ SELECT * FROM t WHERE s ? 600;;
 RESET enable_seqscan;;
 ROLLBACK;
 BEGIN;
--- istore gin access should find the matching rows for key 900;
--- ./spec/istore/istore_key_gin_spec.rb:49;
 CREATE EXTENSION istore;
 CREATE TABLE t AS
 SELECT string_agg(j::text || '=>0', ',')::istore AS s

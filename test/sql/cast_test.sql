@@ -1,18 +1,10 @@
-BEGIN;
--- casts should cast from istore to bigistore;
--- ./spec/cast_spec.rb:8;
-CREATE EXTENSION istore;
 SELECT '1=>1, -1=>-1'::istore::bigistore;
 ROLLBACK;
 BEGIN;
--- casts should cast from bigistore to istore;
--- ./spec/cast_spec.rb:12;
 CREATE EXTENSION istore;
 SELECT '1=>1, -1=>-1'::bigistore::istore;
 ROLLBACK;
 BEGIN;
--- casts should fail cast from bigistore to istore if any value is to big;
--- ./spec/cast_spec.rb:16;
 CREATE EXTENSION istore;
 SELECT '1=>1, -1=>3000000000'::bigistore::istore;
 ROLLBACK;
