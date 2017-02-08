@@ -1,4 +1,5 @@
 --require types
+--require parallel_agg
 
 CREATE FUNCTION exist(bigistore, integer)
     RETURNS boolean
@@ -162,25 +163,34 @@ CREATE FUNCTION istore_max_transfn(internal, bigistore)
     AS 'istore' ,'bigistore_max_transfn'
     LANGUAGE C IMMUTABLE;
 
-CREATE AGGREGATE SUM (
+CREATE AGGREGATE SUM(bigistore) (
     sfunc = istore_sum_transfn,
-    basetype = bigistore,
     stype = internal,
-    finalfunc = bigistore_agg_finalfn
+    finalfunc = bigistore_agg_finalfn,
+    combinefunc = istore_agg_combine,
+    serialfunc = istore_serial,
+    deserialfunc = istore_deserial,
+    parallel = safe
 );
 
-CREATE AGGREGATE MIN (
+CREATE AGGREGATE MIN(bigistore) (
     sfunc = istore_min_transfn,
-    basetype = bigistore,
     stype = internal,
-    finalfunc = bigistore_agg_finalfn
+    finalfunc = bigistore_agg_finalfn,
+    combinefunc = istore_agg_combine,
+    serialfunc = istore_serial,
+    deserialfunc = istore_deserial,
+    parallel = safe
 );
 
-CREATE AGGREGATE MAX (
+CREATE AGGREGATE MAX(bigistore) (
     sfunc = istore_max_transfn,
-    basetype = bigistore,
     stype = internal,
-    finalfunc = bigistore_agg_finalfn
+    finalfunc = bigistore_agg_finalfn,
+    combinefunc = istore_agg_combine,
+    serialfunc = istore_serial,
+    deserialfunc = istore_deserial,
+    parallel = safe
 );
 
 CREATE OPERATOR -> (

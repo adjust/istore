@@ -1,3 +1,5 @@
+BEGIN;
+CREATE EXTENSION istore;
 SELECT '1=>1, -1=>-1'::istore::bigistore;
 ROLLBACK;
 BEGIN;
