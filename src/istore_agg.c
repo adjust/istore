@@ -381,3 +381,126 @@ istore_agg_finalfn_pairs(PG_FUNCTION_ARGS)
 
     PG_RETURN_POINTER(istore);
 }
+
+/*
+ * SUM(istore) combinefunc
+ */
+PG_FUNCTION_INFO_V1(istore_sum_combine);
+Datum
+istore_sum_combine(PG_FUNCTION_ARGS)
+{
+    ISAggState *left, *right, *result;
+    IStore     *istore;
+    MemoryContext agg_context, old_context;
+
+    if (!AggCheckCallContext(fcinfo, &agg_context))
+        elog(ERROR, "aggregate function called in non-aggregate context");
+
+    left = PG_ARGISNULL(0) ? NULL : (ISAggState *) PG_GETARG_POINTER(0);
+    right = PG_ARGISNULL(1) ? NULL : (ISAggState *) PG_GETARG_POINTER(1);
+
+    if (right == NULL) PG_RETURN_POINTER(left);
+
+    if (PG_ARGISNULL(0))
+    {
+        old_context = MemoryContextSwitchTo(agg_context);
+
+        left = (ISAggState *)palloc0(sizeof(ISAggState) + right->size * sizeof(BigIStorePair));
+        left->size = right->size;
+        left->used = right->used;
+
+        memcpy(left->pairs, right->pairs, right->size * sizeof(BigIStorePair));
+
+        MemoryContextSwitchTo(old_context);
+
+        PG_RETURN_POINTER(left);
+    }
+
+    istore      = (IStore *)(palloc0(ISHDRSZ + right->used * sizeof(IStorePair)));
+    istore->len = right->used;
+    istore_copy_and_add_buflen(istore, right->pairs);
+    SET_VARSIZE(istore, ISHDRSZ + right->used * sizeof(IStorePair));
+
+    old_context = MemoryContextSwitchTo(agg_context);
+    result = istore_agg_internal(left, istore, AGG_SUM);
+    MemoryContextSwitchTo(old_context);
+
+    pfree(istore);
+
+    PG_RETURN_POINTER(result);
+}
+
+/*
+* Serialize the internal aggregation state ISAggState into bytea.
+*/
+PG_FUNCTION_INFO_V1(istore_serial);
+Datum
+istore_serial(PG_FUNCTION_ARGS)
+{
+    int32 key, i = 0;
+    int64 val;
+    ISAggState *state;
+    StringInfoData buf;
+
+    if (!AggCheckCallContext(fcinfo, NULL))
+        elog(ERROR, "aggregate deserialization function called in non-aggregate context");
+
+    state = (ISAggState *) PG_GETARG_POINTER(0);
+
+    pq_begintypsend(&buf);
+    pq_sendint(&buf, (int)state->size, sizeof(int));
+    pq_sendint(&buf, state->used, sizeof(int));
+
+    for (; i < state->used; ++i)
+    {
+        key = state->pairs[i].key;
+        val = state->pairs[i].val;
+
+        pq_sendint(&buf, key, sizeof(int));
+        pq_sendint64(&buf, val);
+    }
+
+    PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+}
+
+PG_FUNCTION_INFO_V1(istore_deserial);
+Datum
+istore_deserial(PG_FUNCTION_ARGS)
+{
+    ISAggState *state;
+    StringInfoData buf;
+    bytea *binary;
+    int i = 0;
+    size_t size;
+
+    if (!AggCheckCallContext(fcinfo, NULL))
+        elog(ERROR, "aggregate deserialization function called in non-aggregate context");
+
+    binary = PG_GETARG_BYTEA_P(0);
+
+    /*
+    * Copy the bytea into a StringInfo so that we can "receive" it using the
+    * standard recv-function infrastructure.
+    */
+    initStringInfo(&buf);
+    appendBinaryStringInfo(&buf, VARDATA(binary), VARSIZE(binary) - VARHDRSZ);
+
+    size = (size_t)pq_getmsgint(&buf, sizeof(int));
+
+    state = (ISAggState *) palloc0(sizeof(ISAggState) + size * sizeof(BigIStorePair));
+    state->size = size;
+    state->used = pq_getmsgint(&buf, sizeof(int));
+
+    int32 key;
+    int64 val;
+
+    for (; i < state->used; ++i)
+    {
+        key = pq_getmsgint(&buf, sizeof(int));
+        val = pq_getmsgint64(&buf);
+        state->pairs[i].key = key;
+        state->pairs[i].val = val;
+    }
+
+    PG_RETURN_POINTER(state);
+}

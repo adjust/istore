@@ -5,6 +5,7 @@
 #include "fmgr.h"
 #include "avl.h"
 #include "utils/memutils.h"
+#include "libpq/pqformat.h"
 
 Datum istore_out(PG_FUNCTION_ARGS);
 Datum istore_in(PG_FUNCTION_ARGS);
