@@ -48,8 +48,7 @@ istore_agg_internal(ISAggState *state, IStore *istore, AggType type)
 {
     BigIStorePair *pairs1;
     IStorePair    *pairs2;
-    int            index1 = 0,
-                   index2 = 0;
+    int            index1 = 0, index2 = 0, i, j;
 
     pairs1 = state->pairs;
     pairs2 = FIRST_PAIR(istore, IStorePair);
@@ -63,7 +62,7 @@ istore_agg_internal(ISAggState *state, IStore *istore, AggType type)
         }
         else if (pairs1->key > pairs2->key)
         {
-            int i = 1;
+            i = 1;
             while(index2 + i < istore->len && pairs1->key > pairs2[i].key){
                 ++i;
             }
@@ -81,7 +80,7 @@ istore_agg_internal(ISAggState *state, IStore *istore, AggType type)
             // copy data
             state->used += i;
             // we can't use memcpy here as pairs1 and pairs2 differ in type
-            for (int j=0; j<i; j++)
+            for (j=0; j<i; j++)
             {
                 pairs1->key = pairs2->key;
                 pairs1->val = pairs2->val;
@@ -132,7 +131,7 @@ istore_agg_internal(ISAggState *state, IStore *istore, AggType type)
     }
 
     // append any leftovers
-    int i = istore->len - index2;
+    i = istore->len - index2;
     if ( i > 0 )
     {
         if (state->size <= state->used + i)
@@ -143,7 +142,7 @@ istore_agg_internal(ISAggState *state, IStore *istore, AggType type)
         }
         state->used += i;
         // we can't use memcpy here as pairs1 and pairs2 differ in type
-        for (int j=0; j<i; j++)
+        for (j=0; j<i; j++)
         {
             pairs1->key = pairs2->key;
             pairs1->val = pairs2->val;
@@ -401,7 +400,7 @@ istore_sum_combine(PG_FUNCTION_ARGS)
 
     if (right == NULL) PG_RETURN_POINTER(left);
 
-    if (PG_ARGISNULL(0))
+    if (left == NULL)
     {
         old_context = MemoryContextSwitchTo(agg_context);
 
@@ -437,10 +436,10 @@ PG_FUNCTION_INFO_V1(istore_serial);
 Datum
 istore_serial(PG_FUNCTION_ARGS)
 {
-    int32 key, i = 0;
-    int64 val;
     ISAggState *state;
     StringInfoData buf;
+    int32 key, i;
+    int64 val;
 
     if (!AggCheckCallContext(fcinfo, NULL))
         elog(ERROR, "aggregate deserialization function called in non-aggregate context");
@@ -448,15 +447,15 @@ istore_serial(PG_FUNCTION_ARGS)
     state = (ISAggState *) PG_GETARG_POINTER(0);
 
     pq_begintypsend(&buf);
-    pq_sendint(&buf, (int)state->size, sizeof(int));
-    pq_sendint(&buf, state->used, sizeof(int));
+    pq_sendint(&buf, (int32)state->size, sizeof(int32));
+    pq_sendint(&buf, state->used, sizeof(int32));
 
-    for (; i < state->used; ++i)
+    for (i = 0; i < state->used; ++i)
     {
         key = state->pairs[i].key;
         val = state->pairs[i].val;
 
-        pq_sendint(&buf, key, sizeof(int));
+        pq_sendint(&buf, key, sizeof(int32));
         pq_sendint64(&buf, val);
     }
 
@@ -470,8 +469,9 @@ istore_deserial(PG_FUNCTION_ARGS)
     ISAggState *state;
     StringInfoData buf;
     bytea *binary;
-    int i = 0;
     size_t size;
+    int32 key, i;
+    int64 val;
 
     if (!AggCheckCallContext(fcinfo, NULL))
         elog(ERROR, "aggregate deserialization function called in non-aggregate context");
@@ -485,18 +485,15 @@ istore_deserial(PG_FUNCTION_ARGS)
     initStringInfo(&buf);
     appendBinaryStringInfo(&buf, VARDATA(binary), VARSIZE(binary) - VARHDRSZ);
 
-    size = (size_t)pq_getmsgint(&buf, sizeof(int));
+    size = (size_t)pq_getmsgint(&buf, sizeof(int32));
 
     state = (ISAggState *) palloc0(sizeof(ISAggState) + size * sizeof(BigIStorePair));
     state->size = size;
-    state->used = pq_getmsgint(&buf, sizeof(int));
+    state->used = pq_getmsgint(&buf, sizeof(int32));
 
-    int32 key;
-    int64 val;
-
-    for (; i < state->used; ++i)
+    for (i = 0; i < state->used; ++i)
     {
-        key = pq_getmsgint(&buf, sizeof(int));
+        key = pq_getmsgint(&buf, sizeof(int32));
         val = pq_getmsgint64(&buf);
         state->pairs[i].key = key;
         state->pairs[i].val = val;

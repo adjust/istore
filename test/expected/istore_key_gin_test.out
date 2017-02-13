@@ -1,3 +1,5 @@
+BEGIN;
+CREATE EXTENSION istore;
 CREATE TABLE t AS
 SELECT string_agg(j::text || '=>0', ',')::bigistore AS s
 FROM

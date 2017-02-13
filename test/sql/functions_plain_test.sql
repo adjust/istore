@@ -1,3 +1,5 @@
+BEGIN;
+CREATE EXTENSION istore;
 SELECT exist('1=>1'::bigistore, 1);
 SELECT exist('1=>1'::bigistore, 2);
 SELECT exist('1=>1, -1=>0'::bigistore, 2);

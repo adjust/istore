@@ -12,8 +12,9 @@ void
 istore_copy_and_add_buflen(IStore *istore, BigIStorePair *src_pairs)
 {
     IStorePair *dest_pairs = FIRST_PAIR(istore, IStorePair);
+    int i;
 
-    for (int i = 0; i < istore->len; ++i)
+    for (i = 0; i < istore->len; ++i)
     {
         dest_pairs[i].key = src_pairs[i].key;
         dest_pairs[i].val = src_pairs[i].val;
@@ -31,10 +32,11 @@ void
 bigistore_add_buflen(BigIStore *istore)
 {
     BigIStorePair  *pairs;
+    int i;
 
     pairs  = FIRST_PAIR(istore, BigIStorePair);
 
-    for(int i = 0; i < istore->len; i++)
+    for(i = 0; i < istore->len; i++)
         istore->buflen += digits32(pairs[i].key) + digits64(pairs[i].val) + BUFLEN_OFFSET;
 
     if (istore->buflen < 0)

@@ -1,3 +1,5 @@
+BEGIN;
+CREATE EXTENSION istore;
 CREATE TABLE before (a bigistore);
 INSERT INTO before values ('1=>1'),('1=>-9223372036854775807'),('1=>3'),('2=>1'),('2=>0'),('2=>9223372036854775806');
 CREATE TABLE after (a bigistore);

@@ -1,4 +1,5 @@
 --require types
+--require parallel_agg
 
 CREATE FUNCTION exist(istore, integer)
     RETURNS boolean
@@ -162,21 +163,6 @@ CREATE FUNCTION bigistore_agg_finalfn(internal)
     AS 'istore' ,'bigistore_agg_finalfn_pairs'
     LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION istore_serial(internal)
-    RETURNS bytea
-    AS 'istore'
-    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION istore_deserial(bytea, internal)
-    RETURNS internal
-    AS 'istore', 'istore_deserial'
-    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION istore_sum_combine(internal, internal)
-    RETURNS internal
-    AS 'istore'
-    LANGUAGE C IMMUTABLE PARALLEL SAFE;
-
 CREATE AGGREGATE SUM(istore) (
     sfunc = istore_sum_transfn,
     stype = internal,
@@ -190,14 +176,21 @@ CREATE AGGREGATE SUM(istore) (
 CREATE AGGREGATE MIN(istore) (
     sfunc = istore_min_transfn,
     stype = internal,
-    finalfunc = istore_agg_finalfn_pairs
+    finalfunc = istore_agg_finalfn_pairs,
+    combinefunc = istore_sum_combine,
+    serialfunc = istore_serial,
+    deserialfunc = istore_deserial,
+    parallel = safe
 );
 
-CREATE AGGREGATE MAX (
+CREATE AGGREGATE MAX(istore) (
     sfunc = istore_max_transfn,
-    basetype = istore,
     stype = internal,
-    finalfunc = istore_agg_finalfn_pairs
+    finalfunc = istore_agg_finalfn_pairs,
+    combinefunc = istore_sum_combine,
+    serialfunc = istore_serial,
+    deserialfunc = istore_deserial,
+    parallel = safe
 );
 
 CREATE OPERATOR -> (
