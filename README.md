@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/adjust/istore.svg)](https://travis-ci.org/adjust/istore)
+
 # istore
 
 The idea of istore is to have an integer based hstore (thus the name) which

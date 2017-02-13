@@ -8,5 +8,6 @@ OBJS = $(patsubst %.c,%.o,$(wildcard src/*.c))
 TESTS        = $(wildcard test/sql/*.sql)
 REGRESS      = $(patsubst test/sql/%.sql,%,$(TESTS))
 REGRESS_OPTS = --inputdir=test --load-language=plpgsql
+PG_CPPFLAGS  = --std=c99
 include $(PGXS)
 

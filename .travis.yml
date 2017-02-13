@@ -1,0 +1,14 @@
+sudo: required
+dist: trusty
+language: c
+services:
+  - postgresql
+addons:
+  postgresql: "9.6"
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y postgresql-server-dev-9.6
+before_script:
+  - sudo chmod 777 /usr/lib/postgresql/9.6/lib /usr/share/postgresql/9.6/extension
+script:
+  - ./travis.sh
