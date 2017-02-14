@@ -39,6 +39,7 @@ Datum istore_skeys(PG_FUNCTION_ARGS);
 Datum istore_svals(PG_FUNCTION_ARGS);
 Datum istore_sum_transfn(PG_FUNCTION_ARGS);
 Datum istore_sum_finalfn(PG_FUNCTION_ARGS);
+Datum istore_agg_combine(PG_FUNCTION_ARGS);
 
 Datum bigistore_out(PG_FUNCTION_ARGS);
 Datum bigistore_in(PG_FUNCTION_ARGS);

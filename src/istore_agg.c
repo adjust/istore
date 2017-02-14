@@ -382,11 +382,11 @@ istore_agg_finalfn_pairs(PG_FUNCTION_ARGS)
 }
 
 /*
- * SUM(istore) combinefunc
+ * SUM(istore), etc. aggregates combinefunc
  */
-PG_FUNCTION_INFO_V1(istore_sum_combine);
+PG_FUNCTION_INFO_V1(istore_agg_combine);
 Datum
-istore_sum_combine(PG_FUNCTION_ARGS)
+istore_agg_combine(PG_FUNCTION_ARGS)
 {
     ISAggState *left, *right, *result;
     IStore     *istore;
