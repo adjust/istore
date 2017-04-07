@@ -531,6 +531,12 @@ SELECT bigistore(Array[5,3,4,5], Array[4000,2,4000,4]);
  "3"=>"2", "4"=>"4000", "5"=>"4004"
 (1 row)
 
+SELECT bigistore(Array[5,3,4]::int[], Array[5000000000,4000000000,5]::bigint[]);
+                   bigistore                    
+------------------------------------------------
+ "3"=>"4000000000", "4"=>"5", "5"=>"5000000000"
+(1 row)
+
 ROLLBACK;
 BEGIN;
 -- bigistore functions should fill gaps;
