@@ -68,6 +68,15 @@ SELECT '1=>1, -1=>0'::bigistore + '-1=>-1'::bigistore;
 
 ROLLBACK;
 BEGIN;
+CREATE EXTENSION istore;
+SELECT '0=>40000000000'::bigistore->0;
+  ?column?   
+-------------
+ 40000000000
+(1 row)
+
+ROLLBACK;
+BEGIN;
 -- bigistore operators bigistore should add an integer to #{type};
 -- ./spec/istore/operator_spec.rb:33;
 CREATE EXTENSION istore;
