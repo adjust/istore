@@ -157,7 +157,7 @@ bigistore_sum_up(PG_FUNCTION_ARGS)
         end_key = PG_GETARG_INT32(1) > pairs[is->len -1].key ? pairs[is->len -1].key : PG_GETARG_INT32(1);
         while (index < is->len && pairs[index].key <= end_key)
             result = DirectFunctionCall2(int8pl, result, pairs[index++].val);
-    }    
+    }
 
     PG_RETURN_INT64(result);
 }
@@ -504,8 +504,8 @@ bigistore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
                     i_eltype2;
     AvlNode      *tree;
     AvlNode     *position;
-    int32           key,
-                    value;
+    int32           key;
+    int64           value;
 
     i_eltype1 = ARR_ELEMTYPE(input1);
     i_eltype2 = ARR_ELEMTYPE(input2);

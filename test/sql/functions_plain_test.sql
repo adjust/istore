@@ -158,6 +158,7 @@ CREATE EXTENSION istore;
 SELECT bigistore(Array[5,3,4,5], Array[1,2,3,4]);
 SELECT bigistore(Array[5,3,4,5], Array[1,2,3,4]);
 SELECT bigistore(Array[5,3,4,5], Array[4000,2,4000,4]);
+SELECT bigistore(Array[5,3,4]::int[], Array[5000000000,4000000000,5]::bigint[]);
 ROLLBACK;
 BEGIN;
 -- bigistore functions should fill gaps;
