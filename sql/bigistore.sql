@@ -7,7 +7,7 @@ CREATE FUNCTION exist(bigistore, integer)
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION fetchval(bigistore, integer)
-    RETURNS integer
+    RETURNS bigint
     AS 'istore', 'bigistore_fetchval'
     LANGUAGE C IMMUTABLE STRICT;
 
