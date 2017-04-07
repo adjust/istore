@@ -68,6 +68,16 @@ CREATE FUNCTION bigistore(integer[])
     AS 'istore', 'bigistore_from_intarray'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION bigistore_eq(bigistore, bigistore)
+    RETURNS bool
+    AS 'istore'
+    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION bigistore_ne(bigistore, bigistore)
+    RETURNS bool
+    AS 'istore'
+    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION sum_up(bigistore)
     RETURNS bigint
     AS 'istore', 'bigistore_sum_up'
@@ -251,6 +261,24 @@ CREATE OPERATOR / (
     leftarg   = bigistore,
     rightarg  = bigint,
     procedure = divide
+);
+
+CREATE OPERATOR = (
+    leftarg    = bigistore,
+    rightarg   = bigistore,
+    commutator = =,
+    negator    = <>,
+    restrict   = eqsel,
+    procedure  = bigistore_eq
+);
+
+CREATE OPERATOR <> (
+    leftarg    = bigistore,
+    rightarg   = bigistore,
+    commutator = <>,
+    negator    = =,
+    restrict   = neqsel,
+    procedure  = bigistore_ne
 );
 
 CREATE FUNCTION gin_extract_bigistore_key(internal, internal)

@@ -146,7 +146,7 @@ istore_sum_up(PG_FUNCTION_ARGS)
     pairs  = FIRST_PAIR(is, IStorePair);
     result = 0;
     index  = 0;
-    
+
     if (is->len == 0)
         PG_RETURN_INT64(0);
 
@@ -154,13 +154,13 @@ istore_sum_up(PG_FUNCTION_ARGS)
     {
         while (index < is->len )
             result = DirectFunctionCall2(int84pl, result, pairs[index++].val);
-    } 
-    else 
+    }
+    else
     {
         end_key = PG_GETARG_INT32(1) > pairs[is->len -1].key ? pairs[is->len -1].key : PG_GETARG_INT32(1);
         while (index < is->len && pairs[index].key <= end_key)
             result = DirectFunctionCall2(int84pl, result, pairs[index++].val);
-    }    
+    }
 
     PG_RETURN_INT64(result);
 }
@@ -975,4 +975,41 @@ istore_svals(PG_FUNCTION_ARGS)
         SRF_RETURN_NEXT(funcctx, Int32GetDatum(pairs[i].val));
 
     SRF_RETURN_DONE(funcctx);
+}
+
+bool istore_eq_internal(const IStore *left, const IStore *right)
+{
+    IStorePair *pairs_left, *pairs_right;
+    int32 len;
+
+    if (left->len != right->len) return false;
+    len = left->len;
+
+    pairs_left  = FIRST_PAIR(left, IStorePair);
+    pairs_right = FIRST_PAIR(right, IStorePair);
+
+    return memcmp(pairs_left, pairs_right, sizeof(IStorePair) * len) == 0;
+}
+/*
+ * A boolean function that supports `select '1=>1'::istore = '2=>2'::istore`
+ */
+PG_FUNCTION_INFO_V1(istore_eq);
+Datum
+istore_eq(PG_FUNCTION_ARGS)
+{
+    if (PG_ARGISNULL(0) || PG_ARGISNULL(1)) PG_RETURN_NULL();
+
+    PG_RETURN_BOOL(istore_eq_internal(PG_GETARG_IS(0), PG_GETARG_IS(1)));
+}
+
+/*
+ * Negation to istore_eq
+ */
+PG_FUNCTION_INFO_V1(istore_ne);
+Datum
+istore_ne(PG_FUNCTION_ARGS)
+{
+    if (PG_ARGISNULL(0) || PG_ARGISNULL(1)) PG_RETURN_NULL();
+
+    PG_RETURN_BOOL(!istore_eq_internal(PG_GETARG_IS(0), PG_GETARG_IS(1)));
 }

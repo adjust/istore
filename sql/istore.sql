@@ -68,6 +68,16 @@ CREATE FUNCTION istore(integer[])
     AS 'istore', 'istore_from_intarray'
     LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION istore_eq(istore, istore)
+    RETURNS bool
+    AS 'istore'
+    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION istore_ne(istore, istore)
+    RETURNS bool
+    AS 'istore'
+    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION sum_up(istore)
     RETURNS bigint
     AS 'istore', 'istore_sum_up'
@@ -253,6 +263,23 @@ CREATE OPERATOR / (
     procedure = divide
 );
 
+CREATE OPERATOR = (
+    leftarg    = istore,
+    rightarg   = istore,
+    commutator = =,
+    negator    = <>,
+    restrict   = eqsel,
+    procedure  = istore_eq
+);
+
+CREATE OPERATOR <> (
+    leftarg    = istore,
+    rightarg   = istore,
+    commutator = <>,
+    negator    = =,
+    restrict   = neqsel,
+    procedure  = istore_ne
+);
 
 CREATE FUNCTION gin_extract_istore_key(internal, internal)
 RETURNS internal
