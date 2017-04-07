@@ -157,7 +157,7 @@ bigistore_sum_up(PG_FUNCTION_ARGS)
         end_key = PG_GETARG_INT32(1) > pairs[is->len -1].key ? pairs[is->len -1].key : PG_GETARG_INT32(1);
         while (index < is->len && pairs[index].key <= end_key)
             result = DirectFunctionCall2(int8pl, result, pairs[index++].val);
-    }    
+    }
 
     PG_RETURN_INT64(result);
 }
@@ -975,4 +975,48 @@ bigistore_svals(PG_FUNCTION_ARGS)
         SRF_RETURN_NEXT(funcctx, Int64GetDatum(pairs[i].val));
 
     SRF_RETURN_DONE(funcctx);
+}
+
+bool bigistore_eq_internal(const BigIStore *left, const BigIStore *right)
+{
+    BigIStorePair *pairs_left, *pairs_right;
+    int32 len, i;
+
+    if (left->len != right->len) return false;
+    len = left->len;
+
+    pairs_left  = FIRST_PAIR(left, BigIStorePair);
+    pairs_right = FIRST_PAIR(right, BigIStorePair);
+
+    for (i = 0; i < len; ++i)
+    {
+        if (pairs_left[i].key != pairs_right[i].key || pairs_left[i].val != pairs_right[i].val)
+            return false;
+    }
+
+    return true;
+}
+
+/*
+ * A boolean function that supports `select '1=>1'::bigistore = '2=>2'::bigistore`
+ */
+PG_FUNCTION_INFO_V1(bigistore_eq);
+Datum
+bigistore_eq(PG_FUNCTION_ARGS)
+{
+    if (PG_ARGISNULL(0) || PG_ARGISNULL(1)) PG_RETURN_NULL();
+
+    PG_RETURN_BOOL(bigistore_eq_internal(PG_GETARG_BIGIS(0), PG_GETARG_BIGIS(1)));
+}
+
+/*
+ * Negation to bigistore_eq
+ */
+PG_FUNCTION_INFO_V1(bigistore_ne);
+Datum
+bigistore_ne(PG_FUNCTION_ARGS)
+{
+    if (PG_ARGISNULL(0) || PG_ARGISNULL(1)) PG_RETURN_NULL();
+
+    PG_RETURN_BOOL(!bigistore_eq_internal(PG_GETARG_BIGIS(0), PG_GETARG_BIGIS(1)));
 }

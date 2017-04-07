@@ -4,7 +4,6 @@
 
 #include "istore.h"
 #include "is_parser.h"
-#include "libpq/pqformat.h"
 #include "utils/builtins.h"
 
 PG_FUNCTION_INFO_V1(istore_out);

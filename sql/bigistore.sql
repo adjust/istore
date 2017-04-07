@@ -1,4 +1,5 @@
 --require types
+--require parallel_agg
 
 CREATE FUNCTION exist(bigistore, integer)
     RETURNS boolean
@@ -66,6 +67,16 @@ CREATE FUNCTION bigistore(integer[])
     RETURNS bigistore
     AS 'istore', 'bigistore_from_intarray'
     LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION bigistore_eq(bigistore, bigistore)
+    RETURNS bool
+    AS 'istore'
+    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION bigistore_ne(bigistore, bigistore)
+    RETURNS bool
+    AS 'istore'
+    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION sum_up(bigistore)
     RETURNS bigint
@@ -162,25 +173,34 @@ CREATE FUNCTION istore_max_transfn(internal, bigistore)
     AS 'istore' ,'bigistore_max_transfn'
     LANGUAGE C IMMUTABLE;
 
-CREATE AGGREGATE SUM (
+CREATE AGGREGATE SUM(bigistore) (
     sfunc = istore_sum_transfn,
-    basetype = bigistore,
     stype = internal,
-    finalfunc = bigistore_agg_finalfn
+    finalfunc = bigistore_agg_finalfn,
+    combinefunc = istore_agg_combine,
+    serialfunc = istore_serial,
+    deserialfunc = istore_deserial,
+    parallel = safe
 );
 
-CREATE AGGREGATE MIN (
+CREATE AGGREGATE MIN(bigistore) (
     sfunc = istore_min_transfn,
-    basetype = bigistore,
     stype = internal,
-    finalfunc = bigistore_agg_finalfn
+    finalfunc = bigistore_agg_finalfn,
+    combinefunc = istore_agg_combine,
+    serialfunc = istore_serial,
+    deserialfunc = istore_deserial,
+    parallel = safe
 );
 
-CREATE AGGREGATE MAX (
+CREATE AGGREGATE MAX(bigistore) (
     sfunc = istore_max_transfn,
-    basetype = bigistore,
     stype = internal,
-    finalfunc = bigistore_agg_finalfn
+    finalfunc = bigistore_agg_finalfn,
+    combinefunc = istore_agg_combine,
+    serialfunc = istore_serial,
+    deserialfunc = istore_deserial,
+    parallel = safe
 );
 
 CREATE OPERATOR -> (
@@ -241,6 +261,24 @@ CREATE OPERATOR / (
     leftarg   = bigistore,
     rightarg  = bigint,
     procedure = divide
+);
+
+CREATE OPERATOR = (
+    leftarg    = bigistore,
+    rightarg   = bigistore,
+    commutator = =,
+    negator    = <>,
+    restrict   = eqsel,
+    procedure  = bigistore_eq
+);
+
+CREATE OPERATOR <> (
+    leftarg    = bigistore,
+    rightarg   = bigistore,
+    commutator = <>,
+    negator    = =,
+    restrict   = neqsel,
+    procedure  = bigistore_ne
 );
 
 CREATE FUNCTION gin_extract_bigistore_key(internal, internal)
