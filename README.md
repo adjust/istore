@@ -90,7 +90,11 @@ SELECT pg_size_pretty(pg_table_size('event_log')) as "without istore", pg_size_p
 Operator              | Description                                                           | Example                                   | Result
 ---------             | -----------                                                           | -------                                   | ------
 istore -> integer     | get value for key (NULL if not present)                               | '1=>4,2=>5'::istore -> 1                  | 4
+istore -> integer[]   | get values or key (NULL if not present)                               | '1=>4,2=>5'::istore -> Array[1,3]         | {4,NULL}
 istore ? integer      | does istore contain key?                                              | '1=>4,2=>5'::istore ? 2                   | t
+istore ?& integer[]   | does istore contain all specified keys?                               | '1=>4,2=>5'::istore ?& ARRAY[1,3]         | f
+istore ?| integer[]   | does istore contain any of the specified keys?                        | '1=>4,2=>5'::istore ?| ARRAY[1,3]         | t
+istore || istore      | concatenate istores                                                   | '1=>4, 2=>5'::istore || '3=>4, 2=>7'      | "1"=>"4", "2"=>"7", "3"=>"4"
 istore + istore       | add value of matching keys (missing key will be treated as 0)         | '1=>4,2=>5'::istore + '1=>4,3=>6'::istore | "1"=>"8", "2"=>"5", "3"=>"6"
 istore + integer      | add right operant to all values                                       | '1=>4,2=>5'::istore + 3                   | "1"=>"7", "2"=>"8"
 istore - istore       | subtract value of matching keys (missing key will be treated as 0)    | '1=>4,2=>5'::istore - '1=>4,3=>6'::istore | "1"=>"0", "2"=>"5", "3"=>"-6"
@@ -99,6 +103,8 @@ istore * istore       | multiply value of matching keys (missing key will be ign
 istore * integer      | multiply right operant to all values                                  | '1=>4,2=>5'::istore * 3                   | "1"=>"12", "2"=>"15"
 istore / istore       | divide value of matching keys (missing key will be ignored)           | '1=>4,2=>5'::istore / '1=>4,3=>6'::istore | "1"=>"1"
 istore / integer      | divide right operant to all values                                    | '1=>4,2=>5'::istore / 3                   | "1"=>"1", "2"=>"1"
+%% istore             | convert istore to array of alternating keys and values                | %% '1=>4,2=>5'::istore                    | {1,4,2,5}
+%# istore             | convert istore to two-dimensional key/value array                     | %# '1=>4,2=>5'::istore                    | {{1,4},{2,5}}
 
 ### istore Functions
 
@@ -133,6 +139,18 @@ istore_seed(integer, integer, integer)  | istore                    | create an 
 istore_val_larger(istore, istore)       | istore                    | merge istores with larger values                                            | istore_val_larger('1=>4,2=>5'::istore, '1=>5,3=>6'::istore)   | "1"=>"5", "2"=>"5", "3"=>"6"
 istore_val_smaller(istore, istore)      | istore                    | merge istores with smaller values                                           | istore_val_smaller('1=>4,2=>5'::istore, '1=>5,3=>6'::istore)  | "1"=>"4", "2"=>"5", "3"=>"6"
 each(istore)                            | setof(key int, value int) | get istore's keys and values as a set                                       | each('1=>4,5=>10'::istore)                                    | key \| value<br/> ----+-------<br/> 1 \|     4<br/> 5 \|    10
+istore_to_json(istore)                  | integer[]                 | get istore's keys and values as json                                        | istore_to_json('1=>4,2=>5'::istore)                           |  {"1": 4, "2": 5}
+istore_to_array(istore)                 | integer[]                 | get istore's keys and values as an array of alternating keys and values     | istore_to_array('1=>4,2=>5'::istore)                          |  {1,4,2,5}
+istore_to_matrix(istore)                | integer[]                 | get istore's keys and values as a two-dimensional array                     | istore_to_matrix('1=>4,2=>5'::istore)                         |  {{1,4},{2,5}}
+slice(istore, integer[])                | istore                    | extract a subset of an istore                                               | slice('1=>4,2=>5'::istore, ARRAY[2])                          |  "2"=>"5"
+slice_array(istore, integer[])          | integer[]                 | extract a subset of an istore                                               | slice_array('1=>4,2=>5'::istore, ARRAY[2])                    |  {5}
+delete(istore, integer)                 | istore                    | delete pair with matching key                                               | delete('1=>4,2=>5'::istore, 2)                                |  "1"=>"4"
+delete(istore, integer[])               | istore                    | delete pair with matching keys                                              | delete('1=>4,2=>5'::istore, ARRAY[2])                         |  "1"=>"4"
+exists_all(istore, integer[])           | boolean                   | does istore contain all specified keys?                                     | exists_all('1=>4,2=>5'::istore, ARRAY[2])                     |  t
+exists_any(istore, integer[])           | boolean                   | does istore contain any of the specified keys?                              | exists_any('1=>4,2=>5'::istore, ARRAY[2])                     |  t
+delete(istore, istore)                  | istore                    | delete matching pairs                                                       | delete('1=>4,2=>5'::istore, '1=>3,2=>5')                      |  "1"=>"4"
+concat(istore, istore)                  | istore                    | concat two istores                                                          | concat('1=>4, 2=>5'::istore, '3=>4, 2=>7'::istore)            |  "1"=>"4", "2"=>"7", "3"=>"4"
+
 
 ### istore Aggregate Functions
 

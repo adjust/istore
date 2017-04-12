@@ -136,19 +136,22 @@ IStore *istore_apply_datum(IStore *arg1, Datum arg2, PGFunction applyfunc);
 BigIStore *bigistore_merge(BigIStore *arg1, BigIStore *arg2, PGFunction mergefunc, PGFunction miss1func);
 BigIStore *bigistore_apply_datum(BigIStore *arg1, Datum arg2, PGFunction applyfunc);
 
-void istore_copy_and_add_buflen(IStore *istore, BigIStorePair *pairs);
-void bigistore_add_buflen(BigIStore *istore);
-void istore_pairs_init(IStorePairs *pairs, size_t initial_size);
-void istore_pairs_insert(IStorePairs *pairs, int32 key, int32 val);
-int istore_pairs_cmp(const void *a, const void *b);
-void istore_tree_to_pairs(AvlNode *p, IStorePairs *pairs);
-IStorePair *istore_find(IStore *is, int32 key);
+void           istore_copy_and_add_buflen(IStore *istore, BigIStorePair *pairs);
+void           bigistore_add_buflen(BigIStore *istore);
+void           istore_pairs_init(IStorePairs *pairs, size_t initial_size);
+void           istore_pairs_insert(IStorePairs *pairs, int32 key, int32 val);
+int            istore_pairs_cmp(const void *a, const void *b);
+void           istore_tree_to_pairs(AvlNode *p, IStorePairs *pairs);
+IStorePair *   istore_find(IStore *is, int32 key, int *off_out);
+int            is_pair_buf_len(IStorePair *pair);
+int            bigis_pair_buf_len(BigIStorePair *pair);
+void           bigistore_pairs_init(BigIStorePairs *pairs, size_t initial_size);
+void           bigistore_pairs_insert(BigIStorePairs *pairs, int32 key, int64 val);
+int            bigistore_pairs_cmp(const void *a, const void *b);
+void           bigistore_tree_to_pairs(AvlNode *p, BigIStorePairs *pairs);
+BigIStorePair *bigistore_find(BigIStore *is, int32 key, int *off_out);
 
-void bigistore_pairs_init(BigIStorePairs *pairs, size_t initial_size);
-void bigistore_pairs_insert(BigIStorePairs *pairs, int32 key, int64 val);
-int bigistore_pairs_cmp(const void *a, const void *b);
-void bigistore_tree_to_pairs(AvlNode *p, BigIStorePairs *pairs);
-BigIStorePair *bigistore_find(BigIStore *is, int32 key);
+int is_int32_arr_comp(const void *a, const void *b);
 
 #define BUFLEN_OFFSET 8
 #define MAX(_a, _b) ((_a > _b) ? _a : _b)
@@ -168,8 +171,11 @@ BigIStorePair *bigistore_find(BigIStore *is, int32 key);
 /*
  * get the istore
  */
+
 #define PG_GETARG_IS(x) (IStore *) PG_DETOAST_DATUM(PG_GETARG_DATUM(x))
 #define PG_GETARG_BIGIS(x) (BigIStore *) PG_DETOAST_DATUM(PG_GETARG_DATUM(x))
+#define PG_GETARG_IS_COPY(x) (IStore *) PG_DETOAST_DATUM_COPY(PG_GETARG_DATUM(x))
+#define PG_GETARG_BIGIS_COPY(x) (BigIStore *) PG_DETOAST_DATUM_COPY(PG_GETARG_DATUM(x))
 
 /*
  * creates the internal representation from a pairs collection
@@ -196,8 +202,6 @@ BigIStorePair *bigistore_find(BigIStore *is, int32 key);
         pfree(_pairs->pairs);                                                                                          \
     } while (0)
 
-#endif // ISTORE_H
-
 #define INTPL(_a, _b, _r)                                                                                              \
     do                                                                                                                 \
     {                                                                                                                  \
@@ -205,3 +209,5 @@ BigIStorePair *bigistore_find(BigIStore *is, int32 key);
         if (SAMESIGN(_a, _b) && !SAMESIGN(_r, _a))                                                                     \
             ereport(ERROR, (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE), errmsg("integer out of range")));             \
     } while (0)
+
+#endif // ISTORE_H

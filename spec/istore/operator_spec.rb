@@ -11,6 +11,10 @@ types.each do |type|
           query("SELECT '1=>1, -1=>0'::#{type} -> -1").should match 0
           query("SELECT '1=>1, -1=>3'::#{type} -> -1").should match 3
           query("SELECT '0=>40000000000'::bigistore->0").should match 40000000000 if type == :bigistore
+          query("SELECT #{sample[type]}::#{type} -> 10").should match \
+            sample_hash[type][10]
+          query("SELECT #{sample[type]}::#{type} -> Array[10,0]").should match \
+            arr_to_sql_arr [10,0].map{|k| sample_hash[type][k]}.to_s
         end
 
         it'should check existense of a key' do
@@ -115,6 +119,28 @@ types.each do |type|
           '"-1"=>"-1", "1"=>"-3"'
           query("SELECT '-1=>1, -1=>3'::#{type} * -1").should match \
           '"-1"=>"-4"'
+        end
+
+        it 'should return convert to array' do
+          query("SELECT %%#{sample[type]}::#{type}").should match \
+          arr_to_sql_arr sample_hash[type].to_a.flatten
+          query("SELECT %##{sample[type]}::#{type}").should match \
+          arr_to_sql_arr sample_hash[type].to_a
+        end
+
+        describe 'existence' do
+          it 'should check presence of a key' do
+            query("SELECT #{sample[type]}::#{type} ? 10").should match 't'
+            query("SELECT #{sample[type]}::#{type} ? 25").should match 'f'
+          end
+          it 'should check presence of any key' do
+            query("SELECT #{sample[type]}::#{type} ?| Array[10,0]").should match 't'
+            query("SELECT #{sample[type]}::#{type} ?| Array[27,25]").should match 'f'
+          end
+          it 'should check presence of all key' do
+            query("SELECT #{sample[type]}::#{type} ?& Array[10,0]").should match 't'
+            query("SELECT #{sample[type]}::#{type} ?& Array[27,25]").should match 'f'
+          end
         end
       end
     end

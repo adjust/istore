@@ -356,15 +356,112 @@ types.each do |type|
       end
 
       it 'should return length of empty istores' do
-        query("SELECT istore_length(bigistore(ARRAY[]::integer[],ARRAY[]::integer[]))").should match 0
-        query("SELECT istore_length(istore(ARRAY[]::integer[],ARRAY[]::integer[]))").should match 0
+        query("SELECT istore_length(#{type}(ARRAY[]::integer[],ARRAY[]::integer[]))").should match 0
       end
 
       it 'should return length of non-empty istores' do
-        query("SELECT istore_length(istore(ARRAY[1],ARRAY[1]))").should match 1
-        query("SELECT istore_length(bigistore(ARRAY[1],ARRAY[1]))").should match 1
-        query("SELECT istore_length(bigistore(ARRAY[1,2,3],ARRAY[1,2,3]))").should match 3
-        query("SELECT istore_length(istore(ARRAY[1,2,3],ARRAY[1,2,3]))").should match 3
+        query("SELECT istore_length(#{type}(ARRAY[1],ARRAY[1]))").should match 1
+        query("SELECT istore_length(#{type}(ARRAY[1,2,3],ARRAY[1,2,3]))").should match 3
+        query("SELECT istore_length(#{sample[type]}::#{type})").should match sample_hash[type].size
+      end
+
+      it 'should convert istore to json' do
+        query("SELECT istore_to_json('5=>50, 7=>70, 9=>90'::#{type})").should match \
+        '{"5": 50, "7": 70, "9": 90}'
+        query("SELECT istore_to_json(#{sample[type]}::#{type})").should match \
+          sample_hash[type].to_json.gsub(/[\,\:]/,{','=>', ',':'=>': '})
+      end
+
+      it 'should convert istore to array' do
+        query("SELECT istore_to_array('5=>50, 7=>70, 9=>90'::#{type})").should match \
+        '{5,50,7,70,9,90}'
+        query("SELECT istore_to_array(#{sample[type]}::#{type})").should match \
+          arr_to_sql_arr sample_hash[type].to_a.flatten
+        query("SELECT istore_to_array(''::#{type})").should match \
+          '{}'
+      end
+
+      it 'should convert istore to matrix' do
+        query("SELECT istore_to_matrix('5=>50, 7=>70, 9=>90'::#{type})").should match \
+        '{{5,50},{7,70},{9,90}}'
+        query("SELECT istore_to_matrix(#{sample[type]}::#{type})").should match \
+          arr_to_sql_arr sample_hash[type].to_a
+      end
+
+      describe 'slice' do
+        it 'should return a partial istore' do
+          query("SELECT slice('1=>10, 2=>20, 3=>30, 4=>40, 5=>50, 7=>70, 9=>90'::#{type}, ARRAY[3,5,1,9,11])").should match \
+          '"1"=>"10", "3"=>"30", "5"=>"50", "9"=>"90"'
+          query("SELECT slice(#{sample[type]}::#{type}, ARRAY[10,0])").should match \
+          hash_to_istore [0,10].map{|k| [k,sample_hash[type][k]]}.to_h
+        end
+
+        it 'should return null if no key match' do
+          query("SELECT slice('1=>10, 2=>20, 3=>30, 4=>40, 5=>50, 7=>70, 9=>90'::#{type}, ARRAY[30,50,10,90])").should match nil
+        end
+      end
+
+      describe 'slice_array' do
+        it 'should return a values from istore' do
+          query("SELECT slice_array('1=>10, 2=>20, 3=>30, 4=>40, 5=>50, 7=>70, 9=>90'::#{type}, ARRAY[3,5,1,9,11])").should match \
+          '{30,50,10,90,NULL}'
+          query("SELECT slice_array(#{sample[type]}::#{type}, ARRAY[10,0])").should match \
+          arr_to_sql_arr [10,0].map{|k| sample_hash[type][k]}.to_s
+        end
+
+        it 'should return null array if no key match' do
+          query("SELECT slice_array('1=>10, 2=>20, 3=>30, 4=>40, 5=>50, 7=>70, 9=>90'::#{type}, ARRAY[30,50,10,90])").should match \
+          '{NULL,NULL,NULL,NULL}'
+        end
+      end
+
+      describe 'delete' do
+        it 'should delete a key from istore' do
+          query("SELECT delete('1=>10, 2=>20, 3=>30, 4=>40, 5=>50, 7=>70, 9=>90'::#{type},3)").should match \
+          '"1"=>"10", "2"=>"20", "4"=>"40", "5"=>"50", "7"=>"70", "9"=>"90"'
+          query("SELECT delete(#{sample[type]}::#{type}, 10)").should match \
+            hash_to_istore sample_hash[type].reject{|k,_| k==10}
+        end
+
+        it 'should return istore if key unmatched' do
+          query("SELECT delete('1=>10, 2=>20, 3=>30, 4=>40, 5=>50, 7=>70, 9=>90'::#{type},6)").should match \
+          '"1"=>"10", "2"=>"20", "3"=>"30", "4"=>"40", "5"=>"50", "7"=>"70", "9"=>"90"'
+        end
+
+        it 'should delete multiple keys from istore' do
+          query("SELECT delete('1=>10, 2=>20, 3=>30, 4=>40, 5=>50, 7=>70, 9=>90'::#{type},ARRAY[7,8,2,5,4])").should match \
+          '"1"=>"10", "3"=>"30", "9"=>"90"'
+          query("SELECT delete(#{sample[type]}::#{type}, ARRAY[0,10,-10])").should match \
+            hash_to_istore sample_hash[type].reject{|k,_| [0,10,-10].any?{|m| m==k} }
+        end
+
+        it 'should return istore if keys are unmatched' do
+          query("SELECT delete('1=>10, 2=>20, 3=>30, 4=>40, 5=>50, 7=>70, 9=>90'::#{type},ARRAY[8,6])").should match \
+          '"1"=>"10", "2"=>"20", "3"=>"30", "4"=>"40", "5"=>"50", "7"=>"70", "9"=>"90"'
+        end
+
+        it 'should delete istore from istore' do
+          query("SELECT delete(#{sample[type]}::#{type}, '0=>5, 10=>100')").should match \
+            hash_to_istore sample_hash[type].reject{|k,_| [0].any?{|m| m==k} }
+        end
+      end
+
+      describe 'existence' do
+        it 'should check presence of a key' do
+          query("SELECT exist(#{sample[type]}::#{type}, 10)").should match 't'
+          query("SELECT exist(#{sample[type]}::#{type}, 25)").should match 'f'
+        end
+        it 'should check presence of any key' do
+          query("SELECT exists_any(#{sample[type]}::#{type}, Array[10,0])").should match 't'
+          query("SELECT exists_any(#{sample[type]}::#{type}, Array[27,25])").should match 'f'
+          query("SELECT exists_any('1=>4,2=>5'::#{type}, ARRAY[]::int[]);").should match 'f'
+        end
+        it 'should check presence of all key' do
+          query("SELECT exists_all(#{sample[type]}::#{type}, Array[10,0])").should match 't'
+          query("SELECT exists_all(#{sample[type]}::#{type}, Array[10,25])").should match 'f'
+          query("SELECT exists_all('1=>4,2=>5'::#{type}, ARRAY[1,3]);").should match 'f'
+          query("SELECT exists_all('1=>4,2=>5'::#{type}, ARRAY[]::int[]);").should match 't'
+        end
       end
 
       it 'should be able to find the smallest key' do
@@ -379,6 +476,24 @@ types.each do |type|
         query("SELECT max_key('1=>1'::#{type})").should match '1'
         query("SELECT max_key('1=>1, 2=>1'::#{type})").should match '2'
         query("SELECT max_key('0=>2, 1=>2, 3=>0 ,2=>2'::#{type})").should match '3'
+      end
+
+      describe 'concat' do
+        it 'should concat two istores' do
+          query("SELECT concat('1=>4, 2=>5'::#{type}, '3=>4, 2=>7'::#{type})").should match \
+          '"1"=>"4", "2"=>"7", "3"=>"4"'
+          query("SELECT concat(#{sample[type]}::#{type}, #{sample[type]}::#{type})").should match \
+          sample_out[type]
+        end
+
+        it 'should concat empty istores' do
+          query("SELECT concat(#{sample[type]}::#{type}, ''::#{type})").should match \
+            sample_out[type]
+          query("SELECT concat(''::#{type}, #{sample[type]}::#{type})").should match \
+            sample_out[type]
+          query("SELECT concat(''::#{type}, ''::#{type})").should match \
+            ''
+        end
       end
     end
   end
