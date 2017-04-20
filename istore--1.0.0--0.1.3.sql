@@ -240,7 +240,9 @@ CREATE AGGREGATE MAX (
 );
 
 ----
-DROP FUNCTION IF EXISTS istore_agg_combine(internal, internal);
+DROP FUNCTION IF EXISTS istore_sum_combine(internal, internal);
+DROP FUNCTION IF EXISTS istore_max_combine(internal, internal);
+DROP FUNCTION IF EXISTS istore_min_combine(internal, internal);
 ----
 DROP FUNCTION IF EXISTS istore_deserial(bytea, internal);
 ----

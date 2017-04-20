@@ -4,170 +4,170 @@
 CREATE FUNCTION exist(bigistore, integer)
     RETURNS boolean
     AS 'istore', 'bigistore_exist'
-    LANGUAGE C IMMUTABLE STRICT;
+    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION fetchval(bigistore, integer)
     RETURNS bigint
     AS 'istore', 'bigistore_fetchval'
-    LANGUAGE C IMMUTABLE STRICT;
+    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION each(IN is bigistore,
     OUT key integer,
     OUT value bigint)
 RETURNS SETOF record
 AS 'istore','bigistore_each'
-LANGUAGE C STRICT IMMUTABLE;
+LANGUAGE C STRICT IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION compact(bigistore)
     RETURNS bigistore
     AS 'istore', 'bigistore_compact'
-    LANGUAGE C IMMUTABLE STRICT;
+    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION add(bigistore, bigistore)
     RETURNS bigistore
     AS 'istore', 'bigistore_add'
-    LANGUAGE C IMMUTABLE STRICT;
+    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION add(bigistore, bigint)
     RETURNS bigistore
     AS 'istore', 'bigistore_add_integer'
-    LANGUAGE C IMMUTABLE STRICT;
+    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION subtract(bigistore, bigistore)
     RETURNS bigistore
     AS 'istore', 'bigistore_subtract'
-    LANGUAGE C IMMUTABLE STRICT;
+    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION subtract(bigistore, bigint)
     RETURNS bigistore
     AS 'istore', 'bigistore_subtract_integer'
-    LANGUAGE C IMMUTABLE STRICT;
+    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION multiply(bigistore, bigistore)
     RETURNS bigistore
     AS 'istore', 'bigistore_multiply'
-    LANGUAGE C IMMUTABLE STRICT;
+    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION multiply(bigistore, bigint)
     RETURNS bigistore
     AS 'istore', 'bigistore_multiply_integer'
-    LANGUAGE C IMMUTABLE STRICT;
+    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION divide(bigistore, bigistore)
     RETURNS bigistore
     AS 'istore', 'bigistore_divide'
-    LANGUAGE C IMMUTABLE STRICT;
+    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION divide(bigistore, bigint)
     RETURNS bigistore
     AS 'istore', 'bigistore_divide_integer'
-    LANGUAGE C IMMUTABLE STRICT;
+    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION bigistore(integer[])
     RETURNS bigistore
     AS 'istore', 'bigistore_from_intarray'
-    LANGUAGE C IMMUTABLE STRICT;
+    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION sum_up(bigistore)
     RETURNS bigint
     AS 'istore', 'bigistore_sum_up'
-    LANGUAGE C IMMUTABLE STRICT;
+    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION sum_up(bigistore, integer)
     RETURNS bigint
     AS 'istore', 'bigistore_sum_up'
-    LANGUAGE C IMMUTABLE STRICT;
+    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION bigistore(integer[], integer[])
     RETURNS bigistore
     AS 'istore', 'bigistore_array_add'
-    LANGUAGE C IMMUTABLE STRICT;
+    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION bigistore(integer[], bigint[])
     RETURNS bigistore
     AS 'istore', 'bigistore_array_add'
-    LANGUAGE C IMMUTABLE STRICT;
+    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION istore(integer[], bigint[])
     RETURNS bigistore
     AS 'istore', 'bigistore_array_add'
-    LANGUAGE C IMMUTABLE STRICT;
+    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION fill_gaps(bigistore, integer, bigint DEFAULT 0)
     RETURNS bigistore
     AS 'istore', 'bigistore_fill_gaps'
-    LANGUAGE C IMMUTABLE STRICT;
+    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION accumulate(bigistore)
     RETURNS bigistore
     AS 'istore', 'bigistore_accumulate'
-    LANGUAGE C IMMUTABLE STRICT;
+    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION accumulate(bigistore, integer)
     RETURNS bigistore
     AS 'istore', 'bigistore_accumulate'
-    LANGUAGE C IMMUTABLE STRICT;
+    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION istore_seed(integer, integer, bigint)
     RETURNS bigistore
     AS 'istore', 'bigistore_seed'
-    LANGUAGE C IMMUTABLE STRICT;
+    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION istore_val_larger(bigistore, bigistore)
     RETURNS bigistore
     AS 'istore', 'bigistore_val_larger'
-    LANGUAGE C IMMUTABLE STRICT;
+    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION istore_val_smaller(bigistore, bigistore)
     RETURNS bigistore
     AS 'istore', 'bigistore_val_smaller'
-    LANGUAGE C IMMUTABLE STRICT;
+    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION akeys(bigistore)
     RETURNS integer[]
     AS 'istore' ,'bigistore_akeys'
-    LANGUAGE C IMMUTABLE STRICT;
+    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION avals(bigistore)
     RETURNS bigint[]
     AS 'istore' ,'bigistore_avals'
-    LANGUAGE C IMMUTABLE STRICT;
+    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION skeys(bigistore)
     RETURNS setof integer
     AS 'istore' ,'bigistore_skeys'
-    LANGUAGE C IMMUTABLE STRICT;
+    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION svals(bigistore)
     RETURNS setof bigint
     AS 'istore' ,'bigistore_svals'
-    LANGUAGE C IMMUTABLE STRICT;
+    LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION istore_to_json(bigistore)
 RETURNS json
 AS 'istore', 'bigistore_to_json'
-LANGUAGE C IMMUTABLE STRICT;
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION istore_sum_transfn(internal, bigistore)
     RETURNS internal
     AS 'istore' ,'bigistore_sum_transfn'
-    LANGUAGE C IMMUTABLE;
+    LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION istore_min_transfn(internal, bigistore)
     RETURNS internal
     AS 'istore' ,'bigistore_min_transfn'
-    LANGUAGE C IMMUTABLE;
+    LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION istore_max_transfn(internal, bigistore)
     RETURNS internal
     AS 'istore' ,'bigistore_max_transfn'
-    LANGUAGE C IMMUTABLE;
+    LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE SUM(bigistore) (
     sfunc = istore_sum_transfn,
     stype = internal,
     finalfunc = bigistore_agg_finalfn,
-    combinefunc = istore_agg_combine,
+    combinefunc = istore_sum_combine,
     serialfunc = istore_serial,
     deserialfunc = istore_deserial,
     parallel = safe
@@ -177,7 +177,7 @@ CREATE AGGREGATE MIN(bigistore) (
     sfunc = istore_min_transfn,
     stype = internal,
     finalfunc = bigistore_agg_finalfn,
-    combinefunc = istore_agg_combine,
+    combinefunc = istore_min_combine,
     serialfunc = istore_serial,
     deserialfunc = istore_deserial,
     parallel = safe
@@ -187,7 +187,7 @@ CREATE AGGREGATE MAX(bigistore) (
     sfunc = istore_max_transfn,
     stype = internal,
     finalfunc = bigistore_agg_finalfn,
-    combinefunc = istore_agg_combine,
+    combinefunc = istore_max_combine,
     serialfunc = istore_serial,
     deserialfunc = istore_deserial,
     parallel = safe
@@ -256,7 +256,7 @@ CREATE OPERATOR / (
 CREATE FUNCTION gin_extract_bigistore_key(internal, internal)
 RETURNS internal
 AS 'istore'
-LANGUAGE C IMMUTABLE STRICT;
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS bigistore_key_ops
 DEFAULT FOR TYPE bigistore USING gin

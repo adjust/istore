@@ -167,7 +167,7 @@ CREATE AGGREGATE SUM(istore) (
     sfunc = istore_sum_transfn,
     stype = internal,
     finalfunc = bigistore_agg_finalfn,
-    combinefunc = istore_agg_combine,
+    combinefunc = istore_sum_combine,
     serialfunc = istore_serial,
     deserialfunc = istore_deserial,
     parallel = safe
@@ -177,7 +177,7 @@ CREATE AGGREGATE MIN(istore) (
     sfunc = istore_min_transfn,
     stype = internal,
     finalfunc = istore_agg_finalfn_pairs,
-    combinefunc = istore_agg_combine,
+    combinefunc = istore_min_combine,
     serialfunc = istore_serial,
     deserialfunc = istore_deserial,
     parallel = safe
@@ -187,7 +187,7 @@ CREATE AGGREGATE MAX(istore) (
     sfunc = istore_max_transfn,
     stype = internal,
     finalfunc = istore_agg_finalfn_pairs,
-    combinefunc = istore_agg_combine,
+    combinefunc = istore_max_combine,
     serialfunc = istore_serial,
     deserialfunc = istore_deserial,
     parallel = safe
@@ -257,17 +257,17 @@ CREATE OPERATOR / (
 CREATE FUNCTION gin_extract_istore_key(internal, internal)
 RETURNS internal
 AS 'istore'
-LANGUAGE C IMMUTABLE STRICT;
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION gin_extract_istore_key_query(internal, internal, int2, internal, internal)
 RETURNS internal
 AS 'istore'
-LANGUAGE C IMMUTABLE STRICT;
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION gin_consistent_istore_key(internal, int2, internal, int4, internal, internal)
 RETURNS bool
 AS 'istore'
-LANGUAGE C IMMUTABLE STRICT;
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS istore_key_ops
 DEFAULT FOR TYPE istore USING gin

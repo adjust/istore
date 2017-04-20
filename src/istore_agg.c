@@ -21,6 +21,7 @@
                                                                                                  \
     } while(0)
 
+
 typedef struct {
     size_t size;
     int    used;
@@ -40,6 +41,116 @@ state_init(MemoryContext agg_context)
     state = (ISAggState *) MemoryContextAllocZero(agg_context, sizeof(ISAggState) + INITSTATESIZE * sizeof(BigIStorePair));
     state->size = INITSTATESIZE ;
     return state;
+}
+
+static inline void
+istore_agg_state_accum(ISAggState *state, size_t num_paris, BigIStorePair *pairs2, ISAggType type)
+{
+    BigIStorePair *pairs1;
+    int            index1 = 0, index2 = 0, i;
+
+    pairs1 = state->pairs;
+
+    while (index1 < state->used && index2 < num_paris)
+    {
+        if (pairs1->key < pairs2->key)
+        {
+            // do nothing keep state
+            ++pairs1;
+            ++index1;
+        }
+        else if (pairs1->key > pairs2->key)
+        {
+            i = 1;
+            while(index2 + i < num_paris && pairs1->key > pairs2[i].key){
+                ++i;
+            }
+
+            // ensure array is big enough
+            if (state->size < state->used + i)
+            {
+                state->size  = state->size * 2 > state->used + i ? state->size * 2 : state->used + i;
+                state        = repalloc(state, sizeof(ISAggState) + state->size * sizeof(BigIStorePair));
+                pairs1       = state->pairs+index1;
+            }
+
+            // move data i steps forward from index1
+            memmove(pairs1+i,pairs1, (state->used - index1) * sizeof(BigIStorePair));
+
+            // copy data
+            state->used += i;
+            memcpy(pairs1, pairs2, i * sizeof(BigIStorePair));
+            pairs1 += i;
+            pairs2 += i;
+            index1 += i;
+            index2 += i;
+
+        }
+        else
+        {
+            // identical keys - apply logic according to aggregation type
+            if (type == AGG_SUM)
+            {
+                    /*
+                    * Overflow check.  If the inputs are of different signs then their sum
+                    * cannot overflow.  If the inputs are of the same sign, their sum had
+                    * better be that sign too.
+                    */
+                    if (SAMESIGN(pairs1->val, pairs2->val))
+                    {
+                        pairs1->val += pairs2->val;
+                        if(!SAMESIGN(pairs1->val, pairs2->val))
+                            ereport(ERROR,
+                                    (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
+                                    errmsg("bigint out of range")));
+                    }
+                    else
+                    {
+                        pairs1->val += pairs2->val;
+                    }
+            }
+            else if (type == AGG_MIN)
+            {
+                pairs1->val = MIN(pairs2->val, pairs1->val);
+            }
+            else if (type == AGG_MAX)
+            {
+                pairs1->val = MAX(pairs2->val, pairs1->val);
+            }
+
+            ++index1;
+            ++index2;
+            ++pairs1;
+            ++pairs2;
+        }
+    }
+
+    // append any leftovers
+    i = num_paris - index2;
+    if ( i > 0 )
+    {
+        if (state->size <= state->used + i)
+        {
+            state->size = state->size * 2 > state->used + i ? state->size * 2 : state->used + i;
+            state       = repalloc(state, sizeof(ISAggState) + state->size * sizeof(BigIStorePair));
+            pairs1      = state->pairs+index1;
+        }
+        state->used += i;
+        memcpy(pairs1,pairs2, i * sizeof(BigIStorePair));
+    }
+}
+
+static inline ISAggState *
+is_agg_state_copy(ISAggState *state, MemoryContext context)
+{
+    ISAggState    *res;
+
+    res = (ISAggState *)MemoryContextAllocZero(context, sizeof(ISAggState) + state->size * sizeof(BigIStorePair));
+    res->size = state->size;
+    res->used = state->used;
+
+    memcpy(res->pairs, state->pairs, state->size * sizeof(BigIStorePair));
+    return res;
 }
 
 // Aggregate internal function for istore.
@@ -382,15 +493,15 @@ istore_agg_finalfn_pairs(PG_FUNCTION_ARGS)
 }
 
 /*
- * SUM(istore), etc. aggregates combinefunc
+ * SUM(istore), aggregates combinefunc
  */
-PG_FUNCTION_INFO_V1(istore_agg_combine);
+PG_FUNCTION_INFO_V1(istore_sum_combine);
 Datum
-istore_agg_combine(PG_FUNCTION_ARGS)
+istore_sum_combine(PG_FUNCTION_ARGS)
 {
-    ISAggState *left, *right, *result;
-    IStore     *istore;
-    MemoryContext agg_context, old_context;
+
+    ISAggState *left, *right;
+    MemoryContext agg_context;
 
     if (!AggCheckCallContext(fcinfo, &agg_context))
         elog(ERROR, "aggregate function called in non-aggregate context");
@@ -402,31 +513,79 @@ istore_agg_combine(PG_FUNCTION_ARGS)
 
     if (left == NULL)
     {
-        old_context = MemoryContextSwitchTo(agg_context);
 
-        left = (ISAggState *)palloc0(sizeof(ISAggState) + right->size * sizeof(BigIStorePair));
-        left->size = right->size;
-        left->used = right->used;
-
-        memcpy(left->pairs, right->pairs, right->size * sizeof(BigIStorePair));
-
-        MemoryContextSwitchTo(old_context);
+        left = is_agg_state_copy(right, agg_context);
 
         PG_RETURN_POINTER(left);
     }
 
-    istore      = (IStore *)(palloc0(ISHDRSZ + right->used * sizeof(IStorePair)));
-    istore->len = right->used;
-    istore_copy_and_add_buflen(istore, right->pairs);
-    SET_VARSIZE(istore, ISHDRSZ + right->used * sizeof(IStorePair));
+    istore_agg_state_accum(left, right->used, right->pairs, AGG_SUM);
 
-    old_context = MemoryContextSwitchTo(agg_context);
-    result = istore_agg_internal(left, istore, AGG_SUM);
-    MemoryContextSwitchTo(old_context);
+    PG_RETURN_POINTER(left);
+}
 
-    pfree(istore);
+/*
+ * MAX(istore), aggregates combinefunc
+ */
+PG_FUNCTION_INFO_V1(istore_max_combine);
+Datum
+istore_max_combine(PG_FUNCTION_ARGS)
+{
 
-    PG_RETURN_POINTER(result);
+    ISAggState *left, *right;
+    MemoryContext agg_context;
+
+    if (!AggCheckCallContext(fcinfo, &agg_context))
+        elog(ERROR, "aggregate function called in non-aggregate context");
+
+    left = PG_ARGISNULL(0) ? NULL : (ISAggState *) PG_GETARG_POINTER(0);
+    right = PG_ARGISNULL(1) ? NULL : (ISAggState *) PG_GETARG_POINTER(1);
+
+    if (right == NULL) PG_RETURN_POINTER(left);
+
+    if (left == NULL)
+    {
+
+        left = is_agg_state_copy(right, agg_context);
+
+        PG_RETURN_POINTER(left);
+    }
+
+    istore_agg_state_accum(left, right->used, right->pairs, AGG_MAX);
+
+    PG_RETURN_POINTER(left);
+}
+
+/*
+ * MAX(istore), aggregates combinefunc
+ */
+PG_FUNCTION_INFO_V1(istore_min_combine);
+Datum
+istore_min_combine(PG_FUNCTION_ARGS)
+{
+
+    ISAggState *left, *right;
+    MemoryContext agg_context;
+
+    if (!AggCheckCallContext(fcinfo, &agg_context))
+        elog(ERROR, "aggregate function called in non-aggregate context");
+
+    left = PG_ARGISNULL(0) ? NULL : (ISAggState *) PG_GETARG_POINTER(0);
+    right = PG_ARGISNULL(1) ? NULL : (ISAggState *) PG_GETARG_POINTER(1);
+
+    if (right == NULL) PG_RETURN_POINTER(left);
+
+    if (left == NULL)
+    {
+
+        left = is_agg_state_copy(right, agg_context);
+
+        PG_RETURN_POINTER(left);
+    }
+
+    istore_agg_state_accum(left, right->used, right->pairs, AGG_MIN);
+
+    PG_RETURN_POINTER(left);
 }
 
 /*
@@ -436,6 +595,7 @@ PG_FUNCTION_INFO_V1(istore_serial);
 Datum
 istore_serial(PG_FUNCTION_ARGS)
 {
+
     ISAggState *state;
     StringInfoData buf;
     int32 key, i;
@@ -466,24 +626,19 @@ PG_FUNCTION_INFO_V1(istore_deserial);
 Datum
 istore_deserial(PG_FUNCTION_ARGS)
 {
+    bytea      *sstate;
     ISAggState *state;
-    StringInfoData buf;
-    bytea *binary;
     size_t size;
     int32 key, i;
     int64 val;
+    StringInfoData buf;
 
     if (!AggCheckCallContext(fcinfo, NULL))
         elog(ERROR, "aggregate deserialization function called in non-aggregate context");
 
-    binary = PG_GETARG_BYTEA_P(0);
-
-    /*
-    * Copy the bytea into a StringInfo so that we can "receive" it using the
-    * standard recv-function infrastructure.
-    */
+    sstate = PG_GETARG_BYTEA_PP(0);
     initStringInfo(&buf);
-    appendBinaryStringInfo(&buf, VARDATA(binary), VARSIZE(binary) - VARHDRSZ);
+    appendBinaryStringInfo(&buf, VARDATA_ANY(sstate), VARSIZE_ANY_EXHDR(sstate));
 
     size = (size_t)pq_getmsgint(&buf, sizeof(int32));
 
