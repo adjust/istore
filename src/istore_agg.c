@@ -1,13 +1,11 @@
 #include "istore.h"
 
 #define SAMESIGN(a,b)   (((a) < 0) == ((b) < 0))
-#define INITSTATESIZE 30
 
-#define BIG_ISTORE 1
-#define ISTORE 0
-#define AGG_SUM 1
-#define AGG_MIN 2
-#define AGG_MAX 3
+static const int INITSTATESIZE = 30;
+static const int AGG_SUM = 1;
+static const int AGG_MIN = 2;
+static const int AGG_MAX = 3;
 
 
 #define INIT_AGG_STATE(_state, _type)                                                                   \
@@ -34,9 +32,15 @@ typedef struct {
     BigIStorePair pairs[0];
 } ISAggState;
 
+static inline ISAggState * state_init(MemoryContext agg_context, const int type);
+static inline void istore_agg_state_accum(ISAggState *state, int num_paris, BigIStorePair *pairs2);
+static inline ISAggState * is_agg_state_copy(ISAggState *state, MemoryContext context);
+static inline void istore_agg_internal(ISAggState *state, IStore *istore);
+static inline void bigistore_agg_internal(ISAggState *state, BigIStore *istore);
+
 
 static inline ISAggState *
-state_init(MemoryContext agg_context, int type)
+state_init(MemoryContext agg_context, const int type)
 {
     ISAggState *state;
     state = (ISAggState *) MemoryContextAllocZero(agg_context, sizeof(ISAggState) + INITSTATESIZE * sizeof(BigIStorePair));
