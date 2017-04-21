@@ -5,6 +5,10 @@
 
 #define BIG_ISTORE 1
 #define ISTORE 0
+#define AGG_SUM 1
+#define AGG_MIN 2
+#define AGG_MAX 3
+
 
 #define INIT_AGG_STATE(_state)                                                                 \
     do {                                                                                         \
@@ -25,14 +29,10 @@
 typedef struct {
     int size;
     int used;
+    int agg_type;
     BigIStorePair pairs[0];
 } ISAggState;
 
-typedef enum {
-    AGG_SUM,
-    AGG_MIN,
-    AGG_MAX
-} ISAggType;
 
 static inline ISAggState *
 state_init(MemoryContext agg_context)
@@ -44,7 +44,7 @@ state_init(MemoryContext agg_context)
 }
 
 static inline void
-istore_agg_state_accum(ISAggState *state, int num_paris, BigIStorePair *pairs2, ISAggType type)
+istore_agg_state_accum(ISAggState *state, int num_paris, BigIStorePair *pairs2)
 {
     BigIStorePair *pairs1;
     int            index1 = 0, index2 = 0, i;
@@ -89,7 +89,7 @@ istore_agg_state_accum(ISAggState *state, int num_paris, BigIStorePair *pairs2, 
         else
         {
             // identical keys - apply logic according to aggregation type
-            if (type == AGG_SUM)
+            if (state->agg_type == AGG_SUM)
             {
                     /*
                     * Overflow check.  If the inputs are of different signs then their sum
@@ -109,11 +109,11 @@ istore_agg_state_accum(ISAggState *state, int num_paris, BigIStorePair *pairs2, 
                         pairs1->val += pairs2->val;
                     }
             }
-            else if (type == AGG_MIN)
+            else if (state->agg_type == AGG_MIN)
             {
                 pairs1->val = MIN(pairs2->val, pairs1->val);
             }
-            else if (type == AGG_MAX)
+            else if (state->agg_type == AGG_MAX)
             {
                 pairs1->val = MAX(pairs2->val, pairs1->val);
             }
@@ -145,9 +145,10 @@ is_agg_state_copy(ISAggState *state, MemoryContext context)
 {
     ISAggState    *res;
 
-    res = (ISAggState *)MemoryContextAllocZero(context, sizeof(ISAggState) + state->size * sizeof(BigIStorePair));
-    res->size = state->size;
-    res->used = state->used;
+    res           = (ISAggState *)MemoryContextAllocZero(context, sizeof(ISAggState) + state->size * sizeof(BigIStorePair));
+    res->size     = state->size;
+    res->used     = state->used;
+    res->agg_type = state->agg_type;
 
     memcpy(res->pairs, state->pairs, state->size * sizeof(BigIStorePair));
     return res;
@@ -155,7 +156,7 @@ is_agg_state_copy(ISAggState *state, MemoryContext context)
 
 // Aggregate internal function for istore.
 static inline ISAggState *
-istore_agg_internal(ISAggState *state, IStore *istore, ISAggType type)
+istore_agg_internal(ISAggState *state, IStore *istore)
 {
     BigIStorePair *pairs1;
     IStorePair    *pairs2;
@@ -205,7 +206,7 @@ istore_agg_internal(ISAggState *state, IStore *istore, ISAggType type)
         else
         {
             // identical keys add values
-            if (type == AGG_SUM)
+            if (state->agg_type == AGG_SUM)
             {
                 /*
                 * Overflow check.  If the inputs are of different signs then their sum
@@ -225,11 +226,11 @@ istore_agg_internal(ISAggState *state, IStore *istore, ISAggType type)
                     pairs1->val += pairs2->val;
                 }
             }
-            else if (type == AGG_MIN)
+            else if (state->agg_type == AGG_MIN)
             {
                 pairs1->val = MIN(pairs2->val, pairs1->val);
             }
-            else if (type == AGG_MAX)
+            else if (state->agg_type == AGG_MAX)
             {
                 pairs1->val = MAX(pairs2->val, pairs1->val);
             }
@@ -266,7 +267,7 @@ istore_agg_internal(ISAggState *state, IStore *istore, ISAggType type)
 }
 
 static inline ISAggState *
-bigistore_agg_internal(ISAggState *state, BigIStore *istore, ISAggType type)
+bigistore_agg_internal(ISAggState *state, BigIStore *istore)
 {
     BigIStorePair *pairs2;
     BigIStorePair *pairs1;
@@ -313,7 +314,7 @@ bigistore_agg_internal(ISAggState *state, BigIStore *istore, ISAggType type)
         else
         {
             // identical keys - apply logic according to aggregation type
-            if (type == AGG_SUM)
+            if (state->agg_type == AGG_SUM)
             {
                     /*
                     * Overflow check.  If the inputs are of different signs then their sum
@@ -333,11 +334,11 @@ bigistore_agg_internal(ISAggState *state, BigIStore *istore, ISAggType type)
                         pairs1->val += pairs2->val;
                     }
             }
-            else if (type == AGG_MIN)
+            else if (state->agg_type == AGG_MIN)
             {
                 pairs1->val = MIN(pairs2->val, pairs1->val);
             }
-            else if (type == AGG_MAX)
+            else if (state->agg_type == AGG_MAX)
             {
                 pairs1->val = MAX(pairs2->val, pairs1->val);
             }
@@ -375,8 +376,9 @@ istore_min_transfn(PG_FUNCTION_ARGS)
 {
     ISAggState    *state;
     INIT_AGG_STATE(state);
+    state->agg_type = AGG_MIN;
 
-    PG_RETURN_POINTER(istore_agg_internal(state, PG_GETARG_IS(1), AGG_MIN));
+    PG_RETURN_POINTER(istore_agg_internal(state, PG_GETARG_IS(1)));
 }
 
 /*
@@ -388,7 +390,8 @@ bigistore_min_transfn(PG_FUNCTION_ARGS)
 {
     ISAggState    *state;
     INIT_AGG_STATE(state);
-    PG_RETURN_POINTER(bigistore_agg_internal(state, PG_GETARG_BIGIS(1), AGG_MIN));
+    state->agg_type = AGG_MIN;
+    PG_RETURN_POINTER(bigistore_agg_internal(state, PG_GETARG_BIGIS(1)));
 }
 
 /*
@@ -400,7 +403,8 @@ istore_max_transfn(PG_FUNCTION_ARGS)
 {
     ISAggState    *state;
     INIT_AGG_STATE(state);
-    PG_RETURN_POINTER(istore_agg_internal(state, PG_GETARG_IS(1), AGG_MAX));
+    state->agg_type = AGG_MAX;
+    PG_RETURN_POINTER(istore_agg_internal(state, PG_GETARG_IS(1)));
 
 }
 
@@ -413,7 +417,8 @@ bigistore_max_transfn(PG_FUNCTION_ARGS)
 {
     ISAggState    *state;
     INIT_AGG_STATE(state);
-    PG_RETURN_POINTER(bigistore_agg_internal(state, PG_GETARG_BIGIS(1), AGG_MAX));
+    state->agg_type = AGG_MAX;
+    PG_RETURN_POINTER(bigistore_agg_internal(state, PG_GETARG_BIGIS(1)));
 
 }
 
@@ -426,7 +431,8 @@ istore_sum_transfn(PG_FUNCTION_ARGS)
 {
     ISAggState    *state;
     INIT_AGG_STATE(state);
-    PG_RETURN_POINTER(istore_agg_internal(state, PG_GETARG_IS(1), AGG_SUM));
+    state->agg_type = AGG_SUM;
+    PG_RETURN_POINTER(istore_agg_internal(state, PG_GETARG_IS(1)));
 
 }
 
@@ -439,7 +445,8 @@ bigistore_sum_transfn(PG_FUNCTION_ARGS)
 {
     ISAggState    *state;
     INIT_AGG_STATE(state);
-    PG_RETURN_POINTER(bigistore_agg_internal(state, PG_GETARG_BIGIS(1), AGG_SUM));
+    state->agg_type = AGG_SUM;
+    PG_RETURN_POINTER(bigistore_agg_internal(state, PG_GETARG_BIGIS(1)));
 
 }
 
@@ -495,9 +502,9 @@ istore_agg_finalfn_pairs(PG_FUNCTION_ARGS)
 /*
  * SUM(istore), aggregates combinefunc
  */
-PG_FUNCTION_INFO_V1(istore_sum_combine);
+PG_FUNCTION_INFO_V1(istore_agg_combine);
 Datum
-istore_sum_combine(PG_FUNCTION_ARGS)
+istore_agg_combine(PG_FUNCTION_ARGS)
 {
 
     ISAggState *left, *right;
@@ -519,71 +526,7 @@ istore_sum_combine(PG_FUNCTION_ARGS)
         PG_RETURN_POINTER(left);
     }
 
-    istore_agg_state_accum(left, right->used, right->pairs, AGG_SUM);
-
-    PG_RETURN_POINTER(left);
-}
-
-/*
- * MAX(istore), aggregates combinefunc
- */
-PG_FUNCTION_INFO_V1(istore_max_combine);
-Datum
-istore_max_combine(PG_FUNCTION_ARGS)
-{
-
-    ISAggState *left, *right;
-    MemoryContext agg_context;
-
-    if (!AggCheckCallContext(fcinfo, &agg_context))
-        elog(ERROR, "aggregate function called in non-aggregate context");
-
-    left = PG_ARGISNULL(0) ? NULL : (ISAggState *) PG_GETARG_POINTER(0);
-    right = PG_ARGISNULL(1) ? NULL : (ISAggState *) PG_GETARG_POINTER(1);
-
-    if (right == NULL) PG_RETURN_POINTER(left);
-
-    if (left == NULL)
-    {
-
-        left = is_agg_state_copy(right, agg_context);
-
-        PG_RETURN_POINTER(left);
-    }
-
-    istore_agg_state_accum(left, right->used, right->pairs, AGG_MAX);
-
-    PG_RETURN_POINTER(left);
-}
-
-/*
- * MAX(istore), aggregates combinefunc
- */
-PG_FUNCTION_INFO_V1(istore_min_combine);
-Datum
-istore_min_combine(PG_FUNCTION_ARGS)
-{
-
-    ISAggState *left, *right;
-    MemoryContext agg_context;
-
-    if (!AggCheckCallContext(fcinfo, &agg_context))
-        elog(ERROR, "aggregate function called in non-aggregate context");
-
-    left = PG_ARGISNULL(0) ? NULL : (ISAggState *) PG_GETARG_POINTER(0);
-    right = PG_ARGISNULL(1) ? NULL : (ISAggState *) PG_GETARG_POINTER(1);
-
-    if (right == NULL) PG_RETURN_POINTER(left);
-
-    if (left == NULL)
-    {
-
-        left = is_agg_state_copy(right, agg_context);
-
-        PG_RETURN_POINTER(left);
-    }
-
-    istore_agg_state_accum(left, right->used, right->pairs, AGG_MIN);
+    istore_agg_state_accum(left, right->used, right->pairs);
 
     PG_RETURN_POINTER(left);
 }
@@ -609,6 +552,7 @@ istore_serial(PG_FUNCTION_ARGS)
     pq_begintypsend(&buf);
     pq_sendint(&buf, state->size, sizeof(int));
     pq_sendint(&buf, state->used, sizeof(int));
+    pq_sendint(&buf, state->agg_type, sizeof(int));
 
     for (i = 0; i < state->used; ++i)
     {
@@ -643,8 +587,9 @@ istore_deserial(PG_FUNCTION_ARGS)
     size = pq_getmsgint(&buf, sizeof(int));
 
     state = (ISAggState *) palloc0(sizeof(ISAggState) + size * sizeof(BigIStorePair));
-    state->size = size;
-    state->used = pq_getmsgint(&buf, sizeof(int));
+    state->size     = size;
+    state->used     = pq_getmsgint(&buf, sizeof(int));
+    state->agg_type = pq_getmsgint(&buf, sizeof(int));
 
     for (i = 0; i < state->used; ++i)
     {

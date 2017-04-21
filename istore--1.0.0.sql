@@ -68,17 +68,7 @@ CREATE FUNCTION istore_deserial(bytea, internal)
     AS 'istore', 'istore_deserial'
     LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION istore_sum_combine(internal, internal)
-    RETURNS internal
-    AS 'istore'
-    LANGUAGE C IMMUTABLE PARALLEL SAFE;
-
-CREATE FUNCTION istore_max_combine(internal, internal)
-    RETURNS internal
-    AS 'istore'
-    LANGUAGE C IMMUTABLE PARALLEL SAFE;
-
-CREATE FUNCTION istore_min_combine(internal, internal)
+CREATE FUNCTION istore_agg_combine(internal, internal)
     RETURNS internal
     AS 'istore'
     LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -269,7 +259,7 @@ CREATE AGGREGATE SUM(istore) (
     sfunc = istore_sum_transfn,
     stype = internal,
     finalfunc = bigistore_agg_finalfn,
-    combinefunc = istore_sum_combine,
+    combinefunc = istore_agg_combine,
     serialfunc = istore_serial,
     deserialfunc = istore_deserial,
     parallel = safe
@@ -279,7 +269,7 @@ CREATE AGGREGATE MIN(istore) (
     sfunc = istore_min_transfn,
     stype = internal,
     finalfunc = istore_agg_finalfn_pairs,
-    combinefunc = istore_min_combine,
+    combinefunc = istore_agg_combine,
     serialfunc = istore_serial,
     deserialfunc = istore_deserial,
     parallel = safe
@@ -289,7 +279,7 @@ CREATE AGGREGATE MAX(istore) (
     sfunc = istore_max_transfn,
     stype = internal,
     finalfunc = istore_agg_finalfn_pairs,
-    combinefunc = istore_max_combine,
+    combinefunc = istore_agg_combine,
     serialfunc = istore_serial,
     deserialfunc = istore_deserial,
     parallel = safe
@@ -551,7 +541,7 @@ CREATE AGGREGATE SUM(bigistore) (
     sfunc = istore_sum_transfn,
     stype = internal,
     finalfunc = bigistore_agg_finalfn,
-    combinefunc = istore_sum_combine,
+    combinefunc = istore_agg_combine,
     serialfunc = istore_serial,
     deserialfunc = istore_deserial,
     parallel = safe
@@ -561,7 +551,7 @@ CREATE AGGREGATE MIN(bigistore) (
     sfunc = istore_min_transfn,
     stype = internal,
     finalfunc = bigistore_agg_finalfn,
-    combinefunc = istore_min_combine,
+    combinefunc = istore_agg_combine,
     serialfunc = istore_serial,
     deserialfunc = istore_deserial,
     parallel = safe
@@ -571,7 +561,7 @@ CREATE AGGREGATE MAX(bigistore) (
     sfunc = istore_max_transfn,
     stype = internal,
     finalfunc = bigistore_agg_finalfn,
-    combinefunc = istore_max_combine,
+    combinefunc = istore_agg_combine,
     serialfunc = istore_serial,
     deserialfunc = istore_deserial,
     parallel = safe

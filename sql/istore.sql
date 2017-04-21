@@ -167,7 +167,7 @@ CREATE AGGREGATE SUM(istore) (
     sfunc = istore_sum_transfn,
     stype = internal,
     finalfunc = bigistore_agg_finalfn,
-    combinefunc = istore_sum_combine,
+    combinefunc = istore_agg_combine,
     serialfunc = istore_serial,
     deserialfunc = istore_deserial,
     parallel = safe
@@ -177,7 +177,7 @@ CREATE AGGREGATE MIN(istore) (
     sfunc = istore_min_transfn,
     stype = internal,
     finalfunc = istore_agg_finalfn_pairs,
-    combinefunc = istore_min_combine,
+    combinefunc = istore_agg_combine,
     serialfunc = istore_serial,
     deserialfunc = istore_deserial,
     parallel = safe
@@ -187,7 +187,7 @@ CREATE AGGREGATE MAX(istore) (
     sfunc = istore_max_transfn,
     stype = internal,
     finalfunc = istore_agg_finalfn_pairs,
-    combinefunc = istore_max_combine,
+    combinefunc = istore_agg_combine,
     serialfunc = istore_serial,
     deserialfunc = istore_deserial,
     parallel = safe

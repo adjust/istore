@@ -407,23 +407,11 @@ CREATE OR REPLACE FUNCTION istore_seed(integer, integer, integer)
  IMMUTABLE PARALLEL SAFE STRICT
 AS 'istore', $function$istore_seed$function$;
 ----
-CREATE OR REPLACE FUNCTION istore_min_combine(internal, internal)
+CREATE OR REPLACE FUNCTION istore_agg_combine(internal, internal)
  RETURNS internal
  LANGUAGE c
  IMMUTABLE PARALLEL SAFE
-AS 'istore', $function$istore_min_combine$function$;
-----
-CREATE OR REPLACE FUNCTION istore_max_combine(internal, internal)
- RETURNS internal
- LANGUAGE c
- IMMUTABLE PARALLEL SAFE
-AS 'istore', $function$istore_max_combine$function$;
-----
-CREATE OR REPLACE FUNCTION istore_sum_combine(internal, internal)
- RETURNS internal
- LANGUAGE c
- IMMUTABLE PARALLEL SAFE
-AS 'istore', $function$istore_sum_combine$function$;
+AS 'istore', $function$istore_agg_combine$function$;
 ----
 CREATE OR REPLACE FUNCTION istore_deserial(bytea, internal)
  RETURNS internal
@@ -436,3 +424,70 @@ CREATE OR REPLACE FUNCTION istore_serial(internal)
  LANGUAGE c
  IMMUTABLE PARALLEL SAFE STRICT
 AS 'istore', $function$istore_serial$function$;
+
+DROP AGGREGATE SUM(istore);
+CREATE AGGREGATE SUM(istore) (
+    sfunc = istore_sum_transfn,
+    stype = internal,
+    finalfunc = bigistore_agg_finalfn,
+    combinefunc = istore_agg_combine,
+    serialfunc = istore_serial,
+    deserialfunc = istore_deserial,
+    parallel = safe
+);
+
+DROP AGGREGATE MIN(istore);
+CREATE AGGREGATE MIN(istore) (
+    sfunc = istore_min_transfn,
+    stype = internal,
+    finalfunc = istore_agg_finalfn_pairs,
+    combinefunc = istore_agg_combine,
+    serialfunc = istore_serial,
+    deserialfunc = istore_deserial,
+    parallel = safe
+);
+
+DROP AGGREGATE MAX(istore);
+CREATE AGGREGATE MAX(istore) (
+    sfunc = istore_max_transfn,
+    stype = internal,
+    finalfunc = istore_agg_finalfn_pairs,
+    combinefunc = istore_agg_combine,
+    serialfunc = istore_serial,
+    deserialfunc = istore_deserial,
+    parallel = safe
+);
+
+
+DROP AGGREGATE SUM(bigistore);
+CREATE AGGREGATE SUM(bigistore) (
+    sfunc = istore_sum_transfn,
+    stype = internal,
+    finalfunc = bigistore_agg_finalfn,
+    combinefunc = istore_agg_combine,
+    serialfunc = istore_serial,
+    deserialfunc = istore_deserial,
+    parallel = safe
+);
+
+DROP AGGREGATE MIN(bigistore);
+CREATE AGGREGATE MIN(bigistore) (
+    sfunc = istore_min_transfn,
+    stype = internal,
+    finalfunc = bigistore_agg_finalfn,
+    combinefunc = istore_agg_combine,
+    serialfunc = istore_serial,
+    deserialfunc = istore_deserial,
+    parallel = safe
+);
+
+DROP AGGREGATE MAX(bigistore);
+CREATE AGGREGATE MAX(bigistore) (
+    sfunc = istore_max_transfn,
+    stype = internal,
+    finalfunc = bigistore_agg_finalfn,
+    combinefunc = istore_agg_combine,
+    serialfunc = istore_serial,
+    deserialfunc = istore_deserial,
+    parallel = safe
+);
