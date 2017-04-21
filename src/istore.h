@@ -5,6 +5,7 @@
 #include "fmgr.h"
 #include "avl.h"
 #include "utils/memutils.h"
+#include "libpq/pqformat.h"
 
 Datum istore_out(PG_FUNCTION_ARGS);
 Datum istore_in(PG_FUNCTION_ARGS);
@@ -38,6 +39,12 @@ Datum istore_skeys(PG_FUNCTION_ARGS);
 Datum istore_svals(PG_FUNCTION_ARGS);
 Datum istore_sum_transfn(PG_FUNCTION_ARGS);
 Datum istore_sum_finalfn(PG_FUNCTION_ARGS);
+Datum istore_agg_combine(PG_FUNCTION_ARGS);
+Datum istore_min_transfn(PG_FUNCTION_ARGS);
+Datum istore_max_transfn(PG_FUNCTION_ARGS);
+Datum istore_sum_transfn(PG_FUNCTION_ARGS);
+Datum istore_agg_finalfn_pairs(PG_FUNCTION_ARGS);
+Datum istore_agg_combine(PG_FUNCTION_ARGS);
 
 Datum bigistore_out(PG_FUNCTION_ARGS);
 Datum bigistore_in(PG_FUNCTION_ARGS);
@@ -70,6 +77,12 @@ Datum bigistore_avals(PG_FUNCTION_ARGS);
 Datum bigistore_skeys(PG_FUNCTION_ARGS);
 Datum bigistore_svals(PG_FUNCTION_ARGS);
 Datum bigistore_sum_transfn(PG_FUNCTION_ARGS);
+Datum bigistore_min_transfn(PG_FUNCTION_ARGS);
+Datum bigistore_max_transfn(PG_FUNCTION_ARGS);
+Datum bigistore_sum_transfn(PG_FUNCTION_ARGS);
+Datum bigistore_agg_finalfn_pairs(PG_FUNCTION_ARGS);
+Datum istore_serial(PG_FUNCTION_ARGS);
+Datum istore_deserial(PG_FUNCTION_ARGS);
 
 /*
  * a single key/value pair

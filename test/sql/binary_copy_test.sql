@@ -1,6 +1,4 @@
 BEGIN;
--- bigistore binary_copy should copy data binary from country;
--- ./spec/istore/binary_copy_spec.rb:9;
 CREATE EXTENSION istore;
 CREATE TABLE before (a bigistore);
 INSERT INTO before values ('1=>1'),('1=>-9223372036854775807'),('1=>3'),('2=>1'),('2=>0'),('2=>9223372036854775806');
@@ -10,8 +8,6 @@ COPY after FROM '/tmp/tst' WITH (FORMAT binary);
 SELECT * FROM after;
 ROLLBACK;
 BEGIN;
--- istore binary_copy should copy data binary from country;
--- ./spec/istore/binary_copy_spec.rb:9;
 CREATE EXTENSION istore;
 CREATE TABLE before (a istore);
 INSERT INTO before values ('1=>1'),('1=>-2147483647'),('1=>3'),('2=>1'),('2=>0'),('2=>2147483647');
