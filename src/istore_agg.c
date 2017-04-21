@@ -23,8 +23,8 @@
 
 
 typedef struct {
-    size_t size;
-    int    used;
+    int size;
+    int used;
     BigIStorePair pairs[0];
 } ISAggState;
 
@@ -44,7 +44,7 @@ state_init(MemoryContext agg_context)
 }
 
 static inline void
-istore_agg_state_accum(ISAggState *state, size_t num_paris, BigIStorePair *pairs2, ISAggType type)
+istore_agg_state_accum(ISAggState *state, int num_paris, BigIStorePair *pairs2, ISAggType type)
 {
     BigIStorePair *pairs1;
     int            index1 = 0, index2 = 0, i;
@@ -607,8 +607,8 @@ istore_serial(PG_FUNCTION_ARGS)
     state = (ISAggState *) PG_GETARG_POINTER(0);
 
     pq_begintypsend(&buf);
-    pq_sendint(&buf, (int32)state->size, sizeof(int32));
-    pq_sendint(&buf, state->used, sizeof(int32));
+    pq_sendint(&buf, state->size, sizeof(int));
+    pq_sendint(&buf, state->used, sizeof(int));
 
     for (i = 0; i < state->used; ++i)
     {
@@ -628,7 +628,7 @@ istore_deserial(PG_FUNCTION_ARGS)
 {
     bytea      *sstate;
     ISAggState *state;
-    size_t size;
+    int size;
     int32 key, i;
     int64 val;
     StringInfoData buf;
@@ -640,11 +640,11 @@ istore_deserial(PG_FUNCTION_ARGS)
     initStringInfo(&buf);
     appendBinaryStringInfo(&buf, VARDATA_ANY(sstate), VARSIZE_ANY_EXHDR(sstate));
 
-    size = (size_t)pq_getmsgint(&buf, sizeof(int32));
+    size = pq_getmsgint(&buf, sizeof(int));
 
     state = (ISAggState *) palloc0(sizeof(ISAggState) + size * sizeof(BigIStorePair));
     state->size = size;
-    state->used = pq_getmsgint(&buf, sizeof(int32));
+    state->used = pq_getmsgint(&buf, sizeof(int));
 
     for (i = 0; i < state->used; ++i)
     {
