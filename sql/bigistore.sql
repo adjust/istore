@@ -162,6 +162,16 @@ CREATE FUNCTION istore_max_transfn(internal, bigistore)
     AS 'istore' ,'bigistore_max_transfn'
     LANGUAGE C IMMUTABLE;
 
+CREATE FUNCTION bigistore_avl_transfn(internal, int, bigint)
+    RETURNS internal
+    AS 'istore' ,'bigistore_avl_transfn'
+    LANGUAGE C IMMUTABLE;
+
+CREATE FUNCTION bigistore_avl_finalfn(internal)
+    RETURNS bigistore
+    AS 'istore' ,'bigistore_avl_finalfn'
+    LANGUAGE C IMMUTABLE;
+
 CREATE AGGREGATE SUM (
     sfunc = istore_sum_transfn,
     basetype = bigistore,
@@ -182,6 +192,13 @@ CREATE AGGREGATE MAX (
     stype = internal,
     finalfunc = bigistore_agg_finalfn
 );
+
+CREATE AGGREGATE ISAGG(key int, value bigint) (
+    sfunc = bigistore_avl_transfn,
+    stype = internal,
+    finalfunc = bigistore_avl_finalfn
+);
+
 
 CREATE OPERATOR -> (
     leftarg   = bigistore,

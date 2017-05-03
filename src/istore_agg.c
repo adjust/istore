@@ -1,4 +1,5 @@
 #include "istore.h"
+#include "utils/builtins.h"
 
 #define SAMESIGN(a,b)   (((a) < 0) == ((b) < 0))
 #define INITSTATESIZE 30
@@ -381,3 +382,129 @@ istore_agg_finalfn_pairs(PG_FUNCTION_ARGS)
 
     PG_RETURN_POINTER(istore);
 }
+
+
+/*
+ * Agg(int, bigint) aggregate funtion
+ */
+PG_FUNCTION_INFO_V1(istore_avl_transfn);
+Datum
+istore_avl_transfn(PG_FUNCTION_ARGS)
+{
+    AvlNode         *tree;
+    AvlNode         *position;
+    MemoryContext    agg_context, oldcontext;
+    int32            key,value;
+
+    if (!AggCheckCallContext(fcinfo, &agg_context))
+        elog(ERROR, "aggregate function called in non-aggregate context");
+
+    if (PG_ARGISNULL(0) && (PG_ARGISNULL(1) || PG_ARGISNULL(2)))
+        PG_RETURN_NULL();
+
+    key   = PG_GETARG_INT32(1);
+    value = PG_GETARG_INT32(2);;
+    tree  = PG_ARGISNULL(0) ? NULL : (AvlNode *) PG_GETARG_POINTER(0);
+
+    if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
+        PG_RETURN_POINTER(tree);
+
+    oldcontext = MemoryContextSwitchTo(agg_context);
+    position = is_tree_find(key, tree);
+
+    if (position == NULL)
+        tree = is_tree_insert(tree, key, value);
+    else
+        position->value = DirectFunctionCall2(int4pl, position->value, value);
+
+    PG_RETURN_POINTER(tree);
+}
+
+PG_FUNCTION_INFO_V1(istore_avl_finalfn);
+Datum
+istore_avl_finalfn(PG_FUNCTION_ARGS)
+{
+    AvlNode      *tree;
+    IStore       *istore;
+    IStorePairs  *pairs;
+
+    if (PG_ARGISNULL(0)) PG_RETURN_NULL();
+
+    tree  = (AvlNode *) PG_GETARG_POINTER(0);
+
+    pairs = palloc0(sizeof *pairs);
+    istore_pairs_init(pairs, 200);
+    istore_tree_to_pairs(tree, pairs);
+    istore_make_empty(tree);
+
+    FINALIZE_ISTORE(istore, pairs);
+    PG_RETURN_POINTER(istore);
+}
+
+
+
+/*
+ * Agg(int, bigint) aggregate funtion
+ */
+PG_FUNCTION_INFO_V1(bigistore_avl_transfn);
+Datum
+bigistore_avl_transfn(PG_FUNCTION_ARGS)
+{
+    AvlNode         *tree;
+    AvlNode         *position;
+    MemoryContext    agg_context, oldcontext;
+    int32            key;
+    int64            value;
+
+    if (!AggCheckCallContext(fcinfo, &agg_context))
+        elog(ERROR, "aggregate function called in non-aggregate context");
+
+    if (PG_ARGISNULL(0) && (PG_ARGISNULL(1) || PG_ARGISNULL(2)))
+        PG_RETURN_NULL();
+
+    key   = PG_GETARG_INT32(1);
+    value = PG_GETARG_INT64(2);;
+    tree  = PG_ARGISNULL(0) ? NULL : (AvlNode *) PG_GETARG_POINTER(0);
+
+    if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
+        PG_RETURN_POINTER(tree);
+
+    oldcontext = MemoryContextSwitchTo(agg_context);
+    position = is_tree_find(key, tree);
+
+    if (position == NULL)
+        tree = is_tree_insert(tree, key, value);
+    else
+        position->value = DirectFunctionCall2(int8pl, position->value, value);
+
+    PG_RETURN_POINTER(tree);
+}
+
+PG_FUNCTION_INFO_V1(bigistore_avl_finalfn);
+Datum
+bigistore_avl_finalfn(PG_FUNCTION_ARGS)
+{
+    AvlNode         *tree;
+    BigIStore       *istore;
+    BigIStorePairs  *pairs;
+
+    if (PG_ARGISNULL(0)) PG_RETURN_NULL();
+
+    tree  = (AvlNode *) PG_GETARG_POINTER(0);
+
+    pairs = palloc0(sizeof *pairs);
+    bigistore_pairs_init(pairs, 200);
+    bigistore_tree_to_pairs(tree, pairs);
+    istore_make_empty(tree);
+
+    FINALIZE_BIGISTORE(istore, pairs);
+    PG_RETURN_POINTER(istore);
+}
+
+
+
+
+
+
+
+
