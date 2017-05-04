@@ -187,3 +187,13 @@ BigIStorePair* bigistore_find(BigIStore *is, int32 key);
 
 
 #endif // ISTORE_H
+
+
+#define INTPL(_a,_b,_r)                                         \
+    do{                                                         \
+        _r = _a + _b;                                           \
+        if (SAMESIGN(_a, _b) && !SAMESIGN(_r, _a))              \
+            ereport(ERROR,                                      \
+                (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),   \
+                 errmsg("integer out of range")));              \
+    } while(0)                                                  \

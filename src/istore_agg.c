@@ -394,7 +394,7 @@ istore_avl_transfn(PG_FUNCTION_ARGS)
     AvlNode         *tree;
     AvlNode         *position;
     MemoryContext    agg_context, oldcontext;
-    int32            key,value;
+    int32            key,value, pl_result;
 
     if (!AggCheckCallContext(fcinfo, &agg_context))
         elog(ERROR, "aggregate function called in non-aggregate context");
@@ -402,20 +402,23 @@ istore_avl_transfn(PG_FUNCTION_ARGS)
     if (PG_ARGISNULL(0) && (PG_ARGISNULL(1) || PG_ARGISNULL(2)))
         PG_RETURN_NULL();
 
-    key   = PG_GETARG_INT32(1);
-    value = PG_GETARG_INT32(2);;
     tree  = PG_ARGISNULL(0) ? NULL : (AvlNode *) PG_GETARG_POINTER(0);
 
     if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
         PG_RETURN_POINTER(tree);
 
-    oldcontext = MemoryContextSwitchTo(agg_context);
-    position = is_tree_find(key, tree);
+    key         = PG_GETARG_INT32(1);
+    value       = PG_GETARG_INT32(2);
+    oldcontext  = MemoryContextSwitchTo(agg_context);
+    position    = is_tree_find(key, tree);
 
     if (position == NULL)
         tree = is_tree_insert(tree, key, value);
     else
-        position->value = DirectFunctionCall2(int4pl, position->value, value);
+    {
+        INTPL(position->value, value, pl_result);
+        position->value = pl_result;
+    }
 
     PG_RETURN_POINTER(tree);
 }
@@ -454,7 +457,7 @@ bigistore_avl_transfn(PG_FUNCTION_ARGS)
     AvlNode         *position;
     MemoryContext    agg_context, oldcontext;
     int32            key;
-    int64            value;
+    int64            value, pl_result;
 
     if (!AggCheckCallContext(fcinfo, &agg_context))
         elog(ERROR, "aggregate function called in non-aggregate context");
@@ -462,20 +465,23 @@ bigistore_avl_transfn(PG_FUNCTION_ARGS)
     if (PG_ARGISNULL(0) && (PG_ARGISNULL(1) || PG_ARGISNULL(2)))
         PG_RETURN_NULL();
 
-    key   = PG_GETARG_INT32(1);
-    value = PG_GETARG_INT64(2);;
     tree  = PG_ARGISNULL(0) ? NULL : (AvlNode *) PG_GETARG_POINTER(0);
 
     if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
         PG_RETURN_POINTER(tree);
 
-    oldcontext = MemoryContextSwitchTo(agg_context);
-    position = is_tree_find(key, tree);
+    key         = PG_GETARG_INT32(1);
+    value       = PG_GETARG_INT64(2);
+    oldcontext  = MemoryContextSwitchTo(agg_context);
+    position    = is_tree_find(key, tree);
 
     if (position == NULL)
         tree = is_tree_insert(tree, key, value);
     else
-        position->value = DirectFunctionCall2(int8pl, position->value, value);
+    {
+        INTPL(position->value, value, pl_result);
+        position->value = pl_result;
+    }
 
     PG_RETURN_POINTER(tree);
 }
