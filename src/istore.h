@@ -1,9 +1,9 @@
 #ifndef ISTORE_H
 #define ISTORE_H
 
-#include "postgres.h"
-#include "fmgr.h"
 #include "avl.h"
+#include "fmgr.h"
+#include "postgres.h"
 #include "utils/memutils.h"
 
 Datum istore_out(PG_FUNCTION_ARGS);
@@ -187,3 +187,13 @@ BigIStorePair* bigistore_find(BigIStore *is, int32 key);
 
 
 #endif // ISTORE_H
+
+
+#define INTPL(_a,_b,_r)                                         \
+    do{                                                         \
+        _r = _a + _b;                                           \
+        if (SAMESIGN(_a, _b) && !SAMESIGN(_r, _a))              \
+            ereport(ERROR,                                      \
+                (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),   \
+                 errmsg("integer out of range")));              \
+    } while(0)
