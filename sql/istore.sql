@@ -172,6 +172,11 @@ CREATE FUNCTION istore_avl_finalfn(internal)
     AS 'istore' ,'istore_avl_finalfn'
     LANGUAGE C IMMUTABLE;
 
+CREATE FUNCTION istore_length(istore)
+    RETURNS integer
+    AS 'istore', 'istore_length'
+    LANGUAGE C IMMUTABLE STRICT;
+
 
 CREATE AGGREGATE SUM (
     sfunc = istore_sum_transfn,

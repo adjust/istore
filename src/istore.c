@@ -976,3 +976,11 @@ istore_svals(PG_FUNCTION_ARGS)
 
     SRF_RETURN_DONE(funcctx);
 }
+
+PG_FUNCTION_INFO_V1(istore_length);
+Datum
+istore_length(PG_FUNCTION_ARGS)
+{
+    const IStore *is = PG_GETARG_BIGIS(0);
+    PG_RETURN_INT32(is->len);
+}
