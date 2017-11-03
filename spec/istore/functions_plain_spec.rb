@@ -366,6 +366,20 @@ types.each do |type|
         query("SELECT istore_length(bigistore(ARRAY[1,2,3],ARRAY[1,2,3]))").should match 3
         query("SELECT istore_length(istore(ARRAY[1,2,3],ARRAY[1,2,3]))").should match 3
       end
+
+      it 'should be able to find the smallest key' do
+        query("SELECT min_key(''::#{type})").should match nil
+        query("SELECT min_key('1=>1'::#{type})").should match '1'
+        query("SELECT min_key('1=>1, 2=>1'::#{type})").should match '1'
+        query("SELECT min_key('0=>2, 1=>2, 3=>0 ,2=>2'::#{type})").should match '0'
+      end
+
+      it 'should be able to find the biggest key' do
+        query("SELECT max_key(''::#{type})").should match nil
+        query("SELECT max_key('1=>1'::#{type})").should match '1'
+        query("SELECT max_key('1=>1, 2=>1'::#{type})").should match '2'
+        query("SELECT max_key('0=>2, 1=>2, 3=>0 ,2=>2'::#{type})").should match '3'
+      end
     end
   end
 end

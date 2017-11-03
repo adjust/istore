@@ -17,6 +17,16 @@ RETURNS SETOF record
 AS 'istore','bigistore_each'
 LANGUAGE C STRICT IMMUTABLE;
 
+CREATE FUNCTION min_key(bigistore)
+    RETURNS integer
+    AS 'istore', 'bigistore_min_key'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION max_key(bigistore)
+    RETURNS integer
+    AS 'istore', 'bigistore_max_key'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION compact(bigistore)
     RETURNS bigistore
     AS 'istore', 'bigistore_compact'

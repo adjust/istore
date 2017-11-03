@@ -98,6 +98,50 @@ bigistore_apply_datum(BigIStore *arg1, Datum arg2, PGFunction applyfunc)
 }
 
 /*
+ * get the smallest key from an bigistore
+ */
+PG_FUNCTION_INFO_V1(bigistore_min_key);
+Datum
+bigistore_min_key(PG_FUNCTION_ARGS)
+{
+    BigIStore *istore;
+    int32   key;
+
+    istore = PG_GETARG_BIGIS(0);
+    if (istore->len == 0) 
+    {
+        PG_RETURN_NULL();
+    }
+    else 
+    {
+        key = FIRST_PAIR(istore, BigIStorePair)[0].key;
+        PG_RETURN_INT32(key);
+    }
+}
+
+/*
+ * get the biggest key from an bigistore
+ */
+PG_FUNCTION_INFO_V1(bigistore_max_key);
+Datum
+bigistore_max_key(PG_FUNCTION_ARGS)
+{
+    BigIStore *istore;
+    int32   key;
+
+    istore = PG_GETARG_BIGIS(0);
+    if (istore->len == 0) 
+    {
+        PG_RETURN_NULL();
+    }
+    else 
+    {
+        key = FIRST_PAIR(istore, BigIStorePair)[istore->len - 1].key;
+        PG_RETURN_INT32(key);
+    }
+}
+
+/*
  * remove zero values from bigistore
  */
 PG_FUNCTION_INFO_V1(bigistore_compact);
