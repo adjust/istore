@@ -1,6 +1,6 @@
 # istore extension
 comment = 'an integer based hstore'
-default_version = '0.1.5'
+default_version = '0.1.6'
 relocatable = true
 module_pathname = '$libdir/istore'
 requires = ''

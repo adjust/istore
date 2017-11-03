@@ -99,6 +99,50 @@ istore_apply_datum(IStore *arg1, Datum arg2, PGFunction applyfunc)
 }
 
 /*
+ * get the smallest key from an istore
+ */
+PG_FUNCTION_INFO_V1(istore_min_key);
+Datum
+istore_min_key(PG_FUNCTION_ARGS)
+{
+    IStore *istore;
+    int32   key;
+
+    istore = PG_GETARG_IS(0);
+    if (istore->len == 0) 
+    {
+        PG_RETURN_NULL();
+    }
+    else 
+    {
+        key = FIRST_PAIR(istore, IStorePair)[0].key;
+        PG_RETURN_INT32(key);
+    }
+}
+
+/*
+ * get the biggest key from an istore
+ */
+PG_FUNCTION_INFO_V1(istore_max_key);
+Datum
+istore_max_key(PG_FUNCTION_ARGS)
+{
+    IStore *istore;
+    int32   key;
+
+    istore = PG_GETARG_IS(0);
+    if (istore->len == 0) 
+    {
+        PG_RETURN_NULL();
+    }
+    else 
+    {
+        key = FIRST_PAIR(istore, IStorePair)[istore->len - 1].key;
+        PG_RETURN_INT32(key);
+    }
+}
+
+/*
  * remove zero values from istore
  */
 PG_FUNCTION_INFO_V1(istore_compact);
