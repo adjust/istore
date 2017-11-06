@@ -14,10 +14,16 @@ SELECT '1=>1, -1=>3'::bigistore -> -1;
         3
 (1 row)
 
+SELECT '0=>40000000000'::bigistore->0;
+  ?column?   
+-------------
+ 40000000000
+(1 row)
+
 ROLLBACK;
 BEGIN;
 -- bigistore operators bigistore should check existense of a key;
--- ./spec/istore/operator_spec.rb:15;
+-- ./spec/istore/operator_spec.rb:16;
 CREATE EXTENSION istore;
 SELECT '1=>1, -1=>3'::bigistore ? -1;
  ?column? 
@@ -34,7 +40,7 @@ SELECT '1=>1, -1=>3'::bigistore ? 5;
 ROLLBACK;
 BEGIN;
 -- bigistore operators bigistore should add two bigistore;
--- ./spec/istore/operator_spec.rb:20;
+-- ./spec/istore/operator_spec.rb:21;
 CREATE EXTENSION istore;
 SELECT '1=>1, -1=>3'::bigistore + '1=>1'::bigistore;
       ?column?       
@@ -68,17 +74,8 @@ SELECT '1=>1, -1=>0'::bigistore + '-1=>-1'::bigistore;
 
 ROLLBACK;
 BEGIN;
-CREATE EXTENSION istore;
-SELECT '0=>40000000000'::bigistore->0;
-  ?column?   
--------------
- 40000000000
-(1 row)
-
-ROLLBACK;
-BEGIN;
 -- bigistore operators bigistore should add an integer to #{type};
--- ./spec/istore/operator_spec.rb:33;
+-- ./spec/istore/operator_spec.rb:35;
 CREATE EXTENSION istore;
 SELECT '1=>1, -1=>3'::bigistore  + 1;
       ?column?       
@@ -137,7 +134,7 @@ SELECT '-1=>1, -1=>3'::bigistore + -1;
 ROLLBACK;
 BEGIN;
 -- bigistore operators bigistore should substract two bigistore;
--- ./spec/istore/operator_spec.rb:54;
+-- ./spec/istore/operator_spec.rb:56;
 CREATE EXTENSION istore;
 SELECT '1=>1, -1=>3'::bigistore - '1=>1'::bigistore;
       ?column?       
@@ -166,7 +163,7 @@ SELECT '1=>0, -1=>3'::bigistore - '1=>-1'::bigistore;
 ROLLBACK;
 BEGIN;
 -- bigistore operators bigistore should substract integer from bigistore;
--- ./spec/istore/operator_spec.rb:65;
+-- ./spec/istore/operator_spec.rb:67;
 CREATE EXTENSION istore;
 SELECT '1=>1, -1=>3'::bigistore  - 1;
       ?column?       
@@ -225,7 +222,7 @@ SELECT '-1=>1, -1=>3'::bigistore - -1;
 ROLLBACK;
 BEGIN;
 -- bigistore operators bigistore should multiply two bigistore;
--- ./spec/istore/operator_spec.rb:86;
+-- ./spec/istore/operator_spec.rb:88;
 CREATE EXTENSION istore;
 SELECT '1=>3, 2=>2'::bigistore * '1=>2, 3=>5'::bigistore;
  ?column? 
@@ -254,7 +251,7 @@ SELECT '-1=>3, 2=>0'::bigistore * '-1=>-2, 3=>5'::bigistore;
 ROLLBACK;
 BEGIN;
 -- bigistore operators bigistore should multiply #{type} with integer;
--- ./spec/istore/operator_spec.rb:97;
+-- ./spec/istore/operator_spec.rb:99;
 CREATE EXTENSION istore;
 SELECT '1=>1, -1=>3'::bigistore  * 1;
       ?column?       
@@ -330,7 +327,7 @@ SELECT '1=>1, -1=>3'::istore -> -1;
 ROLLBACK;
 BEGIN;
 -- istore operators istore should check existense of a key;
--- ./spec/istore/operator_spec.rb:15;
+-- ./spec/istore/operator_spec.rb:16;
 CREATE EXTENSION istore;
 SELECT '1=>1, -1=>3'::istore ? -1;
  ?column? 
@@ -347,7 +344,7 @@ SELECT '1=>1, -1=>3'::istore ? 5;
 ROLLBACK;
 BEGIN;
 -- istore operators istore should add two istore;
--- ./spec/istore/operator_spec.rb:20;
+-- ./spec/istore/operator_spec.rb:21;
 CREATE EXTENSION istore;
 SELECT '1=>1, -1=>3'::istore + '1=>1'::istore;
       ?column?       
@@ -382,7 +379,7 @@ SELECT '1=>1, -1=>0'::istore + '-1=>-1'::istore;
 ROLLBACK;
 BEGIN;
 -- istore operators istore should add an integer to #{type};
--- ./spec/istore/operator_spec.rb:33;
+-- ./spec/istore/operator_spec.rb:35;
 CREATE EXTENSION istore;
 SELECT '1=>1, -1=>3'::istore  + 1;
       ?column?       
@@ -441,7 +438,7 @@ SELECT '-1=>1, -1=>3'::istore + -1;
 ROLLBACK;
 BEGIN;
 -- istore operators istore should substract two istore;
--- ./spec/istore/operator_spec.rb:54;
+-- ./spec/istore/operator_spec.rb:56;
 CREATE EXTENSION istore;
 SELECT '1=>1, -1=>3'::istore - '1=>1'::istore;
       ?column?       
@@ -470,7 +467,7 @@ SELECT '1=>0, -1=>3'::istore - '1=>-1'::istore;
 ROLLBACK;
 BEGIN;
 -- istore operators istore should substract integer from istore;
--- ./spec/istore/operator_spec.rb:65;
+-- ./spec/istore/operator_spec.rb:67;
 CREATE EXTENSION istore;
 SELECT '1=>1, -1=>3'::istore  - 1;
       ?column?       
@@ -529,7 +526,7 @@ SELECT '-1=>1, -1=>3'::istore - -1;
 ROLLBACK;
 BEGIN;
 -- istore operators istore should multiply two istore;
--- ./spec/istore/operator_spec.rb:86;
+-- ./spec/istore/operator_spec.rb:88;
 CREATE EXTENSION istore;
 SELECT '1=>3, 2=>2'::istore * '1=>2, 3=>5'::istore;
  ?column? 
@@ -558,7 +555,7 @@ SELECT '-1=>3, 2=>0'::istore * '-1=>-2, 3=>5'::istore;
 ROLLBACK;
 BEGIN;
 -- istore operators istore should multiply #{type} with integer;
--- ./spec/istore/operator_spec.rb:97;
+-- ./spec/istore/operator_spec.rb:99;
 CREATE EXTENSION istore;
 SELECT '1=>1, -1=>3'::istore  * 1;
       ?column?       

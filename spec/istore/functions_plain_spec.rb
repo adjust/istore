@@ -202,6 +202,10 @@ types.each do |type|
 
         query("SELECT #{type}(Array[5,3,4,5], Array[4000,2,4000,4])").should match \
           '"3"=>"2", "4"=>"4000", "5"=>"4004"'
+        if type == :bigistore
+          query("SELECT bigistore(Array[5,3,4]::int[], Array[5000000000,4000000000,5]::bigint[])").should match \
+          '"3"=>"4000000000", "4"=>"5", "5"=>"5000000000"'
+        end
       end
 
       it 'should fill gaps' do
@@ -334,7 +338,7 @@ types.each do |type|
       it 'should sum up istores' do
         query("SELECT sum_up('10=>5, 15=>10'::istore)").should match 15
       end
-      
+
       it 'should sum up istores with big numbers' do
         query("SELECT sum_up('10=>2000000000, 15=>1000000000'::istore)").should match 3000000000
       end
@@ -353,3 +357,5 @@ types.each do |type|
     end
   end
 end
+
+
