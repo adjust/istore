@@ -7,17 +7,18 @@
  */
 
 #include "postgres.h"
+
 #include "avl.h"
+#include "utils/builtins.h"
 
 #define MAX(_a, _b) ((_a > _b) ? _a : _b)
-#define COMPARE(_a,_b) ((_a == _b) ? 0 : ((_a < _b) ? -1 : 1))
+#define COMPARE(_a, _b) ((_a == _b) ? 0 : ((_a < _b) ? -1 : 1))
 #define height(_p) ((_p == NULL) ? -1 : _p->height)
-
 
 /*
  * free the node along with all subnodes
  */
-AvlNode*
+AvlNode *
 istore_make_empty(AvlNode *t)
 {
     if (t != NULL)
@@ -33,7 +34,7 @@ istore_make_empty(AvlNode *t)
 /*
  * find a node for a given key
  */
-AvlNode*
+AvlNode *
 is_tree_find(int32 key, AvlNode *t)
 {
     int32 cmp;
@@ -55,19 +56,19 @@ is_tree_find(int32 key, AvlNode *t)
  * Perform a rotate between a node (k2) and its left child
  * Update heights, then return new root
  */
-static inline AvlNode*
+static inline AvlNode *
 singleRotateWithLeft(AvlNode *k2)
 {
     AvlNode *k1;
 
-    k1 = k2->left;
-    k2->left = k1->right;
+    k1        = k2->left;
+    k2->left  = k1->right;
     k1->right = k2;
 
     k2->height = MAX(height(k2->left), height(k2->right)) + 1;
     k1->height = MAX(height(k1->left), k2->height) + 1;
 
-    return k1;  /* New root */
+    return k1; /* New root */
 }
 
 /*
@@ -75,19 +76,19 @@ singleRotateWithLeft(AvlNode *k2)
  * Perform a rotate between a node (k1) and its right child
  * Update heights, then return new root
  */
-static inline AvlNode*
+static inline AvlNode *
 singleRotateWithRight(AvlNode *k1)
 {
     AvlNode *k2;
 
-    k2 = k1->right;
+    k2        = k1->right;
     k1->right = k2->left;
-    k2->left = k1;
+    k2->left  = k1;
 
     k1->height = MAX(height(k1->left), height(k1->right)) + 1;
     k2->height = MAX(height(k2->right), k1->height) + 1;
 
-    return k2;  /* New root */
+    return k2; /* New root */
 }
 
 /*
@@ -96,7 +97,7 @@ singleRotateWithRight(AvlNode *k1)
  * Do the left-right double rotation
  * Update heights, then return new root
  */
-static inline AvlNode*
+static inline AvlNode *
 doubleRotateWithLeft(AvlNode *k3)
 {
     /* Rotate between k1 and k2 */
@@ -111,8 +112,8 @@ doubleRotateWithLeft(AvlNode *k3)
  * child and k1's right child has a left child
  * Do the right-left double rotation
  * Update heights, then return new root
-*/
-static inline AvlNode*
+ */
+static inline AvlNode *
 doubleRotateWithRight(AvlNode *k1)
 {
     /* Rotate between k3 and k2 */
@@ -126,10 +127,10 @@ doubleRotateWithRight(AvlNode *k1)
  * return number of nodes
  */
 int
-is_tree_length(AvlNode* t)
+is_tree_length(AvlNode *t)
 {
     int n;
-    if(t == NULL)
+    if (t == NULL)
         return 0;
     n = is_tree_length(t->left);
     ++n;
@@ -140,21 +141,22 @@ is_tree_length(AvlNode* t)
 /*
  * insert key/value into tree
  */
-AvlNode*
+AvlNode *
 is_tree_insert(AvlNode *t, int32 key, int64 value)
 {
-    if(t == NULL)
+    if (t == NULL)
     {
         /* Create and return a one-node tree */
         t = palloc0(sizeof(struct AvlNode));
         if (t == NULL)
             elog(ERROR, "AvlTree is_tree_insert: could not allocate memory");
-        else{
-            t->key = key;
-            t->value = value;
+        else
+        {
+            t->key    = key;
+            t->value  = value;
             t->height = 0;
-            t->left = NULL;
-            t->right = NULL;
+            t->left   = NULL;
+            t->right  = NULL;
         }
     }
     else
@@ -171,12 +173,12 @@ is_tree_insert(AvlNode *t, int32 key, int64 value)
                     t = doubleRotateWithLeft(t);
             }
         }
-        else if(cmp > 0)
+        else if (cmp > 0)
         {
             t->right = is_tree_insert(t->right, key, value);
             if (height(t->right) - height(t->left) == 2)
             {
-                if (COMPARE(key, t->right->key) > 0 )
+                if (COMPARE(key, t->right->key) > 0)
                     t = singleRotateWithRight(t);
                 else
                     t = doubleRotateWithRight(t);
