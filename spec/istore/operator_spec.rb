@@ -10,6 +10,7 @@ types.each do |type|
         it 'should fetch values' do
           query("SELECT '1=>1, -1=>0'::#{type} -> -1").should match 0
           query("SELECT '1=>1, -1=>3'::#{type} -> -1").should match 3
+          query("SELECT '0=>40000000000'::bigistore->0").should match 40000000000 if type == :bigistore
         end
 
         it'should check existense of a key' do
@@ -28,6 +29,7 @@ types.each do |type|
           '"-1"=>"3", "1"=>"-1"'
           query("SELECT '1=>1, -1=>0'::#{type} + '-1=>-1'::#{type}").should match \
           '"-1"=>"-1", "1"=>"1"'
+
        end
 
         it 'should add an integer to #{type}' do
