@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/adjust/istore.svg)](https://travis-ci.org/adjust/istore)
+[![Build Status](https://travis-ci.org/adjust/istore.svg?branch=master)](https://travis-ci.org/adjust/istore)
 
 # istore
 
