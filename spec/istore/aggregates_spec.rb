@@ -14,7 +14,7 @@ describe "isagg" do
       end
 
       it 'should skip null values' do
-        query("SELECT id, isagg((i%10), NULL::#{type}) FROM generate_series(1,100) i, generate_series(1,3) id GROUP BY id;").should match \
+        query("SELECT id, isagg((i%10), NULL::#{type}) FROM generate_series(1,100) i, generate_series(1,3) id GROUP BY id ORDER BY id;").should match \
         ['1', nil ],
         ['2', nil ],
         ['3', nil ]
