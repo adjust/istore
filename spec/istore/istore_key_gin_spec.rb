@@ -6,7 +6,7 @@ types.each do |type|
         install_extension
         query <<-SQL
         CREATE TABLE t AS
-        SELECT string_agg(j::text || '=>0', ',')::#{type} AS s
+        SELECT i, string_agg(j::text || '=>0', ',')::#{type} AS s
         FROM
             generate_series(0, 100000) AS i,
             generate_series(i, i + (i % 10)) AS j
@@ -29,7 +29,7 @@ types.each do |type|
       end
 
       it "should find the matching rows for key 300" do
-        query("SELECT * FROM t WHERE s ? 300;").should match \
+        query("SELECT s FROM t WHERE s ? 300 ORDER BY i;").should match \
           ['"300"=>"0"'],
           ['"296"=>"0", "297"=>"0", "298"=>"0", "299"=>"0", "300"=>"0", "301"=>"0", "302"=>"0"'],
           ['"297"=>"0", "298"=>"0", "299"=>"0", "300"=>"0", "301"=>"0", "302"=>"0", "303"=>"0", "304"=>"0"'],
@@ -38,7 +38,7 @@ types.each do |type|
           ['"298"=>"0", "299"=>"0", "300"=>"0", "301"=>"0", "302"=>"0", "303"=>"0", "304"=>"0", "305"=>"0", "306"=>"0"']
       end
       it "should find the matching rows for key 600" do
-        query("SELECT * FROM t WHERE s ? 600;").should match \
+        query("SELECT s FROM t WHERE s ? 600 ORDER BY i;").should match \
           ['"596"=>"0", "597"=>"0", "598"=>"0", "599"=>"0", "600"=>"0", "601"=>"0", "602"=>"0"'],
           ['"599"=>"0", "600"=>"0", "601"=>"0", "602"=>"0", "603"=>"0", "604"=>"0", "605"=>"0", "606"=>"0", "607"=>"0", "608"=>"0"'],
           ['"598"=>"0", "599"=>"0", "600"=>"0", "601"=>"0", "602"=>"0", "603"=>"0", "604"=>"0", "605"=>"0", "606"=>"0"'],
@@ -47,7 +47,7 @@ types.each do |type|
           ['"600"=>"0"']
       end
       it "should find the matching rows for key 900" do
-        query("SELECT * FROM t WHERE s ? 900;").should match \
+        query("SELECT s FROM t WHERE s ? 900 ORDER BY i;").should match \
           ['"895"=>"0", "896"=>"0", "897"=>"0", "898"=>"0", "899"=>"0", "900"=>"0"'],
           ['"896"=>"0", "897"=>"0", "898"=>"0", "899"=>"0", "900"=>"0", "901"=>"0", "902"=>"0"'],
           ['"899"=>"0", "900"=>"0", "901"=>"0", "902"=>"0", "903"=>"0", "904"=>"0", "905"=>"0", "906"=>"0", "907"=>"0", "908"=>"0"'],
