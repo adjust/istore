@@ -18,11 +18,12 @@ postgres: &postgres
   client_encoding: utf8
   user: postgres
   host: localhost
+  adapter: postgresql
 
 development:
   <<: *postgres
-  dbname: istore_development
+  database: istore_development
 
 test:
   <<: *postgres
-  dbname: istore_test
+  database: istore_test
