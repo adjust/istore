@@ -142,6 +142,11 @@ CREATE FUNCTION svals(bigistore)
     AS 'istore' ,'bigistore_svals'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION istore_length(bigistore)
+    RETURNS integer
+    AS 'istore', 'bigistore_length'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION istore_to_json(bigistore)
 RETURNS json
 AS 'istore', 'bigistore_to_json'

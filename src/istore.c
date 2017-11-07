@@ -1,10 +1,10 @@
 #include "istore.h"
+#include "access/htup_details.h"
+#include "catalog/pg_type.h"
 #include "funcapi.h"
 #include "utils/array.h"
 #include "utils/builtins.h"
 #include "utils/lsyscache.h"
-#include "access/htup_details.h"
-#include "catalog/pg_type.h"
 
 PG_MODULE_MAGIC;
 
@@ -16,15 +16,13 @@ PG_MODULE_MAGIC;
  * change.
  * if PGFunction miss1func is NULL only the result will only contain matching keys
  */
-IStore*
+IStore *
 istore_merge(IStore *arg1, IStore *arg2, PGFunction mergefunc, PGFunction miss1func)
 {
-    IStore      *result;
-    IStorePair  *pairs1,
-                *pairs2;
+    IStore *     result;
+    IStorePair * pairs1, *pairs2;
     IStorePairs *creator = NULL;
-    int          index1  = 0,
-                 index2  = 0;
+    int          index1 = 0, index2 = 0;
 
     pairs1  = FIRST_PAIR(arg1, IStorePair);
     pairs2  = FIRST_PAIR(arg2, IStorePair);
@@ -48,13 +46,15 @@ istore_merge(IStore *arg1, IStore *arg2, PGFunction mergefunc, PGFunction miss1f
         }
         else
         {
-            istore_pairs_insert(creator, pairs1[index1].key, DirectFunctionCall2(mergefunc, pairs1[index1].val, pairs2[index2].val));
+            istore_pairs_insert(
+              creator, pairs1[index1].key, DirectFunctionCall2(mergefunc, pairs1[index1].val, pairs2[index2].val));
             ++index1;
             ++index2;
         }
     }
 
-    if (miss1func != NULL){
+    if (miss1func != NULL)
+    {
         while (index1 < arg1->len)
         {
             istore_pairs_insert(creator, pairs1[index1].key, pairs1[index1].val);
@@ -76,14 +76,13 @@ istore_merge(IStore *arg1, IStore *arg2, PGFunction mergefunc, PGFunction miss1f
 /*
  * apply PGFunction applyfunc on each value of arg1 with arg2
  */
-IStore*
+IStore *
 istore_apply_datum(IStore *arg1, Datum arg2, PGFunction applyfunc)
 {
-    IStore      *result;
-    IStorePair  *pairs;
+    IStore *     result;
+    IStorePair * pairs;
     IStorePairs *creator = NULL;
-    int          index  = 0;
-
+    int          index   = 0;
 
     pairs   = FIRST_PAIR(arg1, IStorePair);
     creator = palloc0(sizeof *creator);
@@ -103,14 +102,12 @@ istore_apply_datum(IStore *arg1, Datum arg2, PGFunction applyfunc)
  * remove zero values from istore
  */
 PG_FUNCTION_INFO_V1(istore_compact);
-Datum
-istore_compact(PG_FUNCTION_ARGS)
+Datum istore_compact(PG_FUNCTION_ARGS)
 {
-    IStore      *is,
-                *result;
-    IStorePair  *pairs;
+    IStore *     is, *result;
+    IStorePair * pairs;
     int          index;
-    IStorePairs *creator ;
+    IStorePairs *creator;
 
     is      = PG_GETARG_IS(0);
     pairs   = FIRST_PAIR(is, IStorePair);
@@ -128,39 +125,37 @@ istore_compact(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(result);
 }
 
-
 /*
  * Sum the values of an istore
  */
 PG_FUNCTION_INFO_V1(istore_sum_up);
-Datum
-istore_sum_up(PG_FUNCTION_ARGS)
+Datum istore_sum_up(PG_FUNCTION_ARGS)
 {
-    IStore      *is;
-    IStorePair  *pairs;
-    int64        result;
-    int          index;
-    int32        end_key;
+    IStore *    is;
+    IStorePair *pairs;
+    int64       result;
+    int         index;
+    int32       end_key;
 
     is     = PG_GETARG_IS(0);
     pairs  = FIRST_PAIR(is, IStorePair);
     result = 0;
     index  = 0;
-    
+
     if (is->len == 0)
         PG_RETURN_INT64(0);
 
     if (PG_NARGS() == 1)
     {
-        while (index < is->len )
+        while (index < is->len)
             result = DirectFunctionCall2(int84pl, result, pairs[index++].val);
-    } 
-    else 
+    }
+    else
     {
-        end_key = PG_GETARG_INT32(1) > pairs[is->len -1].key ? pairs[is->len -1].key : PG_GETARG_INT32(1);
+        end_key = PG_GETARG_INT32(1) > pairs[is->len - 1].key ? pairs[is->len - 1].key : PG_GETARG_INT32(1);
         while (index < is->len && pairs[index].key <= end_key)
             result = DirectFunctionCall2(int84pl, result, pairs[index++].val);
-    }    
+    }
 
     PG_RETURN_INT64(result);
 }
@@ -168,14 +163,14 @@ istore_sum_up(PG_FUNCTION_ARGS)
 /*
  * Binary search the key in the istore.
  */
-IStorePair*
+IStorePair *
 istore_find(IStore *is, int32 key)
 {
     IStorePair *pairs  = FIRST_PAIR(is, IStorePair);
     IStorePair *result = NULL;
-    int low        = 0;
-    int max        = is->len;
-    int mid        = 0;
+    int         low    = 0;
+    int         max    = is->len;
+    int         mid    = 0;
     while (low < max)
     {
         mid = low + (max - low) / 2;
@@ -196,12 +191,11 @@ istore_find(IStore *is, int32 key)
  * Implementation of operator ?(istore, int)
  */
 PG_FUNCTION_INFO_V1(istore_exist);
-Datum
-istore_exist(PG_FUNCTION_ARGS)
+Datum istore_exist(PG_FUNCTION_ARGS)
 {
-    bool found;
-    IStore *in = PG_GETARG_IS(0);
-    int32 key  = PG_GETARG_INT32(1);
+    bool    found;
+    IStore *in  = PG_GETARG_IS(0);
+    int32   key = PG_GETARG_INT32(1);
     if (istore_find(in, key))
         found = true;
     else
@@ -213,13 +207,12 @@ istore_exist(PG_FUNCTION_ARGS)
  * Implementation of operator ->(istore, int)
  */
 PG_FUNCTION_INFO_V1(istore_fetchval);
-Datum
-istore_fetchval(PG_FUNCTION_ARGS)
+Datum istore_fetchval(PG_FUNCTION_ARGS)
 {
     IStorePair *pair;
-    IStore *in = PG_GETARG_IS(0);
-    int32 key  = PG_GETARG_INT32(1);
-    if ((pair = istore_find(in, key)) == NULL )
+    IStore *    in  = PG_GETARG_IS(0);
+    int32       key = PG_GETARG_INT32(1);
+    if ((pair = istore_find(in, key)) == NULL)
         PG_RETURN_NULL();
     else
         PG_RETURN_INT64(pair->val);
@@ -229,14 +222,12 @@ istore_fetchval(PG_FUNCTION_ARGS)
  * Merge two istores by addition of values
  */
 PG_FUNCTION_INFO_V1(istore_add);
-Datum
-istore_add(PG_FUNCTION_ARGS)
+Datum istore_add(PG_FUNCTION_ARGS)
 {
-    IStore      *is1,
-                *is2;
+    IStore *is1, *is2;
 
-    is1     = PG_GETARG_IS(0);
-    is2     = PG_GETARG_IS(1);
+    is1 = PG_GETARG_IS(0);
+    is2 = PG_GETARG_IS(1);
 
     PG_RETURN_POINTER(istore_merge(is1, is2, int4pl, int4up));
 }
@@ -245,11 +236,10 @@ istore_add(PG_FUNCTION_ARGS)
  * Increment values of an istore
  */
 PG_FUNCTION_INFO_V1(istore_add_integer);
-Datum
-istore_add_integer(PG_FUNCTION_ARGS)
+Datum istore_add_integer(PG_FUNCTION_ARGS)
 {
-    IStore      *is;
-    Datum        int_arg;
+    IStore *is;
+    Datum   int_arg;
 
     is      = PG_GETARG_IS(0);
     int_arg = PG_GETARG_DATUM(1);
@@ -264,14 +254,12 @@ istore_add_integer(PG_FUNCTION_ARGS)
  * a treated as if their value is zero
  */
 PG_FUNCTION_INFO_V1(istore_subtract);
-Datum
-istore_subtract(PG_FUNCTION_ARGS)
+Datum istore_subtract(PG_FUNCTION_ARGS)
 {
-    IStore      *is1,
-                *is2;
+    IStore *is1, *is2;
 
-    is1     = PG_GETARG_IS(0);
-    is2     = PG_GETARG_IS(1);
+    is1 = PG_GETARG_IS(0);
+    is2 = PG_GETARG_IS(1);
 
     PG_RETURN_POINTER(istore_merge(is1, is2, int4mi, int4um));
 }
@@ -280,11 +268,10 @@ istore_subtract(PG_FUNCTION_ARGS)
  * Decrement values of an istore
  */
 PG_FUNCTION_INFO_V1(istore_subtract_integer);
-Datum
-istore_subtract_integer(PG_FUNCTION_ARGS)
+Datum istore_subtract_integer(PG_FUNCTION_ARGS)
 {
-    IStore  *is;
-    Datum    int_arg;
+    IStore *is;
+    Datum   int_arg;
 
     is      = PG_GETARG_IS(0);
     int_arg = PG_GETARG_DATUM(1);
@@ -299,14 +286,12 @@ istore_subtract_integer(PG_FUNCTION_ARGS)
  * one istore are omitted.
  */
 PG_FUNCTION_INFO_V1(istore_multiply);
-Datum
-istore_multiply(PG_FUNCTION_ARGS)
+Datum istore_multiply(PG_FUNCTION_ARGS)
 {
-    IStore      *is1,
-                *is2;
+    IStore *is1, *is2;
 
-    is1     = PG_GETARG_IS(0);
-    is2     = PG_GETARG_IS(1);
+    is1 = PG_GETARG_IS(0);
+    is2 = PG_GETARG_IS(1);
 
     PG_RETURN_POINTER(istore_merge(is1, is2, int4mul, NULL));
 }
@@ -315,11 +300,10 @@ istore_multiply(PG_FUNCTION_ARGS)
  * Multiply values of an istore
  */
 PG_FUNCTION_INFO_V1(istore_multiply_integer);
-Datum
-istore_multiply_integer(PG_FUNCTION_ARGS)
+Datum istore_multiply_integer(PG_FUNCTION_ARGS)
 {
-    IStore  *is;
-    Datum    int_arg;
+    IStore *is;
+    Datum   int_arg;
 
     is      = PG_GETARG_IS(0);
     int_arg = PG_GETARG_DATUM(1);
@@ -334,14 +318,12 @@ istore_multiply_integer(PG_FUNCTION_ARGS)
  * one istore are omitted.
  */
 PG_FUNCTION_INFO_V1(istore_divide);
-Datum
-istore_divide(PG_FUNCTION_ARGS)
+Datum istore_divide(PG_FUNCTION_ARGS)
 {
-    IStore      *is1,
-                *is2;
+    IStore *is1, *is2;
 
-    is1     = PG_GETARG_IS(0);
-    is2     = PG_GETARG_IS(1);
+    is1 = PG_GETARG_IS(0);
+    is2 = PG_GETARG_IS(1);
 
     PG_RETURN_POINTER(istore_merge(is1, is2, int4div, NULL));
 }
@@ -350,11 +332,10 @@ istore_divide(PG_FUNCTION_ARGS)
  * Divide values of an istore
  */
 PG_FUNCTION_INFO_V1(istore_divide_integer);
-Datum
-istore_divide_integer(PG_FUNCTION_ARGS)
+Datum istore_divide_integer(PG_FUNCTION_ARGS)
 {
-    IStore  *is;
-    Datum    int_arg;
+    IStore *is;
+    Datum   int_arg;
 
     is      = PG_GETARG_IS(0);
     int_arg = PG_GETARG_DATUM(1);
@@ -366,23 +347,20 @@ istore_divide_integer(PG_FUNCTION_ARGS)
  * create an istore from an intarray by counting elements
  */
 PG_FUNCTION_INFO_V1(istore_from_intarray);
-Datum
-istore_from_intarray(PG_FUNCTION_ARGS)
+Datum istore_from_intarray(PG_FUNCTION_ARGS)
 {
-    IStore    *result;
-    Datum     *i_data;
-    bool      *nulls;
-    int        n,
-               s = 0;
-    int16      i_typlen;
-    bool       i_typbyval;
-    char       i_typalign;
-    Oid        i_eltype;
-    AvlNode   *tree;
-    IStorePairs   *pairs;
-    AvlNode   *position;
-    int      key,
-             i;
+    IStore *     result;
+    Datum *      i_data;
+    bool *       nulls;
+    int          n, s = 0;
+    int16        i_typlen;
+    bool         i_typbyval;
+    char         i_typalign;
+    Oid          i_eltype;
+    AvlNode *    tree;
+    IStorePairs *pairs;
+    AvlNode *    position;
+    int          key, i;
 
     ArrayType *input = PG_GETARG_ARRAYTYPE_P(0);
     if (input == NULL)
@@ -390,23 +368,9 @@ istore_from_intarray(PG_FUNCTION_ARGS)
 
     i_eltype = ARR_ELEMTYPE(input);
 
-    get_typlenbyvalalign(
-            i_eltype,
-            &i_typlen,
-            &i_typbyval,
-            &i_typalign
-            );
+    get_typlenbyvalalign(i_eltype, &i_typlen, &i_typbyval, &i_typalign);
 
-    deconstruct_array(
-            input,
-            i_eltype,
-            i_typlen,
-            i_typbyval,
-            i_typalign,
-            &i_data,
-            &nulls,
-            &n
-            );
+    deconstruct_array(input, i_eltype, i_typlen, i_typbyval, i_typalign, &i_data, &nulls, &n);
 
     tree = NULL;
 
@@ -416,14 +380,9 @@ istore_from_intarray(PG_FUNCTION_ARGS)
             continue;
         switch (i_eltype)
         {
-            case INT2OID:
-                key = DatumGetInt16(i_data[i]);
-                break;
-            case INT4OID:
-                key = DatumGetInt32(i_data[i]);
-                break;
-            default:
-                elog(ERROR, "unsupported array type");
+            case INT2OID: key = DatumGetInt16(i_data[i]); break;
+            case INT4OID: key = DatumGetInt32(i_data[i]); break;
+            default: elog(ERROR, "unsupported array type");
         }
 
         position = is_tree_find(key, tree);
@@ -454,67 +413,29 @@ istore_from_intarray(PG_FUNCTION_ARGS)
 static Datum
 istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
 {
-    IStore      *out;
-    Datum       *i_data1,
-                *i_data2;
-    bool        *nulls1,
-                *nulls2;
+    IStore *     out;
+    Datum *      i_data1, *i_data2;
+    bool *       nulls1, *nulls2;
     IStorePairs *pairs;
-    int          i,
-                 n = 0,
-                 n1,
-                 n2;
-    int16        i_typlen1,
-                 i_typlen2;
-    bool         i_typbyval1,
-                 i_typbyval2;
-    char         i_typalign1,
-                 i_typalign2;
-    Oid          i_eltype1,
-                 i_eltype2;
-    AvlNode      *tree;
-    AvlNode      *position;
-    int32        key,
-                 value;
+    int          i, n = 0, n1, n2;
+    int16        i_typlen1, i_typlen2;
+    bool         i_typbyval1, i_typbyval2;
+    char         i_typalign1, i_typalign2;
+    Oid          i_eltype1, i_eltype2;
+    AvlNode *    tree;
+    AvlNode *    position;
+    int32        key, value;
 
     i_eltype1 = ARR_ELEMTYPE(input1);
     i_eltype2 = ARR_ELEMTYPE(input2);
 
-    get_typlenbyvalalign(
-            i_eltype1,
-            &i_typlen1,
-            &i_typbyval1,
-            &i_typalign1
-            );
+    get_typlenbyvalalign(i_eltype1, &i_typlen1, &i_typbyval1, &i_typalign1);
 
-    get_typlenbyvalalign(
-            i_eltype2,
-            &i_typlen2,
-            &i_typbyval2,
-            &i_typalign2
-            );
+    get_typlenbyvalalign(i_eltype2, &i_typlen2, &i_typbyval2, &i_typalign2);
 
-    deconstruct_array(
-            input1,
-            i_eltype1,
-            i_typlen1,
-            i_typbyval1,
-            i_typalign1,
-            &i_data1,
-            &nulls1,
-            &n1
-            );
+    deconstruct_array(input1, i_eltype1, i_typlen1, i_typbyval1, i_typalign1, &i_data1, &nulls1, &n1);
 
-    deconstruct_array(
-            input2,
-            i_eltype2,
-            i_typlen2,
-            i_typbyval2,
-            i_typalign2,
-            &i_data2,
-            &nulls2,
-            &n2
-            );
+    deconstruct_array(input2, i_eltype2, i_typlen2, i_typbyval2, i_typalign2, &i_data2, &nulls2, &n2);
 
     if (n1 != n2)
         elog(ERROR, "array dont have the same length");
@@ -527,25 +448,15 @@ istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
             continue;
         switch (i_eltype1)
         {
-            case INT2OID:
-                key = DatumGetInt16(i_data1[i]);
-                break;
-            case INT4OID:
-                key = DatumGetInt32(i_data1[i]);
-                break;
-            default:
-                elog(ERROR, "unsupported array type");
+            case INT2OID: key = DatumGetInt16(i_data1[i]); break;
+            case INT4OID: key = DatumGetInt32(i_data1[i]); break;
+            default: elog(ERROR, "unsupported array type");
         }
         switch (i_eltype2)
         {
-            case INT2OID:
-                value = DatumGetInt16(i_data2[i]);
-                break;
-            case INT4OID:
-                value = DatumGetInt32(i_data2[i]);
-                break;
-            default:
-                elog(ERROR, "unsupported array type");
+            case INT2OID: value = DatumGetInt16(i_data2[i]); break;
+            case INT4OID: value = DatumGetInt32(i_data2[i]); break;
+            default: elog(ERROR, "unsupported array type");
         }
 
         position = is_tree_find(key, tree);
@@ -572,12 +483,10 @@ istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
  * bigistore from key and value intarrays
  */
 PG_FUNCTION_INFO_V1(istore_array_add);
-Datum
-istore_array_add(PG_FUNCTION_ARGS)
+Datum istore_array_add(PG_FUNCTION_ARGS)
 {
     Datum      result;
-    ArrayType *input1,
-              *input2;
+    ArrayType *input1, *input2;
 
     if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
         PG_RETURN_NULL();
@@ -600,11 +509,10 @@ istore_array_add(PG_FUNCTION_ARGS)
  */
 
 static void
-setup_firstcall(FuncCallContext *funcctx, IStore *is,
-                FunctionCallInfoData *fcinfo)
+setup_firstcall(FuncCallContext *funcctx, IStore *is, FunctionCallInfoData *fcinfo)
 {
     MemoryContext oldcontext;
-    IStore     *st;
+    IStore *      st;
 
     oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
@@ -615,7 +523,7 @@ setup_firstcall(FuncCallContext *funcctx, IStore *is,
 
     if (fcinfo)
     {
-        TupleDesc   tupdesc;
+        TupleDesc tupdesc;
 
         /* Build a tuple descriptor for our result type */
         if (get_call_result_type(fcinfo, NULL, &tupdesc) != TYPEFUNC_COMPOSITE)
@@ -631,13 +539,12 @@ setup_firstcall(FuncCallContext *funcctx, IStore *is,
  * return keys and values as a set
  */
 PG_FUNCTION_INFO_V1(istore_each);
-Datum
-istore_each(PG_FUNCTION_ARGS)
+Datum istore_each(PG_FUNCTION_ARGS)
 {
     FuncCallContext *funcctx;
-    IStore          *is;
+    IStore *         is;
     int              i;
-    IStorePair          *pairs;
+    IStorePair *     pairs;
 
     if (SRF_IS_FIRSTCALL())
     {
@@ -653,10 +560,9 @@ istore_each(PG_FUNCTION_ARGS)
 
     if (i < is->len)
     {
-        Datum       res,
-                    dvalues[2];
-        bool        nulls[2] = {false, false};
-        HeapTuple   tuple;
+        Datum     res, dvalues[2];
+        bool      nulls[2] = { false, false };
+        HeapTuple tuple;
 
         dvalues[0] = Int32GetDatum(pairs[i].key);
         dvalues[1] = Int32GetDatum(pairs[i].val);
@@ -673,20 +579,15 @@ istore_each(PG_FUNCTION_ARGS)
  * fill missing keys in a range
  */
 PG_FUNCTION_INFO_V1(istore_fill_gaps);
-Datum
-istore_fill_gaps(PG_FUNCTION_ARGS)
+Datum istore_fill_gaps(PG_FUNCTION_ARGS)
 {
 
-    IStore  *is,
-            *result;
-    IStorePair  *pairs;
+    IStore *    is, *result;
+    IStorePair *pairs;
 
     IStorePairs *creator = NULL;
 
-    int up_to,
-        fill_with,
-        index1 = 0,
-        index2 = 0;
+    int up_to, fill_with, index1 = 0, index2 = 0;
 
     if (PG_ARGISNULL(0))
         PG_RETURN_NULL();
@@ -703,7 +604,7 @@ istore_fill_gaps(PG_FUNCTION_ARGS)
 
     istore_pairs_init(creator, up_to + 1);
 
-    for(index1=0; index1 <= up_to; ++index1)
+    for (index1 = 0; index1 <= up_to; ++index1)
     {
         if (index2 < is->len && index1 == pairs[index2].key)
         {
@@ -724,22 +625,17 @@ istore_fill_gaps(PG_FUNCTION_ARGS)
  * rolling sum over keys
  */
 PG_FUNCTION_INFO_V1(istore_accumulate);
-Datum
-istore_accumulate(PG_FUNCTION_ARGS)
+Datum istore_accumulate(PG_FUNCTION_ARGS)
 {
 
-    IStore  *is,
-            *result;
-    IStorePair  *pairs;
+    IStore *    is, *result;
+    IStorePair *pairs;
 
     IStorePairs *creator = NULL;
 
-    int     index1    = 0,
-            index2    = 0;
-    size_t  size      = 0;
-    int32   start_key = 0,
-            sum       = 0,
-            end_key   = -1;
+    int    index1 = 0, index2 = 0;
+    size_t size      = 0;
+    int32  start_key = 0, sum = 0, end_key = -1;
 
     if (PG_ARGISNULL(0))
         PG_RETURN_NULL();
@@ -752,13 +648,13 @@ istore_accumulate(PG_FUNCTION_ARGS)
     if (is->len > 0)
     {
         start_key = pairs[0].key;
-        end_key = PG_NARGS() == 1 ? pairs[is->len -1].key : PG_GETARG_INT32(1);
-        size = start_key > end_key ? 0 : (end_key - start_key + 1);
+        end_key   = PG_NARGS() == 1 ? pairs[is->len - 1].key : PG_GETARG_INT32(1);
+        size      = start_key > end_key ? 0 : (end_key - start_key + 1);
     }
 
     istore_pairs_init(creator, size);
 
-    for(index1=start_key; index1 <= end_key; ++index1)
+    for (index1 = start_key; index1 <= end_key; ++index1)
     {
         if (index2 < is->len && index1 == pairs[index2].key)
         {
@@ -777,18 +673,14 @@ istore_accumulate(PG_FUNCTION_ARGS)
  * construct a bigistore with a key range and a fixed value
  */
 PG_FUNCTION_INFO_V1(istore_seed);
-Datum
-istore_seed(PG_FUNCTION_ARGS)
+Datum istore_seed(PG_FUNCTION_ARGS)
 {
 
-    IStore  *result;
+    IStore *result;
 
     IStorePairs *creator = NULL;
 
-    int     from,
-            up_to,
-            fill_with,
-            index1 = 0;
+    int from, up_to, fill_with, index1 = 0;
 
     if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
         PG_RETURN_NULL();
@@ -801,12 +693,12 @@ istore_seed(PG_FUNCTION_ARGS)
     if (up_to < from)
         elog(ERROR, "parameter upto must be >= from");
 
-    if (from < 0 )
+    if (from < 0)
         elog(ERROR, "parameter from must be >= 0");
 
     istore_pairs_init(creator, up_to - from + 1);
 
-    for(index1=from; index1 <= up_to; ++index1)
+    for (index1 = from; index1 <= up_to; ++index1)
     {
         istore_pairs_insert(creator, index1, fill_with);
     }
@@ -819,14 +711,12 @@ istore_seed(PG_FUNCTION_ARGS)
  * Merge two istores by extraccting the bigger values
  */
 PG_FUNCTION_INFO_V1(istore_val_larger);
-Datum
-istore_val_larger(PG_FUNCTION_ARGS)
+Datum istore_val_larger(PG_FUNCTION_ARGS)
 {
-    IStore      *is1,
-                *is2;
+    IStore *is1, *is2;
 
-    is1     = PG_GETARG_IS(0);
-    is2     = PG_GETARG_IS(1);
+    is1 = PG_GETARG_IS(0);
+    is2 = PG_GETARG_IS(1);
 
     PG_RETURN_POINTER(istore_merge(is1, is2, int4larger, int4up));
 }
@@ -835,14 +725,12 @@ istore_val_larger(PG_FUNCTION_ARGS)
  * Merge two istores by extraccting the smaller values
  */
 PG_FUNCTION_INFO_V1(istore_val_smaller);
-Datum
-istore_val_smaller(PG_FUNCTION_ARGS)
+Datum istore_val_smaller(PG_FUNCTION_ARGS)
 {
-    IStore      *is1,
-                *is2;
+    IStore *is1, *is2;
 
-    is1     = PG_GETARG_IS(0);
-    is2     = PG_GETARG_IS(1);
+    is1 = PG_GETARG_IS(0);
+    is2 = PG_GETARG_IS(1);
 
     PG_RETURN_POINTER(istore_merge(is1, is2, int4smaller, int4up));
 }
@@ -851,17 +739,16 @@ istore_val_smaller(PG_FUNCTION_ARGS)
  * return array of keys
  */
 PG_FUNCTION_INFO_V1(istore_akeys);
-Datum
-istore_akeys(PG_FUNCTION_ARGS)
+Datum istore_akeys(PG_FUNCTION_ARGS)
 {
-    IStore      *is;
-    IStorePair  *pairs;
-    Datum       *d;
-    int          index;
-        ArrayType  *a;
+    IStore *    is;
+    IStorePair *pairs;
+    Datum *     d;
+    int         index;
+    ArrayType * a;
 
-    is     = PG_GETARG_IS(0);
-    index  = 0;
+    is    = PG_GETARG_IS(0);
+    index = 0;
 
     if (is->len == 0)
     {
@@ -886,17 +773,16 @@ istore_akeys(PG_FUNCTION_ARGS)
  * return array of values
  */
 PG_FUNCTION_INFO_V1(istore_avals);
-Datum
-istore_avals(PG_FUNCTION_ARGS)
+Datum istore_avals(PG_FUNCTION_ARGS)
 {
-    IStore      *is;
-    IStorePair  *pairs;
-    Datum       *d;
-    int          index;
-        ArrayType  *a;
+    IStore *    is;
+    IStorePair *pairs;
+    Datum *     d;
+    int         index;
+    ArrayType * a;
 
-    is     = PG_GETARG_IS(0);
-    index  = 0;
+    is    = PG_GETARG_IS(0);
+    index = 0;
 
     if (is->len == 0)
     {
@@ -921,12 +807,11 @@ istore_avals(PG_FUNCTION_ARGS)
  * return set of keys
  */
 PG_FUNCTION_INFO_V1(istore_skeys);
-Datum
-istore_skeys(PG_FUNCTION_ARGS)
+Datum istore_skeys(PG_FUNCTION_ARGS)
 {
-    IStore          *is;
+    IStore *         is;
     FuncCallContext *funcctx;
-    IStorePair      *pairs;
+    IStorePair *     pairs;
     int              i;
 
     if (SRF_IS_FIRSTCALL())
@@ -951,12 +836,11 @@ istore_skeys(PG_FUNCTION_ARGS)
  * return set of values
  */
 PG_FUNCTION_INFO_V1(istore_svals);
-Datum
-istore_svals(PG_FUNCTION_ARGS)
+Datum istore_svals(PG_FUNCTION_ARGS)
 {
-    IStore          *is;
+    IStore *         is;
     FuncCallContext *funcctx;
-    IStorePair      *pairs;
+    IStorePair *     pairs;
     int              i;
 
     if (SRF_IS_FIRSTCALL())
@@ -975,4 +859,11 @@ istore_svals(PG_FUNCTION_ARGS)
         SRF_RETURN_NEXT(funcctx, Int32GetDatum(pairs[i].val));
 
     SRF_RETURN_DONE(funcctx);
+}
+
+PG_FUNCTION_INFO_V1(istore_length);
+Datum istore_length(PG_FUNCTION_ARGS)
+{
+    const IStore *is = PG_GETARG_IS(0);
+    PG_RETURN_INT32(is->len);
 }

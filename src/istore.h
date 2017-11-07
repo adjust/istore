@@ -38,6 +38,7 @@ Datum istore_akeys(PG_FUNCTION_ARGS);
 Datum istore_avals(PG_FUNCTION_ARGS);
 Datum istore_skeys(PG_FUNCTION_ARGS);
 Datum istore_svals(PG_FUNCTION_ARGS);
+Datum istore_length(PG_FUNCTION_ARGS);
 Datum istore_sum_transfn(PG_FUNCTION_ARGS);
 Datum istore_sum_finalfn(PG_FUNCTION_ARGS);
 
@@ -71,6 +72,7 @@ Datum bigistore_akeys(PG_FUNCTION_ARGS);
 Datum bigistore_avals(PG_FUNCTION_ARGS);
 Datum bigistore_skeys(PG_FUNCTION_ARGS);
 Datum bigistore_svals(PG_FUNCTION_ARGS);
+Datum bigistore_length(PG_FUNCTION_ARGS);
 Datum bigistore_sum_transfn(PG_FUNCTION_ARGS);
 
 /*

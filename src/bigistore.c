@@ -976,3 +976,11 @@ bigistore_svals(PG_FUNCTION_ARGS)
 
     SRF_RETURN_DONE(funcctx);
 }
+
+PG_FUNCTION_INFO_V1(bigistore_length);
+Datum
+bigistore_length(PG_FUNCTION_ARGS)
+{
+    const BigIStore *is = PG_GETARG_BIGIS(0);
+    PG_RETURN_INT32(is->len);
+}
