@@ -57,24 +57,7 @@ CREATE TYPE bigistore (
     STORAGE = EXTENDED
 );
  
---source file sql/casts.sql
---require types
-
-CREATE FUNCTION istore(bigistore)
-    RETURNS istore
-    AS 'istore', 'bigistore_to_istore'
-    LANGUAGE C IMMUTABLE STRICT;
-
-CREATE FUNCTION bigistore(istore)
-    RETURNS bigistore
-    AS 'istore', 'istore_to_big_istore'
-    LANGUAGE C IMMUTABLE STRICT;
-
-CREATE CAST (istore as bigistore) WITH FUNCTION bigistore(istore) AS IMPLICIT;
-CREATE CAST (bigistore as istore) WITH FUNCTION istore(bigistore) AS ASSIGNMENT;
- 
 --source file sql/istore.sql
---require types
 
 CREATE FUNCTION exist(istore, integer)
     RETURNS boolean
@@ -369,7 +352,6 @@ AS
     STORAGE  integer;
  
 --source file sql/bigistore.sql
---require types
 
 CREATE FUNCTION exist(bigistore, integer)
     RETURNS boolean
@@ -518,12 +500,6 @@ CREATE FUNCTION istore_length(bigistore)
     AS 'istore', 'bigistore_length'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION bigistore_length(bigistore)
-    RETURNS integer
-    AS 'istore', 'bigistore_length'
-    LANGUAGE C IMMUTABLE STRICT;
-
-
 CREATE FUNCTION istore_to_json(bigistore)
 RETURNS json
 AS 'istore', 'bigistore_to_json'
@@ -656,4 +632,19 @@ AS
     FUNCTION 3 gin_extract_istore_key_query(internal, internal, int2, internal, internal),
     FUNCTION 4 gin_consistent_istore_key(internal, int2, internal, int4, internal, internal),
     STORAGE  integer;
+ 
+--source file sql/casts.sql
+
+CREATE FUNCTION istore(bigistore)
+    RETURNS istore
+    AS 'istore', 'bigistore_to_istore'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION bigistore(istore)
+    RETURNS bigistore
+    AS 'istore', 'istore_to_big_istore'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE CAST (istore as bigistore) WITH FUNCTION bigistore(istore) AS IMPLICIT;
+CREATE CAST (bigistore as istore) WITH FUNCTION istore(bigistore) AS ASSIGNMENT;
  

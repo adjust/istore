@@ -930,6 +930,52 @@ SELECT sum_up('10=>5, 15=>-10'::bigistore);
 
 ROLLBACK;
 BEGIN;
+-- bigistore functions should return length of empty istores;
+-- ./spec/istore/functions_plain_spec.rb:358;
+CREATE EXTENSION istore;
+SELECT istore_length(bigistore(ARRAY[]::integer[],ARRAY[]::integer[]));
+ istore_length 
+---------------
+             0
+(1 row)
+
+SELECT istore_length(istore(ARRAY[]::integer[],ARRAY[]::integer[]));
+ istore_length 
+---------------
+             0
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- bigistore functions should return length of non-empty istores;
+-- ./spec/istore/functions_plain_spec.rb:363;
+CREATE EXTENSION istore;
+SELECT istore_length(istore(ARRAY[1],ARRAY[1]));
+ istore_length 
+---------------
+             1
+(1 row)
+
+SELECT istore_length(bigistore(ARRAY[1],ARRAY[1]));
+ istore_length 
+---------------
+             1
+(1 row)
+
+SELECT istore_length(bigistore(ARRAY[1,2,3],ARRAY[1,2,3]));
+ istore_length 
+---------------
+             3
+(1 row)
+
+SELECT istore_length(istore(ARRAY[1,2,3],ARRAY[1,2,3]));
+ istore_length 
+---------------
+             3
+(1 row)
+
+ROLLBACK;
+BEGIN;
 -- istore functions should find keys with exists;
 -- ./spec/istore/functions_plain_spec.rb:10;
 CREATE EXTENSION istore;
@@ -1851,6 +1897,52 @@ SELECT sum_up('10=>5, 15=>-10'::bigistore);
  sum_up 
 --------
      -5
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- istore functions should return length of empty istores;
+-- ./spec/istore/functions_plain_spec.rb:358;
+CREATE EXTENSION istore;
+SELECT istore_length(bigistore(ARRAY[]::integer[],ARRAY[]::integer[]));
+ istore_length 
+---------------
+             0
+(1 row)
+
+SELECT istore_length(istore(ARRAY[]::integer[],ARRAY[]::integer[]));
+ istore_length 
+---------------
+             0
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- istore functions should return length of non-empty istores;
+-- ./spec/istore/functions_plain_spec.rb:363;
+CREATE EXTENSION istore;
+SELECT istore_length(istore(ARRAY[1],ARRAY[1]));
+ istore_length 
+---------------
+             1
+(1 row)
+
+SELECT istore_length(bigistore(ARRAY[1],ARRAY[1]));
+ istore_length 
+---------------
+             1
+(1 row)
+
+SELECT istore_length(bigistore(ARRAY[1,2,3],ARRAY[1,2,3]));
+ istore_length 
+---------------
+             3
+(1 row)
+
+SELECT istore_length(istore(ARRAY[1,2,3],ARRAY[1,2,3]));
+ istore_length 
+---------------
+             3
 (1 row)
 
 ROLLBACK;

@@ -358,16 +358,14 @@ types.each do |type|
       it 'should return length of empty istores' do
         query("SELECT istore_length(bigistore(ARRAY[]::integer[],ARRAY[]::integer[]))").should match 0
         query("SELECT istore_length(istore(ARRAY[]::integer[],ARRAY[]::integer[]))").should match 0
-        query("SELECT bigistore_length(bigistore(ARRAY[]::integer[],ARRAY[]::integer[]))").should match 0
       end
 
       it 'should return length of non-empty istores' do
         query("SELECT istore_length(istore(ARRAY[1],ARRAY[1]))").should match 1
         query("SELECT istore_length(bigistore(ARRAY[1],ARRAY[1]))").should match 1
-        query("SELECT bigistore_length(bigistore(ARRAY[1],ARRAY[1]))").should match 1
-
-        query("SELECT bigistore_length(bigistore(ARRAY[1,2,3],ARRAY[1,2,3]))").should match 3
+        query("SELECT istore_length(bigistore(ARRAY[1,2,3],ARRAY[1,2,3]))").should match 3
         query("SELECT istore_length(istore(ARRAY[1,2,3],ARRAY[1,2,3]))").should match 3
+      end
     end
   end
 end
