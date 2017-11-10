@@ -1,4 +1,5 @@
 #include "istore.h"
+
 #include "access/htup_details.h"
 #include "catalog/pg_type.h"
 #include "funcapi.h"
@@ -7,6 +8,8 @@
 #include "utils/lsyscache.h"
 
 PG_MODULE_MAGIC;
+
+static inline Datum *istore_key_val_datums(IStore *is);
 
 /*
  * combine two istores by applying PGFunction mergefunc on values where key match
@@ -46,8 +49,11 @@ istore_merge(IStore *arg1, IStore *arg2, PGFunction mergefunc, PGFunction miss1f
         }
         else
         {
-            istore_pairs_insert(
-              creator, pairs1[index1].key, DirectFunctionCall2(mergefunc, pairs1[index1].val, pairs2[index2].val));
+            if (mergefunc != NULL)
+                istore_pairs_insert(
+                  creator, pairs1[index1].key, DirectFunctionCall2(mergefunc, pairs1[index1].val, pairs2[index2].val));
+            else
+                istore_pairs_insert(creator, pairs1[index1].key, pairs2[index2].val);
             ++index1;
             ++index2;
         }
@@ -208,7 +214,7 @@ Datum istore_sum_up(PG_FUNCTION_ARGS)
  * Binary search the key in the istore.
  */
 IStorePair *
-istore_find(IStore *is, int32 key)
+istore_find(IStore *is, int32 key, int *off_out)
 {
     IStorePair *pairs  = FIRST_PAIR(is, IStorePair);
     IStorePair *result = NULL;
@@ -225,6 +231,8 @@ istore_find(IStore *is, int32 key)
         else
         {
             result = FIRST_PAIR(is, IStorePair) + mid;
+            if (off_out)
+                *off_out = mid;
             break;
         }
     }
@@ -240,7 +248,7 @@ Datum istore_exist(PG_FUNCTION_ARGS)
     bool    found;
     IStore *in  = PG_GETARG_IS(0);
     int32   key = PG_GETARG_INT32(1);
-    if (istore_find(in, key))
+    if (istore_find(in, key, NULL))
         found = true;
     else
         found = false;
@@ -256,7 +264,7 @@ Datum istore_fetchval(PG_FUNCTION_ARGS)
     IStorePair *pair;
     IStore *    in  = PG_GETARG_IS(0);
     int32       key = PG_GETARG_INT32(1);
-    if ((pair = istore_find(in, key)) == NULL)
+    if ((pair = istore_find(in, key, NULL)) == NULL)
         PG_RETURN_NULL();
     else
         PG_RETURN_INT64(pair->val);
@@ -307,7 +315,6 @@ Datum istore_subtract(PG_FUNCTION_ARGS)
 
     PG_RETURN_POINTER(istore_merge(is1, is2, int4mi, int4um));
 }
-
 /*
  * Decrement values of an istore
  */
@@ -385,6 +392,22 @@ Datum istore_divide_integer(PG_FUNCTION_ARGS)
     int_arg = PG_GETARG_DATUM(1);
 
     PG_RETURN_POINTER(istore_apply_datum(is, int_arg, int4div));
+}
+
+/*
+ * concat two istores
+ *
+ * duplicate keys get overwritten
+ */
+PG_FUNCTION_INFO_V1(istore_concat);
+Datum istore_concat(PG_FUNCTION_ARGS)
+{
+    IStore *is1, *is2;
+
+    is1 = PG_GETARG_IS(0);
+    is2 = PG_GETARG_IS(1);
+
+    PG_RETURN_POINTER(istore_merge(is1, is2, NULL, int4up));
 }
 
 /*
@@ -910,4 +933,321 @@ Datum istore_length(PG_FUNCTION_ARGS)
 {
     const IStore *is = PG_GETARG_IS(0);
     PG_RETURN_INT32(is->len);
+}
+
+/*
+ * return palloced array of alternating key values
+ * returns NULL if istore is empty
+ */
+static inline Datum *
+istore_key_val_datums(IStore *is)
+{
+    Datum *     d;
+    IStorePair *pairs;
+    int         index = 0;
+
+    if (is->len == 0)
+        return NULL;
+
+    pairs = FIRST_PAIR(is, IStorePair);
+    d     = (Datum *) palloc(sizeof(Datum) * is->len * 2);
+
+    while (index < is->len)
+    {
+        d[index * 2]     = pairs[index].key;
+        d[index * 2 + 1] = pairs[index].val;
+        ++index;
+    }
+    return d;
+}
+
+PG_FUNCTION_INFO_V1(istore_to_array);
+Datum istore_to_array(PG_FUNCTION_ARGS)
+{
+    IStore *   is;
+    Datum *    d;
+    ArrayType *a;
+
+    is = PG_GETARG_IS(0);
+
+    if (is->len == 0)
+    {
+        a = construct_empty_array(INT4OID);
+        PG_RETURN_POINTER(a);
+    }
+    d = istore_key_val_datums(is);
+    a = construct_array(d, is->len * 2, INT4OID, sizeof(int32), true, 'i');
+    PG_RETURN_POINTER(a);
+}
+
+PG_FUNCTION_INFO_V1(istore_to_matrix);
+Datum istore_to_matrix(PG_FUNCTION_ARGS)
+{
+    IStore *   is;
+    Datum *    d;
+    int        out_size[2] = { 0, 2 };
+    int        lb[2]       = { 1, 1 };
+    ArrayType *a;
+
+    is = PG_GETARG_IS(0);
+
+    if (is->len == 0)
+    {
+        a = construct_empty_array(INT4OID);
+        PG_RETURN_POINTER(a);
+    }
+
+    out_size[0] = is->len;
+    d           = istore_key_val_datums(is);
+    a           = construct_md_array(d, NULL, 2, out_size, lb, INT4OID, sizeof(int32), true, 'i');
+    PG_RETURN_POINTER(a);
+}
+
+PG_FUNCTION_INFO_V1(istore_slice);
+Datum istore_slice(PG_FUNCTION_ARGS)
+{
+    IStorePair * pairs;
+    IStore *     result;
+    IStore *     is      = PG_GETARG_IS(0);
+    IStorePairs *creator = NULL;
+    ArrayType *  a       = PG_GETARG_ARRAYTYPE_P_COPY(1);
+    int32 *      ar      = (int32 *) ARR_DATA_PTR(a);
+    int          alen    = ArrayGetNItems(ARR_NDIM(a), ARR_DIMS(a));
+    int          index1 = 0, index2 = 0;
+    bool         found = false;
+
+    if (ARR_HASNULL(a) && array_contains_nulls(a))
+        ereport(ERROR, (errcode(ERRCODE_NULL_VALUE_NOT_ALLOWED), errmsg("array must not contain nulls")));
+
+    pairs   = FIRST_PAIR(is, IStorePair);
+    creator = palloc0(sizeof *creator);
+
+    istore_pairs_init(creator, MIN(is->len, alen));
+
+    if (alen > 1)
+        qsort((void *) ar, alen, sizeof(int32), is_int32_arr_comp);
+
+    while (index1 < is->len && index2 < alen)
+    {
+        if (pairs[index1].key < ar[index2])
+        {
+            ++index1;
+        }
+        else if (pairs[index1].key > ar[index2])
+        {
+            ++index2;
+        }
+        else
+        {
+            istore_pairs_insert(creator, pairs[index1].key, pairs[index1].val);
+            ++index1;
+            ++index2;
+            found = true;
+        }
+    }
+    if (found)
+    {
+        FINALIZE_ISTORE(result, creator);
+        PG_RETURN_POINTER(result);
+    }
+    else
+        PG_RETURN_NULL();
+}
+
+PG_FUNCTION_INFO_V1(istore_slice_to_array);
+Datum istore_slice_to_array(PG_FUNCTION_ARGS)
+{
+    IStorePair *pair;
+    IStore *    is   = PG_GETARG_IS(0);
+    ArrayType * a    = PG_GETARG_ARRAYTYPE_P(1);
+    int32 *     ar   = (int32 *) ARR_DATA_PTR(a);
+    int         alen = ArrayGetNItems(ARR_NDIM(a), ARR_DIMS(a));
+    int         lbs[1];
+    int         dims[1];
+    int         i;
+    Datum *     out_datums;
+    bool *      out_nulls;
+    ArrayType * aout;
+
+    if (ARR_HASNULL(a) && array_contains_nulls(a))
+        ereport(ERROR, (errcode(ERRCODE_NULL_VALUE_NOT_ALLOWED), errmsg("array must not contain nulls")));
+
+    out_datums = palloc(sizeof(Datum) * alen);
+    out_nulls  = palloc(sizeof(bool) * alen);
+    dims[0]    = alen;
+    lbs[0]     = 1;
+
+    for (i = 0; i < alen; ++i)
+    {
+        if ((pair = istore_find(is, ar[i], NULL)) == NULL)
+        {
+            out_datums[i] = (Datum) 0;
+            out_nulls[i]  = true;
+        }
+        else
+        {
+            out_datums[i] = pair->val;
+            out_nulls[i]  = false;
+        }
+    }
+
+    aout = construct_md_array(out_datums, out_nulls, 1, dims, lbs, INT4OID, sizeof(int32), true, 'i');
+
+    PG_RETURN_POINTER(aout);
+}
+
+PG_FUNCTION_INFO_V1(istore_delete);
+Datum istore_delete(PG_FUNCTION_ARGS)
+{
+    IStorePair *pair;
+    IStore *    is  = PG_GETARG_IS_COPY(0);
+    int32       key = PG_GETARG_INT32(1);
+    int         del_off;
+
+    if ((pair = istore_find(is, key, &del_off)))
+    {
+        --is->len;
+        is->buflen -= is_pair_buf_len(pair);
+        if (is->len > del_off)
+            memmove(pair, pair + 1, (is->len - del_off) * sizeof(IStorePair));
+    }
+    SET_VARSIZE(is, ISHDRSZ + (is->len * sizeof(IStorePair)));
+    PG_RETURN_POINTER(is);
+}
+
+PG_FUNCTION_INFO_V1(istore_delete_array);
+Datum istore_delete_array(PG_FUNCTION_ARGS)
+{
+    IStorePair *pairs;
+    IStore *    is       = PG_GETARG_IS_COPY(0);
+    ArrayType * a        = PG_GETARG_ARRAYTYPE_P_COPY(1);
+    int32 *     ar       = (int32 *) ARR_DATA_PTR(a);
+    int         alen     = ArrayGetNItems(ARR_NDIM(a), ARR_DIMS(a));
+    int         is_index = 0, ar_index = 0;
+
+    if (ARR_HASNULL(a) && array_contains_nulls(a))
+        ereport(ERROR, (errcode(ERRCODE_NULL_VALUE_NOT_ALLOWED), errmsg("array must not contain nulls")));
+
+    pairs = FIRST_PAIR(is, IStorePair);
+
+    if (alen > 1)
+        qsort((void *) ar, alen, sizeof(int32), is_int32_arr_comp);
+
+    while (is_index < is->len && ar_index < alen)
+    {
+        if (pairs[is_index].key < ar[ar_index])
+        {
+            ++is_index;
+        }
+        else if (pairs[is_index].key > ar[ar_index])
+        {
+            ++ar_index;
+        }
+        else
+        {
+            --is->len;
+            is->buflen -= is_pair_buf_len(pairs + is_index);
+            if (is->len > is_index)
+                memmove(pairs + is_index, pairs + is_index + 1, (is->len - is_index) * sizeof(IStorePair));
+
+            ++ar_index;
+        }
+    }
+
+    SET_VARSIZE(is, ISHDRSZ + (is->len * sizeof(IStorePair)));
+    PG_RETURN_POINTER(is);
+}
+
+PG_FUNCTION_INFO_V1(istore_delete_istore);
+Datum istore_delete_istore(PG_FUNCTION_ARGS)
+{
+    IStorePair *pairs, *delpairs;
+    IStore *    is    = PG_GETARG_IS_COPY(0);
+    IStore *    isdel = PG_GETARG_IS(1);
+
+    int index1 = 0, index2 = 0;
+
+    pairs    = FIRST_PAIR(is, IStorePair);
+    delpairs = FIRST_PAIR(isdel, IStorePair);
+
+    while (index1 < is->len && index2 < isdel->len)
+    {
+        if (pairs[index1].key < delpairs[index2].key)
+        {
+            ++index1;
+        }
+        else if (pairs[index1].key > delpairs[index2].key)
+        {
+            ++index2;
+        }
+        else
+        {
+            if (pairs[index1].val == delpairs[index2].val)
+            {
+                --is->len;
+                is->buflen -= is_pair_buf_len(pairs + index1);
+                if (is->len > index1)
+                    memmove(pairs + index1, pairs + index1 + 1, (is->len - index1) * sizeof(IStorePair));
+                ++index2;
+            }
+            else
+            {
+                ++index2;
+                ++index1;
+            }
+        }
+    }
+
+    SET_VARSIZE(is, ISHDRSZ + (is->len * sizeof(IStorePair)));
+    PG_RETURN_POINTER(is);
+}
+
+PG_FUNCTION_INFO_V1(istore_exists_any);
+Datum istore_exists_any(PG_FUNCTION_ARGS)
+{
+    IStore *   is   = PG_GETARG_IS(0);
+    ArrayType *a    = PG_GETARG_ARRAYTYPE_P(1);
+    int32 *    ar   = (int32 *) ARR_DATA_PTR(a);
+    int        alen = ArrayGetNItems(ARR_NDIM(a), ARR_DIMS(a));
+    int        i    = 0;
+
+    if (ARR_HASNULL(a) && array_contains_nulls(a))
+        ereport(ERROR, (errcode(ERRCODE_NULL_VALUE_NOT_ALLOWED), errmsg("array must not contain nulls")));
+
+    for (i = 0; i < alen; i++)
+    {
+        if (istore_find(is, ar[i], NULL) != NULL)
+            PG_RETURN_BOOL(true);
+    }
+
+    PG_RETURN_BOOL(false);
+}
+
+PG_FUNCTION_INFO_V1(istore_exists_all);
+Datum istore_exists_all(PG_FUNCTION_ARGS)
+{
+    IStore *   is   = PG_GETARG_IS(0);
+    ArrayType *a    = PG_GETARG_ARRAYTYPE_P(1);
+    int32 *    ar   = (int32 *) ARR_DATA_PTR(a);
+    int        alen = ArrayGetNItems(ARR_NDIM(a), ARR_DIMS(a));
+    int        i;
+
+    if (ARR_HASNULL(a) && array_contains_nulls(a))
+        ereport(ERROR, (errcode(ERRCODE_NULL_VALUE_NOT_ALLOWED), errmsg("array must not contain nulls")));
+
+    for (i = 0; i < alen; i++)
+    {
+        if (istore_find(is, ar[i], NULL) == NULL)
+            PG_RETURN_BOOL(false);
+    }
+
+    PG_RETURN_BOOL(true);
+}
+
+int
+is_int32_arr_comp(const void *a, const void *b)
+{
+    if (*(const int32 *) a == *(const int32 *) b)
+        return 0;
+    return (*(const int32 *) a > *(const int32 *) b) ? 1 : -1;
 }

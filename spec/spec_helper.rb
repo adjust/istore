@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'dumbo/test'
+require 'json'
 
 ENV['DUMBO_ENV']  ||= 'test'
 require File.expand_path('../../config/boot', __FILE__)
@@ -67,6 +68,19 @@ RSpec.configure do |config|
       istore: %{"-2147483647"=>"10", "-10"=>"-2147483647", "0"=>"5", "10"=>"2147483647", "2147483647"=>"10"},
       bigistore: %{"-2147483647"=>"10", "-10"=>"-9223372036854775807", "0"=>"5", "10"=>"9223372036854775806", "2147483647"=>"10"},
     }
+  end
+  def sample_hash
+    {
+      istore: {-2147483647 => 10, -10 => -2147483647, 0 => 5, 10 => 2147483647, 2147483647 => 10},
+      bigistore: {-2147483647 => 10, -10 => -9223372036854775807, 0 => 5, 10 => 9223372036854775806, 2147483647 => 10},
+    }
+  end
+
+  def hash_to_istore(h)
+    h.map{|k,v| [k.to_s,v.to_s]}.to_h.to_s.gsub(/[\{\}]/,'')
+  end
+  def arr_to_sql_arr(a)
+    a.to_s.gsub(/[\[\] ]/,{'['=>'{',']'=>'}'})
   end
 end
 
