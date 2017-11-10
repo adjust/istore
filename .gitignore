@@ -25,3 +25,5 @@ temp
 results
 bench/benchmarks*
 vendor
+regression.diffs
+regression.out

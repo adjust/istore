@@ -72,6 +72,11 @@ CREATE FUNCTION divide(istore, integer)
     AS 'istore', 'istore_divide_integer'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION concat(istore, istore)
+    RETURNS istore
+    AS 'istore', 'istore_concat'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION istore(integer[])
     RETURNS istore
     AS 'istore', 'istore_from_intarray'
@@ -163,9 +168,57 @@ CREATE FUNCTION istore_agg_finalfn_pairs(internal)
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION istore_to_json(istore)
-RETURNS json
-AS 'istore', 'istore_to_json'
-LANGUAGE C IMMUTABLE STRICT;
+    RETURNS json
+    AS 'istore', 'istore_to_json'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION istore_to_array(istore)
+    RETURNS int[]
+    AS 'istore', 'istore_to_array'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION istore_to_matrix(istore)
+    RETURNS int[]
+    AS 'istore', 'istore_to_matrix'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION slice(istore, integer[])
+    RETURNS istore
+    AS 'istore', 'istore_slice'
+    LANGUAGE C IMMUTABLE STRICT;
+CREATE FUNCTION slice_array(istore, integer[])
+    RETURNS integer[]
+    AS 'istore', 'istore_slice_to_array'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION delete(istore,int)
+    RETURNS istore
+    AS 'istore', 'istore_delete'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION delete(istore,int[])
+    RETURNS istore
+    AS 'istore', 'istore_delete_array'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION exists_all(istore,integer[])
+    RETURNS boolean
+    AS 'istore', 'istore_exists_all'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION exists_any(istore,integer[])
+    RETURNS boolean
+    AS 'istore', 'istore_exists_any'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION delete(istore, istore)
+    RETURNS istore
+    AS 'istore', 'istore_delete_istore'
+    LANGUAGE C IMMUTABLE STRICT;
+
+/*
+    -- populate_record(record,hstore)
+*/
 
 CREATE FUNCTION bigistore_agg_finalfn(internal)
     RETURNS bigistore
@@ -274,6 +327,41 @@ CREATE OPERATOR / (
     leftarg   = istore,
     rightarg  = integer,
     procedure = divide
+);
+
+
+CREATE OPERATOR -> (
+    leftarg   = istore,
+    rightarg  = integer[],
+    procedure = slice_array
+);
+
+CREATE OPERATOR %% (
+    rightarg  = istore,
+    procedure = istore_to_array
+);
+
+CREATE OPERATOR %# (
+    rightarg  = istore,
+    procedure = istore_to_matrix
+);
+
+CREATE OPERATOR ?& (
+    leftarg   = istore,
+    rightarg  = integer[],
+    procedure = exists_all
+);
+
+CREATE OPERATOR ?| (
+    leftarg   = istore,
+    rightarg  = integer[],
+    procedure = exists_any
+);
+
+CREATE OPERATOR || (
+    leftarg   = istore,
+    rightarg  = istore,
+    procedure = concat
 );
 
 

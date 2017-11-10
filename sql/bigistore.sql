@@ -72,6 +72,11 @@ CREATE FUNCTION divide(bigistore, bigint)
     AS 'istore', 'bigistore_divide_integer'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION concat(bigistore, bigistore)
+    RETURNS bigistore
+    AS 'istore', 'bigistore_concat'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION bigistore(integer[])
     RETURNS bigistore
     AS 'istore', 'bigistore_from_intarray'
@@ -161,6 +166,50 @@ CREATE FUNCTION istore_to_json(bigistore)
 RETURNS json
 AS 'istore', 'bigistore_to_json'
 LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION istore_to_array(bigistore)
+    RETURNS int[]
+    AS 'istore', 'bigistore_to_array'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION istore_to_matrix(bigistore)
+    RETURNS int[]
+    AS 'istore', 'bigistore_to_matrix'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION slice(bigistore, integer[])
+    RETURNS bigistore
+    AS 'istore', 'bigistore_slice'
+    LANGUAGE C IMMUTABLE STRICT;
+CREATE FUNCTION slice_array(bigistore, integer[])
+    RETURNS integer[]
+    AS 'istore', 'bigistore_slice_to_array'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION delete(bigistore,int)
+    RETURNS bigistore
+    AS 'istore', 'bigistore_delete'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION delete(bigistore,int[])
+    RETURNS bigistore
+    AS 'istore', 'bigistore_delete_array'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION exists_all(bigistore,integer[])
+    RETURNS boolean
+    AS 'istore', 'bigistore_exists_all'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION exists_any(bigistore,integer[])
+    RETURNS boolean
+    AS 'istore', 'bigistore_exists_any'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION delete(bigistore,bigistore)
+    RETURNS bigistore
+    AS 'istore', 'bigistore_delete_istore'
+    LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION istore_sum_transfn(internal, bigistore)
     RETURNS internal
@@ -274,6 +323,41 @@ CREATE OPERATOR / (
     rightarg  = bigint,
     procedure = divide
 );
+
+CREATE OPERATOR -> (
+    leftarg   = bigistore,
+    rightarg  = integer[],
+    procedure = slice_array
+);
+
+CREATE OPERATOR %% (
+    rightarg  = bigistore,
+    procedure = istore_to_array
+);
+
+CREATE OPERATOR %# (
+    rightarg  = bigistore,
+    procedure = istore_to_matrix
+);
+
+CREATE OPERATOR ?& (
+    leftarg   = bigistore,
+    rightarg  = integer[],
+    procedure = exists_all
+);
+
+CREATE OPERATOR ?| (
+    leftarg   = bigistore,
+    rightarg  = integer[],
+    procedure = exists_any
+);
+
+CREATE OPERATOR || (
+    leftarg   = bigistore,
+    rightarg  = bigistore,
+    procedure = concat
+);
+
 
 CREATE FUNCTION gin_extract_bigistore_key(internal, internal)
 RETURNS internal
