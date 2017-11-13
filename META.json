@@ -1,0 +1,39 @@
+{
+   "name": "istore",
+   "abstract": "An integer -> integer key/value store for analytic workloads",
+   "version": "0.1.6",
+   "maintainer": [ "Chris Travers <christravers@adjust.com>", "Manuel Kniep <rapimo@adjust.com>"],
+   "license": {
+      "PostgreSQL": "http://www.postgresql.org/about/licence"
+   },
+   "provides": { 
+      "istore": {
+         "file": "sql/istore.sql",
+         "version": "0.1.6",
+         "abstract": "Enumerable country list, stored in a single-byte, fixed-length type."
+      }
+   },
+   "meta-spec": {
+     "version": "1.0.0",
+     "url": "http://pgxn.org/meta/spec.txt"
+   },
+   "description": "istore provides a key/valyue store of ints to ints.  This is useful for analytic workloads where istore can efficiently store sparse integer arrays.",
+   "prereqs": {
+      "runtime": {
+        "requires": {
+           "PostgreSQL": "9.4.0"
+        }
+      }
+   },
+   "resources": {
+       "bugtracker": {
+           "web": "http://github.com/adjust/istore/issues"
+       },
+       "repository": {
+          "url": "git://github.com/adjust/istore.git",
+          "web": "http://github.com/adjust/istore",
+          "type": "git"
+       }
+   }
+}
+
