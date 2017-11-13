@@ -8,6 +8,7 @@
    },
    "provides": { 
       "istore": {
+         "file": "sql/istore.sql",
          "version": "0.1.6",
          "abstract": "Enumerable country list, stored in a single-byte, fixed-length type."
       }
