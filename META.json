@@ -2,8 +2,7 @@
    "name": "istore",
    "abstract": "An integer -> integer key/value store for analytic workloads",
    "version": "0.1.6",
-   "maintainer": [ "Chris Travers <christravers@adjust.com>", "Manuel Kniep <rapimo@adjust.com>". 
-Rpbert A],
+   "maintainer": [ "Chris Travers <christravers@adjust.com>", "Manuel Kniep <rapimo@adjust.com>"],
    "license": {
       "PostgreSQL": "http://www.postgresql.org/about/licence"
    },
