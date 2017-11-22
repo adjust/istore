@@ -76,6 +76,19 @@ RSpec.configure do |config|
     }
   end
 
+  def big_value
+      {
+      istore: 2147483647,
+      bigistore: 9223372036854775806,
+      }
+  end
+  def small_value
+      {
+      istore: -2147483647,
+      bigistore: -9223372036854775807,
+      }
+  end
+
   def hash_to_istore(h)
     h.map{|k,v| [k.to_s,v.to_s]}.to_h.to_s.gsub(/[\{\}]/,'')
   end

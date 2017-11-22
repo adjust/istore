@@ -211,24 +211,24 @@ CREATE FUNCTION delete(bigistore,bigistore)
     AS 'istore', 'bigistore_delete_istore'
     LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION istore_sum_transfn(internal, bigistore)
+CREATE FUNCTION bigistore_sum_transfn(internal, bigistore)
     RETURNS internal
-    AS 'istore' ,'bigistore_sum_transfn'
+    AS 'istore'
     LANGUAGE C IMMUTABLE;
 
-CREATE FUNCTION istore_min_transfn(internal, bigistore)
+CREATE FUNCTION bigistore_min_transfn(internal, bigistore)
     RETURNS internal
     AS 'istore' ,'bigistore_min_transfn'
     LANGUAGE C IMMUTABLE;
 
-CREATE FUNCTION istore_max_transfn(internal, bigistore)
+CREATE FUNCTION bigistore_max_transfn(internal, bigistore)
     RETURNS internal
-    AS 'istore' ,'bigistore_max_transfn'
+    AS 'istore'
     LANGUAGE C IMMUTABLE;
 
 CREATE FUNCTION bigistore_avl_transfn(internal, int, bigint)
     RETURNS internal
-    AS 'istore' ,'bigistore_avl_transfn'
+    AS 'istore'
     LANGUAGE C IMMUTABLE;
 
 CREATE FUNCTION bigistore_avl_finalfn(internal)
@@ -237,21 +237,21 @@ CREATE FUNCTION bigistore_avl_finalfn(internal)
     LANGUAGE C IMMUTABLE;
 
 CREATE AGGREGATE SUM (
-    sfunc = istore_sum_transfn,
+    sfunc = bigistore_sum_transfn,
     basetype = bigistore,
     stype = internal,
     finalfunc = bigistore_agg_finalfn
 );
 
 CREATE AGGREGATE MIN (
-    sfunc = istore_min_transfn,
+    sfunc = bigistore_min_transfn,
     basetype = bigistore,
     stype = internal,
     finalfunc = bigistore_agg_finalfn
 );
 
 CREATE AGGREGATE MAX (
-    sfunc = istore_max_transfn,
+    sfunc = bigistore_max_transfn,
     basetype = bigistore,
     stype = internal,
     finalfunc = bigistore_agg_finalfn
