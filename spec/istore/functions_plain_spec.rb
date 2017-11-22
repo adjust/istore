@@ -301,13 +301,13 @@ types.each do |type|
       end
 
       it 'should return #{type} with maxed values' do
-        query("SELECT MAX(s) FROM (VALUES('1=>5, 2=>2, 3=>3'::#{type}),('1=>1, 2=>5, 3=>3'),('1=>1, 2=>4, 3=>5'))t(s)").should match \
-        '"1"=>"5", "2"=>"5", "3"=>"5"'
+        query("SELECT MAX(s) FROM (VALUES('-10=>5, 0=>2, 10=>3'::#{type}),(#{sample[type]}),('-10=>1, 0=>4, 10=>5'))t(s)").should match \
+        '"-2147483647"=>"10", "-10"=>"5", "0"=>"5", "10"=>"%d", "2147483647"=>"10"' % big_value[type]
       end
 
-      it 'should return #{type} with maxed values' do
-        query("SELECT MIN(s) FROM (VALUES('1=>5, 2=>2, 3=>3'::#{type}),('1=>1, 2=>5, 3=>3'),('1=>1, 2=>4, 3=>5'))t(s)").should match \
-        '"1"=>"1", "2"=>"2", "3"=>"3"'
+      it 'should return #{type} with mined values' do
+        query("SELECT MIN(s) FROM (VALUES('-10=>5, 0=>2, 10=>3'::#{type}),(#{sample[type]}),('-10=>1, 0=>4, 10=>5'))t(s)").should match \
+        '"-2147483647"=>"10", "-10"=>"%d", "0"=>"2", "10"=>"3", "2147483647"=>"10"' % small_value[type]
       end
 
       it 'should return keys as array' do
