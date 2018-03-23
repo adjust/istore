@@ -1,4 +1,5 @@
 --require types
+--require istore
 
 CREATE FUNCTION exist(bigistore, integer)
     RETURNS boolean
@@ -184,6 +185,16 @@ CREATE FUNCTION slice(bigistore, integer[])
 CREATE FUNCTION slice_array(bigistore, integer[])
     RETURNS integer[]
     AS 'istore', 'bigistore_slice_to_array'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION clamp_below(bigistore,int)
+    RETURNS bigistore
+    AS 'istore', 'bigistore_clamp_below'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION clamp_above(bigistore,int)
+    RETURNS bigistore
+    AS 'istore', 'bigistore_clamp_above'
     LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION delete(bigistore,int)

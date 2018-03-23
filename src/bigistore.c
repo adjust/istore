@@ -1099,6 +1099,76 @@ Datum bigistore_slice_to_array(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(aout);
 }
 
+PG_FUNCTION_INFO_V1(bigistore_clamp_below);
+Datum bigistore_clamp_below(PG_FUNCTION_ARGS)
+{
+    BigIStorePair * pairs;
+    BigIStore * is    = PG_GETARG_BIGIS_COPY(0);
+    int32    end_key  = PG_GETARG_INT32(1);
+    int64    result   = 0;
+    int      index    = 0, count = 0;
+
+    pairs = FIRST_PAIR(is, BigIStorePair);
+    while (index < is->len && pairs[index].key <= end_key)
+    {
+        count++;
+        is->buflen -= bigis_pair_buf_len(pairs + index);
+        result = DirectFunctionCall2(int8pl, result, pairs[index++].val);
+    }
+
+    if (count) {
+        /* back to the last element that is to be clamped */
+        index--, count--;
+
+        /* put the sum result in its place */
+        pairs[index].key = end_key;
+        pairs[index].val = result;
+
+        /* truncate the rest */
+        is->len -= count;
+        is->buflen += bigis_pair_buf_len(pairs + index);
+        memmove(pairs, pairs + index, is->len * sizeof(BigIStorePair));
+    }
+
+    SET_VARSIZE(is, ISHDRSZ + (is->len * sizeof(BigIStorePair)));
+    PG_RETURN_POINTER(is);
+}
+
+PG_FUNCTION_INFO_V1(bigistore_clamp_above);
+Datum bigistore_clamp_above(PG_FUNCTION_ARGS)
+{
+    BigIStorePair * pairs;
+    BigIStore * is    = PG_GETARG_BIGIS_COPY(0);
+    int32    end_key  = PG_GETARG_INT32(1);
+    int64    result   = 0;
+    int      index    = 0, count = 0;
+
+    pairs = FIRST_PAIR(is, BigIStorePair);
+    index = is->len - 1;
+    while (index >= 0 && pairs[index].key >= end_key)
+    {
+        count++;
+        is->buflen -= bigis_pair_buf_len(pairs + index);
+        result = DirectFunctionCall2(int8pl, result, pairs[index--].val);
+    }
+
+    if (count) {
+        /* back to the last element that is to be clamped */
+        index++, count--;
+
+        /* put the sum result in its place */
+        pairs[index].key = end_key;
+        pairs[index].val = result;
+
+        /* truncate the rest */
+        is->len -= count;
+        is->buflen += bigis_pair_buf_len(pairs + index);
+    }
+
+    SET_VARSIZE(is, ISHDRSZ + (is->len * sizeof(BigIStorePair)));
+    PG_RETURN_POINTER(is);
+}
+
 PG_FUNCTION_INFO_V1(bigistore_delete);
 Datum bigistore_delete(PG_FUNCTION_ARGS)
 {
