@@ -1099,26 +1099,25 @@ Datum bigistore_slice_to_array(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(aout);
 }
 
-PG_FUNCTION_INFO_V1(bigistore_clamp_below);
-Datum bigistore_clamp_below(PG_FUNCTION_ARGS)
+static void bigistore_clamp_pass(BigIStore * is, int32 end_key, int delta_dir)
 {
     BigIStorePair * pairs;
-    BigIStore * is    = PG_GETARG_BIGIS_COPY(0);
-    int32    end_key  = PG_GETARG_INT32(1);
-    int64    result   = 0;
-    int      index    = 0, count = 0;
+    int64 result = 0;
+    int   index  = 0, count = 0;
 
     pairs = FIRST_PAIR(is, BigIStorePair);
-    while (index < is->len && pairs[index].key <= end_key)
+    index = delta_dir > 0 ? 0 : is->len - 1;
+    while ( ((delta_dir > 0) && (index < is->len && pairs[index].key <= end_key)) ||
+            ((delta_dir < 0) && (index >= 0      && pairs[index].key >= end_key)) )
     {
-        count++;
         is->buflen -= bigis_pair_buf_len(pairs + index);
-        result = DirectFunctionCall2(int8pl, result, pairs[index++].val);
+        result = DirectFunctionCall2(int8pl, result, pairs[index].val);
+        index += delta_dir, count++;
     }
 
     if (count) {
         /* back to the last element that is to be clamped */
-        index--, count--;
+        index -= delta_dir, count--;
 
         /* put the sum result in its place */
         pairs[index].key = end_key;
@@ -1127,45 +1126,28 @@ Datum bigistore_clamp_below(PG_FUNCTION_ARGS)
         /* truncate the rest */
         is->len -= count;
         is->buflen += bigis_pair_buf_len(pairs + index);
-        memmove(pairs, pairs + index, is->len * sizeof(BigIStorePair));
+        if (delta_dir > 0)
+            memmove(pairs, pairs + index, is->len * sizeof(BigIStorePair));
     }
 
     SET_VARSIZE(is, ISHDRSZ + (is->len * sizeof(BigIStorePair)));
+}
+
+PG_FUNCTION_INFO_V1(bigistore_clamp_below);
+Datum bigistore_clamp_below(PG_FUNCTION_ARGS)
+{
+    BigIStore * is      = PG_GETARG_BIGIS_COPY(0);
+    int32       end_key = PG_GETARG_INT32(1);
+    bigistore_clamp_pass(is, end_key, 1);
     PG_RETURN_POINTER(is);
 }
 
 PG_FUNCTION_INFO_V1(bigistore_clamp_above);
 Datum bigistore_clamp_above(PG_FUNCTION_ARGS)
 {
-    BigIStorePair * pairs;
-    BigIStore * is    = PG_GETARG_BIGIS_COPY(0);
-    int32    end_key  = PG_GETARG_INT32(1);
-    int64    result   = 0;
-    int      index    = 0, count = 0;
-
-    pairs = FIRST_PAIR(is, BigIStorePair);
-    index = is->len - 1;
-    while (index >= 0 && pairs[index].key >= end_key)
-    {
-        count++;
-        is->buflen -= bigis_pair_buf_len(pairs + index);
-        result = DirectFunctionCall2(int8pl, result, pairs[index--].val);
-    }
-
-    if (count) {
-        /* back to the last element that is to be clamped */
-        index++, count--;
-
-        /* put the sum result in its place */
-        pairs[index].key = end_key;
-        pairs[index].val = result;
-
-        /* truncate the rest */
-        is->len -= count;
-        is->buflen += bigis_pair_buf_len(pairs + index);
-    }
-
-    SET_VARSIZE(is, ISHDRSZ + (is->len * sizeof(BigIStorePair)));
+    BigIStore * is      = PG_GETARG_BIGIS_COPY(0);
+    int32       end_key = PG_GETARG_INT32(1);
+    bigistore_clamp_pass(is, end_key, -1);
     PG_RETURN_POINTER(is);
 }
 

@@ -1096,26 +1096,25 @@ Datum istore_slice_to_array(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(aout);
 }
 
-PG_FUNCTION_INFO_V1(istore_clamp_below);
-Datum istore_clamp_below(PG_FUNCTION_ARGS)
+static void istore_clamp_pass(IStore * is, int32 end_key, int delta_dir)
 {
     IStorePair * pairs;
-    IStore * is       = PG_GETARG_IS_COPY(0);
-    int32    end_key  = PG_GETARG_INT32(1);
-    int32    result   = 0;
-    int      index    = 0, count = 0;
+    int32 result = 0;
+    int   index  = 0, count = 0;
 
     pairs = FIRST_PAIR(is, IStorePair);
-    while (index < is->len && pairs[index].key <= end_key)
+    index = delta_dir > 0 ? 0 : is->len - 1;
+    while ( ((delta_dir > 0) && (index < is->len && pairs[index].key <= end_key)) ||
+            ((delta_dir < 0) && (index >= 0      && pairs[index].key >= end_key)) )
     {
-        count++;
         is->buflen -= is_pair_buf_len(pairs + index);
-        result = DirectFunctionCall2(int4pl, result, pairs[index++].val);
+        result = DirectFunctionCall2(int4pl, result, pairs[index].val);
+        index += delta_dir, count++;
     }
 
     if (count) {
         /* back to the last element that is to be clamped */
-        index--, count--;
+        index -= delta_dir, count--;
 
         /* put the sum result in its place */
         pairs[index].key = end_key;
@@ -1124,45 +1123,28 @@ Datum istore_clamp_below(PG_FUNCTION_ARGS)
         /* truncate the rest */
         is->len -= count;
         is->buflen += is_pair_buf_len(pairs + index);
-        memmove(pairs, pairs + index, is->len * sizeof(IStorePair));
+        if (delta_dir > 0)
+            memmove(pairs, pairs + index, is->len * sizeof(IStorePair));
     }
 
     SET_VARSIZE(is, ISHDRSZ + (is->len * sizeof(IStorePair)));
+}
+
+PG_FUNCTION_INFO_V1(istore_clamp_below);
+Datum istore_clamp_below(PG_FUNCTION_ARGS)
+{
+    IStore * is       = PG_GETARG_IS_COPY(0);
+    int32    end_key  = PG_GETARG_INT32(1);
+    istore_clamp_pass(is, end_key, 1);
     PG_RETURN_POINTER(is);
 }
 
 PG_FUNCTION_INFO_V1(istore_clamp_above);
 Datum istore_clamp_above(PG_FUNCTION_ARGS)
 {
-    IStorePair * pairs;
     IStore * is       = PG_GETARG_IS_COPY(0);
     int32    end_key  = PG_GETARG_INT32(1);
-    int32    result   = 0;
-    int      index    = 0, count = 0;
-
-    pairs = FIRST_PAIR(is, IStorePair);
-    index = is->len - 1;
-    while (index >= 0 && pairs[index].key >= end_key)
-    {
-        count++;
-        is->buflen -= is_pair_buf_len(pairs + index);
-        result = DirectFunctionCall2(int4pl, result, pairs[index--].val);
-    }
-
-    if (count) {
-        /* back to the last element that is to be clamped */
-        index++, count--;
-
-        /* put the sum result in its place */
-        pairs[index].key = end_key;
-        pairs[index].val = result;
-
-        /* truncate the rest */
-        is->len -= count;
-        is->buflen += is_pair_buf_len(pairs + index);
-    }
-
-    SET_VARSIZE(is, ISHDRSZ + (is->len * sizeof(IStorePair)));
+    istore_clamp_pass(is, end_key, -1);
     PG_RETURN_POINTER(is);
 }
 
