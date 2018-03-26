@@ -141,7 +141,7 @@ bigistore_max_key(PG_FUNCTION_ARGS)
     }
     else 
     {
-        key = FIRST_PAIR(istore, BigIStorePair)[istore->len - 1].key;
+        key = LAST_PAIR(istore, BigIStorePair)->key;
         PG_RETURN_INT32(key);
     }
 }
@@ -1138,7 +1138,7 @@ Datum bigistore_clamp_below(PG_FUNCTION_ARGS)
 {
     BigIStore * is = PG_GETARG_BIGIS(0);
     int32 end_key  = PG_GETARG_INT32(1);
-    if( (FIRST_PAIR(is, BigIStorePair))->key < end_key )
+    if(FIRST_PAIR(is, BigIStorePair)->key < end_key)
     {
         is = PG_GETARG_BIGIS_COPY(0);
         bigistore_clamp_pass(is, end_key, 1);
@@ -1151,7 +1151,7 @@ Datum bigistore_clamp_above(PG_FUNCTION_ARGS)
 {
     BigIStore * is = PG_GETARG_BIGIS(0);
     int32 end_key  = PG_GETARG_INT32(1);
-    if( (FIRST_PAIR(is, BigIStorePair))[is->len - 1].key > end_key )
+    if(LAST_PAIR(is, BigIStorePair)->key > end_key)
     {
         is = PG_GETARG_BIGIS_COPY(0);
         bigistore_clamp_pass(is, end_key, -1);

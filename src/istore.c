@@ -143,7 +143,7 @@ istore_max_key(PG_FUNCTION_ARGS)
     }
     else 
     {
-        key = FIRST_PAIR(istore, IStorePair)[istore->len - 1].key;
+        key = LAST_PAIR(istore, IStorePair)->key;
         PG_RETURN_INT32(key);
     }
 }
@@ -1135,7 +1135,7 @@ Datum istore_clamp_below(PG_FUNCTION_ARGS)
 {
     IStore * is      = PG_GETARG_IS(0);
     int32    end_key = PG_GETARG_INT32(1);
-    if( (FIRST_PAIR(is, IStorePair))->key < end_key )
+    if(FIRST_PAIR(is, IStorePair)->key < end_key)
     {
         is = PG_GETARG_IS_COPY(0);
         istore_clamp_pass(is, end_key, 1);
@@ -1148,7 +1148,7 @@ Datum istore_clamp_above(PG_FUNCTION_ARGS)
 {
     IStore * is      = PG_GETARG_IS(0);
     int32    end_key = PG_GETARG_INT32(1);
-    if( (FIRST_PAIR(is, IStorePair))[is->len - 1].key > end_key )
+    if(LAST_PAIR(is, IStorePair)->key > end_key)
     {
         is = PG_GETARG_IS_COPY(0);
         istore_clamp_pass(is, end_key, -1);

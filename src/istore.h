@@ -167,6 +167,7 @@ int is_int32_arr_comp(const void *a, const void *b);
  * get the first pair of type
  */
 #define FIRST_PAIR(x, _pairtype) ((_pairtype *) ((char *) x + ISHDRSZ))
+#define LAST_PAIR(x, _pairtype)  ((_pairtype *) ((char *) x + ISHDRSZ + (x->len-1) * sizeof(_pairtype)))
 
 /*
  * get the istore
