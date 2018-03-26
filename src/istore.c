@@ -1096,64 +1096,63 @@ Datum istore_slice_to_array(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(aout);
 }
 
-static void istore_clamp_pass(IStore * is, int32 end_key, int delta_dir)
+static IStore * istore_clamp_pass(IStore * is, int32 clamp_key, int delta_dir)
 {
+    IStore     * result_is;
     IStorePair * pairs;
-    int32 result = 0;
-    int   index  = 0, count = 0;
+    int32 clamp_sum = 0;
+    int   index     = 0, count = 0, delta_buflen = 0, new_size = 0, bytesize = 0;
+
+    /* short circuit out of the funciton if there is nothing to clamp */
+    if(delta_dir > 0 && FIRST_PAIR(is, IStorePair)->key >= clamp_key)
+        return is;
+    if(delta_dir < 0 && LAST_PAIR(is, IStorePair)->key <= clamp_key) 
+        return is;
 
     pairs = FIRST_PAIR(is, IStorePair);
     index = delta_dir > 0 ? 0 : is->len - 1;
-    while ( ((delta_dir > 0) && (index < is->len && pairs[index].key <= end_key)) ||
-            ((delta_dir < 0) && (index >= 0      && pairs[index].key >= end_key)) )
+    while ( ((delta_dir > 0) && (index < is->len && pairs[index].key <= clamp_key)) ||
+            ((delta_dir < 0) && (index >= 0      && pairs[index].key >= clamp_key)) )
     {
-        is->buflen -= is_pair_buf_len(pairs + index);
-        INTPL(pairs[index].val, result, result);
+        INTPL(pairs[index].val, clamp_sum, clamp_sum);
+        delta_buflen += is_pair_buf_len(pairs + index);
         index += delta_dir, count++;
     }
 
-    if (count > 0) {
-        /* back to the last element that is to be clamped */
-        index -= delta_dir, count--;
+    /* back to the last element that is to be clamped */
+    index -= delta_dir, count--;
 
-        /* put the sum result in its place */
-        pairs[index].key = end_key;
-        pairs[index].val = result;
+    /* copy survivors into a new spot */
+    if (delta_dir > 0)
+        pairs = pairs + index;
 
-        /* truncate the rest */
-        is->len -= count;
-        is->buflen += is_pair_buf_len(pairs + index);
-        if (delta_dir > 0)
-            memmove(pairs, pairs + index, is->len * sizeof(IStorePair));
-    }
+    new_size       = is->len - count;
+    bytesize       = ISHDRSZ + new_size * sizeof(IStorePair);
+    result_is      = palloc0(bytesize);
+    result_is->len = new_size;
 
-    SET_VARSIZE(is, ISHDRSZ + (is->len * sizeof(IStorePair)));
+    SET_VARSIZE(result_is, bytesize);
+    memcpy(FIRST_PAIR(result_is, IStorePair), pairs, bytesize);
+
+    /* put the clamp_sum in the clamp-key place */
+    pairs = delta_dir > 0 ? FIRST_PAIR(result_is, IStorePair) : LAST_PAIR(result_is, IStorePair);
+    pairs->key = clamp_key;
+    pairs->val = clamp_sum;
+    result_is->buflen = is->buflen - delta_buflen + is_pair_buf_len(pairs);
+
+    return result_is;
 }
 
 PG_FUNCTION_INFO_V1(istore_clamp_below);
 Datum istore_clamp_below(PG_FUNCTION_ARGS)
 {
-    IStore * is      = PG_GETARG_IS(0);
-    int32    end_key = PG_GETARG_INT32(1);
-    if(FIRST_PAIR(is, IStorePair)->key < end_key)
-    {
-        is = PG_GETARG_IS_COPY(0);
-        istore_clamp_pass(is, end_key, 1);
-    }
-    PG_RETURN_POINTER(is);
+    PG_RETURN_POINTER(istore_clamp_pass(PG_GETARG_IS(0), PG_GETARG_INT32(1), 1));
 }
 
 PG_FUNCTION_INFO_V1(istore_clamp_above);
 Datum istore_clamp_above(PG_FUNCTION_ARGS)
 {
-    IStore * is      = PG_GETARG_IS(0);
-    int32    end_key = PG_GETARG_INT32(1);
-    if(LAST_PAIR(is, IStorePair)->key > end_key)
-    {
-        is = PG_GETARG_IS_COPY(0);
-        istore_clamp_pass(is, end_key, -1);
-    }
-    PG_RETURN_POINTER(is);
+    PG_RETURN_POINTER(istore_clamp_pass(PG_GETARG_IS(0), PG_GETARG_INT32(1), -1));
 }
 
 PG_FUNCTION_INFO_V1(istore_delete);
