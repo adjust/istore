@@ -1108,11 +1108,11 @@ static void istore_clamp_pass(IStore * is, int32 end_key, int delta_dir)
             ((delta_dir < 0) && (index >= 0      && pairs[index].key >= end_key)) )
     {
         is->buflen -= is_pair_buf_len(pairs + index);
-        result = DirectFunctionCall2(int4pl, result, pairs[index].val);
+        INTPL(pairs[index].val, result, result);
         index += delta_dir, count++;
     }
 
-    if (count) {
+    if (count > 0) {
         /* back to the last element that is to be clamped */
         index -= delta_dir, count--;
 
@@ -1133,18 +1133,26 @@ static void istore_clamp_pass(IStore * is, int32 end_key, int delta_dir)
 PG_FUNCTION_INFO_V1(istore_clamp_below);
 Datum istore_clamp_below(PG_FUNCTION_ARGS)
 {
-    IStore * is       = PG_GETARG_IS_COPY(0);
-    int32    end_key  = PG_GETARG_INT32(1);
-    istore_clamp_pass(is, end_key, 1);
+    IStore * is      = PG_GETARG_IS(0);
+    int32    end_key = PG_GETARG_INT32(1);
+    if( (FIRST_PAIR(is, IStorePair))->key < end_key )
+    {
+        is = PG_GETARG_IS_COPY(0);
+        istore_clamp_pass(is, end_key, 1);
+    }
     PG_RETURN_POINTER(is);
 }
 
 PG_FUNCTION_INFO_V1(istore_clamp_above);
 Datum istore_clamp_above(PG_FUNCTION_ARGS)
 {
-    IStore * is       = PG_GETARG_IS_COPY(0);
-    int32    end_key  = PG_GETARG_INT32(1);
-    istore_clamp_pass(is, end_key, -1);
+    IStore * is      = PG_GETARG_IS(0);
+    int32    end_key = PG_GETARG_INT32(1);
+    if( (FIRST_PAIR(is, IStorePair))[is->len - 1].key > end_key )
+    {
+        is = PG_GETARG_IS_COPY(0);
+        istore_clamp_pass(is, end_key, -1);
+    }
     PG_RETURN_POINTER(is);
 }
 

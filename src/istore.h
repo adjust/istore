@@ -202,6 +202,7 @@ int is_int32_arr_comp(const void *a, const void *b);
         pfree(_pairs->pairs);                                                                                          \
     } while (0)
 
+#define SAMESIGN(a,b)   (((a) < 0) == ((b) < 0))
 #define INTPL(_a, _b, _r)                                                                                              \
     do                                                                                                                 \
     {                                                                                                                  \

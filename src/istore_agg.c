@@ -1,7 +1,6 @@
 #include "istore.h"
 #include "utils/builtins.h"
 
-#define SAMESIGN(a,b)   (((a) < 0) == ((b) < 0))
 #define INITSTATESIZE 30
 
 #define BIG_ISTORE 1
