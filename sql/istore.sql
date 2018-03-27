@@ -191,6 +191,16 @@ CREATE FUNCTION slice_array(istore, integer[])
     AS 'istore', 'istore_slice_to_array'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION clamp_below(istore,int)
+    RETURNS istore
+    AS 'istore', 'istore_clamp_below'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION clamp_above(istore,int)
+    RETURNS istore
+    AS 'istore', 'istore_clamp_above'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION delete(istore,int)
     RETURNS istore
     AS 'istore', 'istore_delete'

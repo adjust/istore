@@ -478,6 +478,26 @@ types.each do |type|
         query("SELECT max_key('0=>2, 1=>2, 3=>0 ,2=>2'::#{type})").should match '3'
       end
 
+      describe 'clamp' do
+        it 'should clamp keys that are below a specified threshold' do
+          query("SELECT clamp_below('1=>1'::#{type}, 0)").should match '"1"=>"1"'
+          query("SELECT clamp_below('-2=>1, -1=>1, 1=>1'::#{type}, 1)").should match '"1"=>"3"'
+          query("SELECT clamp_below('-2=>1, -1=>1, 1=>1'::#{type}, 0)").should match '"0"=>"2", "1"=>"1"'
+          query("SELECT clamp_below('-5=>1, -1=>1, 0=>0, 1=>1'::#{type}, 0)").should match '"0"=>"2", "1"=>"1"'
+          query("SELECT clamp_below('-5=>1, -1=>1, 0=>1, 1=>1'::#{type}, 0)").should match '"0"=>"3", "1"=>"1"'
+          query("SELECT clamp_below('-5=>1, -1=>1, 0=>1, 1=>1'::#{type}, 2)").should match '"2"=>"4"'
+        end
+
+        it 'should clamp keys that are above a specified threshold' do
+          query("SELECT clamp_above('1=>1'::#{type}, 2)").should match '"1"=>"1"'
+          query("SELECT clamp_above('-1=>1, 1=>1, 2=>1'::#{type}, -1)").should match '"-1"=>"3"'
+          query("SELECT clamp_above('-1=>1, 1=>1, 2=>1'::#{type}, 0)").should match '"-1"=>"1", "0"=>"2"'
+          query("SELECT clamp_above('-1=>1, 0=>0, 1=>1, 2=>1'::#{type}, 0)").should match '"-1"=>"1", "0"=>"2"'
+          query("SELECT clamp_above('-1=>1, 0=>1, 1=>1, 2=>1'::#{type}, 0)").should match '"-1"=>"1", "0"=>"3"'
+          query("SELECT clamp_above('-1=>1, 0=>1, 1=>1, 2=>1'::#{type}, -6)").should match '"-6"=>"4"'
+        end
+      end
+
       describe 'concat' do
         it 'should concat two istores' do
           query("SELECT concat('1=>4, 2=>5'::#{type}, '3=>4, 2=>7'::#{type})").should match \

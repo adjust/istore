@@ -141,7 +141,7 @@ bigistore_max_key(PG_FUNCTION_ARGS)
     }
     else 
     {
-        key = FIRST_PAIR(istore, BigIStorePair)[istore->len - 1].key;
+        key = LAST_PAIR(istore, BigIStorePair)->key;
         PG_RETURN_INT32(key);
     }
 }
@@ -1097,6 +1097,65 @@ Datum bigistore_slice_to_array(PG_FUNCTION_ARGS)
     aout = construct_md_array(out_datums, out_nulls, 1, dims, lbs, INT8OID, sizeof(int64), true, 'i');
 
     PG_RETURN_POINTER(aout);
+}
+
+static BigIStore * bigistore_clamp_pass(BigIStore * is, int32 clamp_key, int delta_dir)
+{
+    BigIStore     * result_is;
+    BigIStorePair * pairs;
+    BigIStorePairs  creator;
+    int32 clamp_sum = 0;
+    int   index     = 0, count = 0, delta_buflen = 0;
+
+    /* short circuit out of the funciton if there is nothing to clamp */
+    if(delta_dir > 0 && FIRST_PAIR(is, BigIStorePair)->key >= clamp_key)
+        return is;
+    if(delta_dir < 0 && LAST_PAIR(is, BigIStorePair)->key <= clamp_key) 
+        return is;
+
+    pairs = FIRST_PAIR(is, BigIStorePair);
+    index = delta_dir > 0 ? 0 : is->len - 1;
+    while ( ((delta_dir > 0) && (index < is->len && pairs[index].key <= clamp_key)) ||
+            ((delta_dir < 0) && (index >= 0      && pairs[index].key >= clamp_key)) )
+    {
+        INTPL(pairs[index].val, clamp_sum, clamp_sum);
+        delta_buflen += bigis_pair_buf_len(pairs + index);
+        index += delta_dir, count++;
+    }
+
+    /* back to the last element that is to be clamped */
+    index -= delta_dir, count--;
+
+    /* copy survivors into a new spot */
+    if (delta_dir > 0)
+        pairs = pairs + index;
+
+    creator = (BigIStorePairs) {
+        .pairs  = pairs,
+        .buflen = is->buflen - delta_buflen,
+        .used   = is->len - count
+    };
+    FINALIZE_ISTORE_BASE(result_is, (&creator), BigIStorePair);
+
+    /* put the clamp_sum in the clamp-key place */
+    pairs = delta_dir > 0 ? FIRST_PAIR(result_is, BigIStorePair) : LAST_PAIR(result_is, BigIStorePair);
+    pairs->key = clamp_key;
+    pairs->val = clamp_sum;
+    result_is->buflen += bigis_pair_buf_len(pairs);
+
+    return result_is;
+}
+
+PG_FUNCTION_INFO_V1(bigistore_clamp_below);
+Datum bigistore_clamp_below(PG_FUNCTION_ARGS)
+{
+    PG_RETURN_POINTER(bigistore_clamp_pass(PG_GETARG_BIGIS(0), PG_GETARG_INT32(1), 1));
+}
+
+PG_FUNCTION_INFO_V1(bigistore_clamp_above);
+Datum bigistore_clamp_above(PG_FUNCTION_ARGS)
+{
+    PG_RETURN_POINTER(bigistore_clamp_pass(PG_GETARG_BIGIS(0), PG_GETARG_INT32(1), -1));
 }
 
 PG_FUNCTION_INFO_V1(bigistore_delete);
