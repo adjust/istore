@@ -1098,10 +1098,11 @@ Datum istore_slice_to_array(PG_FUNCTION_ARGS)
 
 static IStore * istore_clamp_pass(IStore * is, int32 clamp_key, int delta_dir)
 {
-    IStore     * result_is;
-    IStorePair * pairs;
+    IStore      * result_is;
+    IStorePair  * pairs;
+    IStorePairs   creator;
     int32 clamp_sum = 0;
-    int   index     = 0, count = 0, delta_buflen = 0, new_size = 0, bytesize = 0;
+    int   index     = 0, count = 0, delta_buflen = 0;
 
     /* short circuit out of the funciton if there is nothing to clamp */
     if(delta_dir > 0 && FIRST_PAIR(is, IStorePair)->key >= clamp_key)
@@ -1126,19 +1127,18 @@ static IStore * istore_clamp_pass(IStore * is, int32 clamp_key, int delta_dir)
     if (delta_dir > 0)
         pairs = pairs + index;
 
-    new_size       = is->len - count;
-    bytesize       = ISHDRSZ + new_size * sizeof(IStorePair);
-    result_is      = palloc0(bytesize);
-    result_is->len = new_size;
-
-    SET_VARSIZE(result_is, bytesize);
-    memcpy(FIRST_PAIR(result_is, IStorePair), pairs, bytesize);
+    creator = (IStorePairs) {
+        .pairs  = pairs,
+        .buflen = is->buflen - delta_buflen,
+        .used   = is->len - count
+    };
+    FINALIZE_ISTORE_BASE(result_is, (&creator), IStorePair);
 
     /* put the clamp_sum in the clamp-key place */
     pairs = delta_dir > 0 ? FIRST_PAIR(result_is, IStorePair) : LAST_PAIR(result_is, IStorePair);
     pairs->key = clamp_key;
     pairs->val = clamp_sum;
-    result_is->buflen = is->buflen - delta_buflen + is_pair_buf_len(pairs);
+    result_is->buflen += is_pair_buf_len(pairs);
 
     return result_is;
 }

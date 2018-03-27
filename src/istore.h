@@ -181,26 +181,26 @@ int is_int32_arr_comp(const void *a, const void *b);
 /*
  * creates the internal representation from a pairs collection
  */
-#define FINALIZE_ISTORE(_istore, _pairs)                                                                               \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        _istore         = palloc0(ISHDRSZ + PAYLOAD_SIZE(_pairs, IStorePair));                                         \
-        _istore->buflen = _pairs->buflen;                                                                              \
-        _istore->len    = _pairs->used;                                                                                \
-        SET_VARSIZE(_istore, ISHDRSZ + PAYLOAD_SIZE(_pairs, IStorePair));                                              \
-        memcpy(FIRST_PAIR(_istore, IStorePair), _pairs->pairs, PAYLOAD_SIZE(_pairs, IStorePair));                      \
-        pfree(_pairs->pairs);                                                                                          \
+
+#define FINALIZE_ISTORE_BASE(_istore, _pairs, _pairtype) \
+        _istore         = palloc0(ISHDRSZ + PAYLOAD_SIZE(_pairs, _pairtype));\
+        _istore->buflen = _pairs->buflen;\
+        _istore->len    = _pairs->used;\
+        SET_VARSIZE(_istore, ISHDRSZ + PAYLOAD_SIZE(_pairs, _pairtype));\
+        memcpy(FIRST_PAIR(_istore, _pairtype), _pairs->pairs, PAYLOAD_SIZE(_pairs, _pairtype));
+
+#define FINALIZE_ISTORE(_istore, _pairs)                   \
+    do                                                     \
+    {                                                      \
+        FINALIZE_ISTORE_BASE(_istore, _pairs, IStorePair); \
+        pfree(_pairs->pairs);                              \
     } while (0)
 
-#define FINALIZE_BIGISTORE(_istore, _pairs)                                                                            \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        _istore         = palloc0(ISHDRSZ + PAYLOAD_SIZE(_pairs, BigIStorePair));                                      \
-        _istore->buflen = _pairs->buflen;                                                                              \
-        _istore->len    = _pairs->used;                                                                                \
-        SET_VARSIZE(_istore, ISHDRSZ + PAYLOAD_SIZE(_pairs, BigIStorePair));                                           \
-        memcpy(FIRST_PAIR(_istore, BigIStorePair), _pairs->pairs, PAYLOAD_SIZE(_pairs, BigIStorePair));                \
-        pfree(_pairs->pairs);                                                                                          \
+#define FINALIZE_BIGISTORE(_istore, _pairs)                   \
+    do                                                        \
+    {                                                         \
+        FINALIZE_ISTORE_BASE(_istore, _pairs, BigIStorePair); \
+        pfree(_pairs->pairs);                                 \
     } while (0)
 
 #define SAMESIGN(a,b)   (((a) < 0) == ((b) < 0))

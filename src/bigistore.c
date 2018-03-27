@@ -1103,8 +1103,9 @@ static BigIStore * bigistore_clamp_pass(BigIStore * is, int32 clamp_key, int del
 {
     BigIStore     * result_is;
     BigIStorePair * pairs;
+    BigIStorePairs  creator;
     int32 clamp_sum = 0;
-    int   index     = 0, count = 0, delta_buflen = 0, new_size = 0, bytesize = 0;
+    int   index     = 0, count = 0, delta_buflen = 0;
 
     /* short circuit out of the funciton if there is nothing to clamp */
     if(delta_dir > 0 && FIRST_PAIR(is, BigIStorePair)->key >= clamp_key)
@@ -1129,19 +1130,18 @@ static BigIStore * bigistore_clamp_pass(BigIStore * is, int32 clamp_key, int del
     if (delta_dir > 0)
         pairs = pairs + index;
 
-    new_size       = is->len - count;
-    bytesize       = ISHDRSZ + new_size * sizeof(BigIStorePair);
-    result_is      = palloc0(bytesize);
-    result_is->len = new_size;
-
-    SET_VARSIZE(result_is, bytesize);
-    memcpy(FIRST_PAIR(result_is, BigIStorePair), pairs, bytesize);
+    creator = (BigIStorePairs) {
+        .pairs  = pairs,
+        .buflen = is->buflen - delta_buflen,
+        .used   = is->len - count
+    };
+    FINALIZE_ISTORE_BASE(result_is, (&creator), BigIStorePair);
 
     /* put the clamp_sum in the clamp-key place */
     pairs = delta_dir > 0 ? FIRST_PAIR(result_is, BigIStorePair) : LAST_PAIR(result_is, BigIStorePair);
     pairs->key = clamp_key;
     pairs->val = clamp_sum;
-    result_is->buflen = is->buflen - delta_buflen + bigis_pair_buf_len(pairs);
+    result_is->buflen += bigis_pair_buf_len(pairs);
 
     return result_is;
 }
