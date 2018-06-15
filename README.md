@@ -93,8 +93,8 @@ istore -> integer     | get value for key (NULL if not present)                 
 istore -> integer[]   | get values or key (NULL if not present)                               | '1=>4,2=>5'::istore -> Array[1,3]         | {4,NULL}
 istore ? integer      | does istore contain key?                                              | '1=>4,2=>5'::istore ? 2                   | t
 istore ?& integer[]   | does istore contain all specified keys?                               | '1=>4,2=>5'::istore ?& ARRAY[1,3]         | f
-istore ?| integer[]   | does istore contain any of the specified keys?                        | '1=>4,2=>5'::istore ?| ARRAY[1,3]         | t
-istore || istore      | concatenate istores                                                   | '1=>4, 2=>5'::istore || '3=>4, 2=>7'      | "1"=>"4", "2"=>"7", "3"=>"4"
+istore ?\| integer[]  | does istore contain any of the specified keys?                        | '1=>4,2=>5'::istore ?\| ARRAY[1,3]        | t
+istore \|\| istore    | concatenate istores                                                   | '1=>4, 2=>5'::istore \|\| '3=>4, 2=>7'    | "1"=>"4", "2"=>"7", "3"=>"4"
 istore + istore       | add value of matching keys (missing key will be treated as 0)         | '1=>4,2=>5'::istore + '1=>4,3=>6'::istore | "1"=>"8", "2"=>"5", "3"=>"6"
 istore + integer      | add right operant to all values                                       | '1=>4,2=>5'::istore + 3                   | "1"=>"7", "2"=>"8"
 istore - istore       | subtract value of matching keys (missing key will be treated as 0)    | '1=>4,2=>5'::istore - '1=>4,3=>6'::istore | "1"=>"0", "2"=>"5", "3"=>"-6"
