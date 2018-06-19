@@ -8,8 +8,8 @@
  */
 
 
-Datum istore_array_sum(Datum *data, int count, bool *nulls);
-Datum bigistore_array_sum(Datum *data, int count, bool *nulls);
+static Datum istore_array_sum(Datum *data, int count, bool *nulls);
+static Datum bigistore_array_sum(Datum *data, int count, bool *nulls);
 
 /*
  * sum aggregation final function
@@ -80,7 +80,7 @@ istore_agg_finalfn(PG_FUNCTION_ARGS)
 /*
  * summarize an array of istores
  */
-Datum
+static Datum
 istore_array_sum(Datum *data, int count, bool *nulls)
 {
     BigIStore       *out;
@@ -132,7 +132,7 @@ istore_array_sum(Datum *data, int count, bool *nulls)
 /*
  * summarize an array of bigistores
  */
-Datum
+static Datum
 bigistore_array_sum(Datum *data, int count, bool *nulls)
 {
     BigIStore       *out;

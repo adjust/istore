@@ -17,7 +17,7 @@ static inline Datum *bigistore_key_val_datums(BigIStore *is);
  * change.
  * if PGFunction miss1func is NULL the result will only contain matching keys
  */
-BigIStore *
+static BigIStore *
 bigistore_merge(BigIStore *arg1, BigIStore *arg2, PGFunction mergefunc, PGFunction miss1func)
 {
     BigIStore *     result;
@@ -80,7 +80,7 @@ bigistore_merge(BigIStore *arg1, BigIStore *arg2, PGFunction mergefunc, PGFuncti
 /*
  * apply PGFunction applyfunc on each value of arg1 with arg2
  */
-BigIStore *
+static BigIStore *
 bigistore_apply_datum(BigIStore *arg1, Datum arg2, PGFunction applyfunc)
 {
     BigIStore *     result;
@@ -211,7 +211,7 @@ Datum bigistore_sum_up(PG_FUNCTION_ARGS)
 /*
  * Binary search the key in the bigistore.
  */
-BigIStorePair *
+static BigIStorePair *
 bigistore_find(BigIStore *is, int32 key, int *off_out)
 {
     BigIStorePair *pairs  = FIRST_PAIR(is, BigIStorePair);
@@ -1099,7 +1099,8 @@ Datum bigistore_slice_to_array(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(aout);
 }
 
-static BigIStore * bigistore_clamp_pass(BigIStore * is, int32 clamp_key, int delta_dir)
+static BigIStore *
+bigistore_clamp_pass(BigIStore * is, int32 clamp_key, int delta_dir)
 {
     BigIStore     * result_is;
     BigIStorePair * pairs;
