@@ -95,33 +95,32 @@ istore_agg_internal(ISAggState *state, IStore *istore, ISAggType type)
         else
         {
             // identical keys add values
-            if (type == AGG_SUM)
+            switch (type)
             {
-                /*
-                * Overflow check.  If the inputs are of different signs then their sum
-                * cannot overflow.  If the inputs are of the same sign, their sum had
-                * better be that sign too.
-                */
-                if (SAMESIGN(pairs1->val, pairs2->val))
-                {
-                    pairs1->val += pairs2->val;
-                    if(!SAMESIGN(pairs1->val, pairs2->val))
-                        ereport(ERROR,
-                                (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-                                errmsg("bigint out of range")));
-                }
-                else
-                {
-                    pairs1->val += pairs2->val;
-                }
-            }
-            else if (type == AGG_MIN)
-            {
-                pairs1->val = MIN(pairs2->val, pairs1->val);
-            }
-            else if (type == AGG_MAX)
-            {
-                pairs1->val = MAX(pairs2->val, pairs1->val);
+                case AGG_SUM:
+                    /*
+                     * Overflow check.  If the inputs are of different signs then their sum
+                     * cannot overflow.  If the inputs are of the same sign, their sum had
+                     * better be that sign too.
+                     */
+                    if (SAMESIGN(pairs1->val, pairs2->val))
+                    {
+                        pairs1->val += pairs2->val;
+                        if(!SAMESIGN(pairs1->val, pairs2->val))
+                            ereport(ERROR,
+                                    (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
+                                    errmsg("bigint out of range")));
+                    }
+                    else
+                    {
+                        pairs1->val += pairs2->val;
+                    }
+                    break;
+                case AGG_MIN:
+                    pairs1->val = MIN(pairs2->val, pairs1->val);
+                    break;
+                case AGG_MAX:
+                    pairs1->val = MAX(pairs2->val, pairs1->val);
             }
 
             ++index1;
@@ -203,17 +202,18 @@ bigistore_agg_internal(ISAggState *state, BigIStore *istore, ISAggType type)
         else
         {
             // identical keys - apply logic according to aggregation type
-            if (type == AGG_SUM)
+            switch (type)
             {
+                case AGG_SUM:
                     /*
-                    * Overflow check.  If the inputs are of different signs then their sum
-                    * cannot overflow.  If the inputs are of the same sign, their sum had
-                    * better be that sign too.
-                    */
+                     * Overflow check.  If the inputs are of different signs then their sum
+                     * cannot overflow.  If the inputs are of the same sign, their sum had
+                     * better be that sign too.
+                     */
                     if (SAMESIGN(pairs1->val, pairs2->val))
                     {
                         pairs1->val += pairs2->val;
-                        if(!SAMESIGN(pairs1->val, pairs2->val))
+                        if (!SAMESIGN(pairs1->val, pairs2->val))
                             ereport(ERROR,
                                     (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
                                     errmsg("bigint out of range")));
@@ -222,14 +222,12 @@ bigistore_agg_internal(ISAggState *state, BigIStore *istore, ISAggType type)
                     {
                         pairs1->val += pairs2->val;
                     }
-            }
-            else if (type == AGG_MIN)
-            {
-                pairs1->val = MIN(pairs2->val, pairs1->val);
-            }
-            else if (type == AGG_MAX)
-            {
-                pairs1->val = MAX(pairs2->val, pairs1->val);
+                    break;
+                case AGG_MIN:
+                    pairs1->val = MIN(pairs2->val, pairs1->val);
+                    break;
+                case AGG_MAX:
+                    pairs1->val = MAX(pairs2->val, pairs1->val);
             }
 
             ++index1;
