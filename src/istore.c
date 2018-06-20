@@ -19,7 +19,7 @@ static inline Datum *istore_key_val_datums(IStore *is);
  * change.
  * if PGFunction miss1func is NULL only the result will only contain matching keys
  */
-IStore *
+static IStore *
 istore_merge(IStore *arg1, IStore *arg2, PGFunction mergefunc, PGFunction miss1func)
 {
     IStore *     result;
@@ -82,7 +82,7 @@ istore_merge(IStore *arg1, IStore *arg2, PGFunction mergefunc, PGFunction miss1f
 /*
  * apply PGFunction applyfunc on each value of arg1 with arg2
  */
-IStore *
+static IStore *
 istore_apply_datum(IStore *arg1, Datum arg2, PGFunction applyfunc)
 {
     IStore *     result;
@@ -213,7 +213,7 @@ Datum istore_sum_up(PG_FUNCTION_ARGS)
 /*
  * Binary search the key in the istore.
  */
-IStorePair *
+static IStorePair *
 istore_find(IStore *is, int32 key, int *off_out)
 {
     IStorePair *pairs  = FIRST_PAIR(is, IStorePair);
