@@ -8,43 +8,36 @@ matrix:
             postgresql: 9.2
        install:
             - sudo apt-get install postgresql-server-dev-9.2
-            - sudo make install
      - env: postgres=9.3
        addons:
             postgresql: 9.3
        install:
             - sudo apt-get install postgresql-server-dev-9.3
-            - sudo make install
      - env: postgres=9.4
        addons:
             postgresql: 9.4
        install:
             - sudo apt-get install postgresql-server-dev-9.4
-            - sudo make install
      - env: postgres=9.5
        addons:
             postgresql: 9.5
        install:
             - sudo apt-get install postgresql-server-dev-9.5
-            - sudo make install
      - env: postgres=9.6
        addons:
             postgresql: 9.6
        install:
             - sudo apt-get install postgresql-server-dev-9.6
-            - sudo make install
      - env: postgres=10
+       addons:
+            postgresql: 10
        install:
-           - sudo /etc/init.d/postgresql stop
-           - wget -q https://www.postgresql.org/media/keys/ACCC4CF8.asc -O - | sudo apt-key add -
-           - sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" >> /etc/apt/sources.list.d/pgdg.list'
-           - sudo apt-get update
-           - sudo apt-get install postgresql postgresql-contrib postgresql-client
-           - sudo apt-get install postgresql-server-dev-10
-           - sudo sh -c 'echo "port=5432" >> /etc/postgresql/10/main/postgresql.conf'
-           - sudo pg_ctlcluster 10 main restart
-           - sudo -u postgres psql  -c "create user travis with superuser";
-           - sudo make install
+            - sudo /etc/init.d/postgresql stop
+            - wget -q https://www.postgresql.org/media/keys/ACCC4CF8.asc -O - | sudo apt-key add -
+            - sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" >> /etc/apt/sources.list.d/pgdg.list'
+            - sudo apt-get update
+            - sudo apt-get install postgresql postgresql-contrib postgresql-client
+            - sudo apt-get install postgresql-server-dev-10
 
    allow_failures:
      - env: postgres=9.2
@@ -54,6 +47,7 @@ matrix:
 
 
 script:
-  - make installcheck
-after_failure:
-  - cat regression.diffs
+  - bash ./travis_script.sh
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
