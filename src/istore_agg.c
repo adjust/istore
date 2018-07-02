@@ -42,6 +42,17 @@ state_init(MemoryContext agg_context)
     return state;
 }
 
+static inline ISAggState *
+state_extend(ISAggState *state, int n)
+{
+    if (state->size < state->used + n)
+    {
+        state->size  = state->size * 2 > state->used + n ? state->size * 2 : state->used + n;
+        state        = repalloc(state, sizeof(ISAggState) + state->size * sizeof(BigIStorePair));
+    }
+    return state;
+}
+
 // Aggregate internal function for istore.
 static inline ISAggState *
 istore_agg_internal(ISAggState *state, IStore *istore, ISAggType type)
@@ -68,13 +79,9 @@ istore_agg_internal(ISAggState *state, IStore *istore, ISAggType type)
                 ++i;
             }
 
-            // ensure array is big enough
-            if (state->size < state->used + i)
-            {
-                state->size  = state->size * 2 > state->used + i ? state->size * 2 : state->used + i;
-                state        = repalloc(state, sizeof(ISAggState) + state->size * sizeof(BigIStorePair));
-                pairs1       = state->pairs+index1;
-            }
+            // expand state capacity to store new items
+            state = state_extend(state, i);
+            pairs1 = state->pairs+index1;
 
             // move data i steps forward from index1
             memmove(pairs1+i,pairs1, (state->used - index1) * sizeof(BigIStorePair));
@@ -134,13 +141,9 @@ istore_agg_internal(ISAggState *state, IStore *istore, ISAggType type)
     int i = istore->len - index2;
     if ( i > 0 )
     {
-        if (state->size <= state->used + i)
-        {
-            state->size = state->size * 2 > state->used + i ? state->size * 2 : state->used + i;
-            state       = repalloc(state, sizeof(ISAggState) + state->size * sizeof(BigIStorePair));
-            pairs1      = state->pairs+index1;
-        }
+        state = state_extend(state, i);
         state->used += i;
+        pairs1 = state->pairs+index1;
         // we can't use memcpy here as pairs1 and pairs2 differ in type
         for (int j=0; j<i; j++)
         {
@@ -179,13 +182,9 @@ bigistore_agg_internal(ISAggState *state, BigIStore *istore, ISAggType type)
                 ++i;
             }
 
-            // ensure array is big enough
-            if (state->size < state->used + i)
-            {
-                state->size  = state->size * 2 > state->used + i ? state->size * 2 : state->used + i;
-                state        = repalloc(state, sizeof(ISAggState) + state->size * sizeof(BigIStorePair));
-                pairs1       = state->pairs+index1;
-            }
+            // expand state capacity to store new items
+            state = state_extend(state, i);
+            pairs1 = state->pairs+index1;
 
             // move data i steps forward from index1
             memmove(pairs1+i,pairs1, (state->used - index1) * sizeof(BigIStorePair));
@@ -241,13 +240,9 @@ bigistore_agg_internal(ISAggState *state, BigIStore *istore, ISAggType type)
     int i = istore->len - index2;
     if ( i > 0 )
     {
-        if (state->size <= state->used + i)
-        {
-            state->size = state->size * 2 > state->used + i ? state->size * 2 : state->used + i;
-            state       = repalloc(state, sizeof(ISAggState) + state->size * sizeof(BigIStorePair));
-            pairs1      = state->pairs+index1;
-        }
+        state = state_extend(state, i);
         state->used += i;
+        pairs1 = state->pairs+index1;
         memcpy(pairs1,pairs2, i * sizeof(BigIStorePair));
     }
 

@@ -193,6 +193,17 @@ types.each do |type|
         '"1"=>"1", "2"=>"1", "3"=>"1"'
       end
 
+      it 'should merge correctly scatter keys' do
+        query("SELECT SUM(x) FROM (VALUES ('1=>1, 5=>5'::istore), ('3=>3, 7=>7')) as v(x)").should match \
+        '"1"=>"1", "3"=>"3", "5"=>"5", "7"=>"7"'
+        query("SELECT SUM(x) FROM (VALUES ('3=>3, 7=>7'::istore), ('1=>1, 5=>5')) as v(x)").should match \
+        '"1"=>"1", "3"=>"3", "5"=>"5", "7"=>"7"'
+        query("SELECT SUM(x) FROM (VALUES ('1=>1, 5=>5'::bigistore), ('3=>3, 7=>7')) as v(x)").should match \
+        '"1"=>"1", "3"=>"3", "5"=>"5", "7"=>"7"'
+        query("SELECT SUM(x) FROM (VALUES ('3=>3, 7=>7'::bigistore), ('1=>1, 5=>5')) as v(x)").should match \
+        '"1"=>"1", "3"=>"3", "5"=>"5", "7"=>"7"'
+      end
+
       it 'should return istores from arrays' do
         query("SELECT #{type}(Array[5,3,4,5], Array[1,2,3,4])").should match \
           '"3"=>"2", "4"=>"3", "5"=>"5"'
