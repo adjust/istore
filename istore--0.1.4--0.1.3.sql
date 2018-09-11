@@ -1,7 +1,7 @@
 ----aggregates----
-DROP AGGREGATE IF EXISTS isagg (key integer, value bigint);
+DROP AGGREGATE IF EXISTS isagg (integer, bigint);
 ----
-DROP AGGREGATE IF EXISTS isagg (key integer, value integer);
+DROP AGGREGATE IF EXISTS isagg (integer, integer);
 ----functions----
 DROP FUNCTION IF EXISTS bigistore_avl_finalfn(internal);
 ----

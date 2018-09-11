@@ -23,14 +23,14 @@ CREATE OR REPLACE FUNCTION istore_avl_transfn(internal, integer, integer)
  IMMUTABLE
 AS 'istore', $function$istore_avl_transfn$function$;
 ----aggregates----
-  CREATE AGGREGATE isagg(key integer, value bigint) (
+  CREATE AGGREGATE isagg(integer, bigint) (
     SFUNC = bigistore_avl_transfn,
   STYPE = internal,
   FINALFUNC = bigistore_avl_finalfn
   );
 
 ----
-  CREATE AGGREGATE isagg(key integer, value integer) (
+  CREATE AGGREGATE isagg(integer, integer) (
     SFUNC = istore_avl_transfn,
   STYPE = internal,
   FINALFUNC = istore_avl_finalfn

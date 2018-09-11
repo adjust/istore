@@ -69,8 +69,9 @@ static inline ISAggState *
 istore_agg_internal(ISAggState *state, IStore *istore, ISAggType type)
 {
     BigIStorePair *pairs1;
-    IStorePair *   pairs2;
+    IStorePair    *pairs2;
     int            index1 = 0, index2 = 0;
+    int            left;
 
     pairs1 = state->pairs;
     pairs2 = FIRST_PAIR(istore, IStorePair);
@@ -144,14 +145,14 @@ istore_agg_internal(ISAggState *state, IStore *istore, ISAggType type)
     }
 
     // append any leftovers
-    int i = istore->len - index2;
-    if (i > 0)
+    left = istore->len - index2;
+    if (left > 0)
     {
-        state = state_extend(state, i);
-        state->used += i;
+        state = state_extend(state, left);
+        state->used += left;
         pairs1 = state->pairs + index1;
         // we can't use memcpy here as pairs1 and pairs2 differ in type
-        for (int j = 0; j < i; j++)
+        for (int j = 0; j < left; j++)
         {
             pairs1->key = pairs2->key;
             pairs1->val = pairs2->val;
@@ -168,6 +169,7 @@ istore_agg_state_accum(ISAggState *state, int num_paris, BigIStorePair *pairs2, 
 {
     BigIStorePair *pairs1;
     int            index1 = 0, index2 = 0;
+    int            left;
 
     pairs1 = state->pairs;
     while (index1 < state->used && index2 < num_paris)
@@ -236,13 +238,13 @@ istore_agg_state_accum(ISAggState *state, int num_paris, BigIStorePair *pairs2, 
     }
 
     // append any leftovers
-    int i = num_paris - index2;
-    if (i > 0)
+    left = num_paris - index2;
+    if (left > 0)
     {
-        state = state_extend(state, i);
-        state->used += i;
+        state = state_extend(state, left);
+        state->used += left;
         pairs1 = state->pairs + index1;
-        memcpy(pairs1, pairs2, i * sizeof(BigIStorePair));
+        memcpy(pairs1, pairs2, left * sizeof(BigIStorePair));
     }
 
     return state;
