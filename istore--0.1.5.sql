@@ -258,7 +258,7 @@ CREATE AGGREGATE MAX (
     finalfunc = istore_agg_finalfn_pairs
 );
 
-CREATE AGGREGATE ISAGG(key int, value int) (
+CREATE AGGREGATE ISAGG(int, int) (
     sfunc = istore_avl_transfn,
     stype = internal,
     finalfunc = istore_avl_finalfn
@@ -551,7 +551,7 @@ CREATE AGGREGATE MAX (
     finalfunc = bigistore_agg_finalfn
 );
 
-CREATE AGGREGATE ISAGG(key int, value bigint) (
+CREATE AGGREGATE ISAGG(int, bigint) (
     sfunc = bigistore_avl_transfn,
     stype = internal,
     finalfunc = bigistore_avl_finalfn

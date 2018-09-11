@@ -8,76 +8,24 @@
 #include "utils/builtins.h"
 #include "utils/memutils.h"
 
-Datum istore_out(PG_FUNCTION_ARGS);
-Datum istore_in(PG_FUNCTION_ARGS);
-Datum istore_recv(PG_FUNCTION_ARGS);
-Datum istore_send(PG_FUNCTION_ARGS);
-Datum istore_to_json(PG_FUNCTION_ARGS);
-Datum istore_array_add(PG_FUNCTION_ARGS);
-Datum istore_from_intarray(PG_FUNCTION_ARGS);
-Datum istore_multiply_integer(PG_FUNCTION_ARGS);
-Datum istore_multiply(PG_FUNCTION_ARGS);
-Datum istore_divide_integer(PG_FUNCTION_ARGS);
-Datum istore_divide_int8(PG_FUNCTION_ARGS);
-Datum istore_divide(PG_FUNCTION_ARGS);
-Datum istore_subtract_integer(PG_FUNCTION_ARGS);
-Datum istore_subtract(PG_FUNCTION_ARGS);
-Datum istore_add_integer(PG_FUNCTION_ARGS);
-Datum istore_add(PG_FUNCTION_ARGS);
-Datum istore_fetchval(PG_FUNCTION_ARGS);
-Datum istore_exist(PG_FUNCTION_ARGS);
-Datum istore_sum_up(PG_FUNCTION_ARGS);
-Datum istore_each(PG_FUNCTION_ARGS);
-Datum istore_fill_gaps(PG_FUNCTION_ARGS);
-Datum istore_accumulate(PG_FUNCTION_ARGS);
-Datum istore_seed(PG_FUNCTION_ARGS);
-Datum istore_val_larger(PG_FUNCTION_ARGS);
-Datum istore_val_smaller(PG_FUNCTION_ARGS);
-Datum istore_min_key(PG_FUNCTION_ARGS);
-Datum istore_max_key(PG_FUNCTION_ARGS);
-Datum istore_compact(PG_FUNCTION_ARGS);
-Datum istore_akeys(PG_FUNCTION_ARGS);
-Datum istore_avals(PG_FUNCTION_ARGS);
-Datum istore_skeys(PG_FUNCTION_ARGS);
-Datum istore_svals(PG_FUNCTION_ARGS);
-Datum istore_length(PG_FUNCTION_ARGS);
-Datum istore_sum_transfn(PG_FUNCTION_ARGS);
-Datum istore_sum_finalfn(PG_FUNCTION_ARGS);
-
-Datum bigistore_out(PG_FUNCTION_ARGS);
-Datum bigistore_in(PG_FUNCTION_ARGS);
-Datum bigistore_recv(PG_FUNCTION_ARGS);
-Datum bigistore_send(PG_FUNCTION_ARGS);
-Datum bigistore_to_json(PG_FUNCTION_ARGS);
-Datum bigistore_array_add(PG_FUNCTION_ARGS);
-Datum bigistore_from_intarray(PG_FUNCTION_ARGS);
-Datum bigistore_multiply_integer(PG_FUNCTION_ARGS);
-Datum bigistore_multiply(PG_FUNCTION_ARGS);
-Datum bigistore_divide_integer(PG_FUNCTION_ARGS);
-Datum bigistore_divide_int8(PG_FUNCTION_ARGS);
-Datum bigistore_divide(PG_FUNCTION_ARGS);
-Datum bigistore_subtract_integer(PG_FUNCTION_ARGS);
-Datum bigistore_subtract(PG_FUNCTION_ARGS);
-Datum bigistore_add_integer(PG_FUNCTION_ARGS);
-Datum bigistore_add(PG_FUNCTION_ARGS);
-Datum bigistore_fetchval(PG_FUNCTION_ARGS);
-Datum bigistore_exist(PG_FUNCTION_ARGS);
-Datum bigistore_sum_up(PG_FUNCTION_ARGS);
-Datum bigistore_each(PG_FUNCTION_ARGS);
-Datum bigistore_fill_gaps(PG_FUNCTION_ARGS);
-Datum bigistore_accumulate(PG_FUNCTION_ARGS);
-Datum bigistore_seed(PG_FUNCTION_ARGS);
-Datum bigistore_val_larger(PG_FUNCTION_ARGS);
-Datum bigistore_val_smaller(PG_FUNCTION_ARGS);
-Datum bigistore_min_key(PG_FUNCTION_ARGS);
-Datum bigistore_max_key(PG_FUNCTION_ARGS);
-Datum bigistore_compact(PG_FUNCTION_ARGS);
-Datum bigistore_akeys(PG_FUNCTION_ARGS);
-Datum bigistore_avals(PG_FUNCTION_ARGS);
-Datum bigistore_skeys(PG_FUNCTION_ARGS);
-Datum bigistore_svals(PG_FUNCTION_ARGS);
-Datum bigistore_length(PG_FUNCTION_ARGS);
-Datum bigistore_sum_transfn(PG_FUNCTION_ARGS);
+/*
+ * Until version 9.4 postgres didn't have "extern" function declaration in
+ * PG_FUNCTION_INFO_V1. This is a quick fix that allows us not to declare every
+ * function manually. Copied from the PostgreSQL 12 source code (see fmgr.h)
+ */
+#if PG_VERSION_NUM < 90400
+#undef PG_FUNCTION_INFO_V1
+#define PG_FUNCTION_INFO_V1(funcname) \
+extern Datum funcname(PG_FUNCTION_ARGS); \
+extern PGDLLEXPORT const Pg_finfo_record * CppConcat(pg_finfo_,funcname)(void); \
+const Pg_finfo_record * \
+CppConcat(pg_finfo_,funcname) (void) \
+{ \
+	static const Pg_finfo_record my_finfo = { 1 }; \
+	return &my_finfo; \
+} \
+extern int no_such_variable
+#endif
 
 /*
  * a single key/value pair

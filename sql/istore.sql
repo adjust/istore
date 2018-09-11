@@ -272,7 +272,7 @@ CREATE AGGREGATE MAX (
     finalfunc = istore_agg_finalfn_pairs
 );
 
-CREATE AGGREGATE ISAGG(key int, value int) (
+CREATE AGGREGATE ISAGG(int, int) (
     sfunc = istore_avl_transfn,
     stype = internal,
     finalfunc = istore_avl_finalfn
