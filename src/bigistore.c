@@ -7,11 +7,12 @@
 #endif
 #include "catalog/pg_type.h"
 #include "funcapi.h"
+#include "miscadmin.h"
 #include "utils/array.h"
 #include "utils/builtins.h"
 #include "utils/lsyscache.h"
+#include "utils/memutils.h"
 
-static inline Datum *bigistore_key_val_datums(BigIStore *is);
 
 /*
  * combine two bigistores by applying PGFunction mergefunc on values where key match
@@ -645,6 +646,181 @@ Datum bigistore_each(PG_FUNCTION_ARGS)
     }
 
     SRF_RETURN_DONE(funcctx);
+}
+
+/*
+ * Verify function caller can handle a tuplestore result, and set up for that.
+ *
+ * Note: if the caller returns without actually creating a tuplestore, the
+ * executor will treat the function result as an empty set.
+ */
+static void
+prepTuplestoreResult(FunctionCallInfo fcinfo)
+{
+    ReturnSetInfo *rsinfo = (ReturnSetInfo *) fcinfo->resultinfo;
+
+    /* check to see if query supports us returning a tuplestore */
+    if (rsinfo == NULL || !IsA(rsinfo, ReturnSetInfo))
+        ereport(ERROR,
+                (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+                 errmsg("set-valued function called in context that cannot accept a set")));
+    if (!(rsinfo->allowedModes & SFRM_Materialize))
+        ereport(ERROR,
+                (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+                 errmsg("materialize mode required, but it is not allowed in this context")));
+
+    /* let the executor know we're sending back a tuplestore */
+    rsinfo->returnMode = SFRM_Materialize;
+
+    /* caller must fill these to return a non-empty result */
+    rsinfo->setResult = NULL;
+    rsinfo->setDesc = NULL;
+}
+
+
+/*
+ * return values per key for multiple bigistores as a set
+ */
+PG_FUNCTION_INFO_V1(mjoin);
+Datum
+mjoin(PG_FUNCTION_ARGS)
+{
+    MemoryContext    oldcontext;
+    /* needed for VARIADIC array deconstruction */
+    ArrayType       *input;
+    Datum           *i_data;
+    bool            *i_nulls;
+    int              arg_count;
+    int16            i_typlen;
+    bool             i_typbyval;
+    char             i_typalign;
+    Oid              i_eltype;
+    /* result tuple stuff */
+    TupleDesc        tupdesc;        /* the fcinfo tupdesc */
+    Tuplestorestate *tupstore;
+    bool            *nulls;
+    HeapTuple        tuple;
+    Datum           *dvalues;
+
+    int             *offset;        /* pair offset per arg */
+    int             *len;           /* is->len per arg */
+    BigIStorePair   **pairs;
+    BigIStore       *bigistore;
+    ReturnSetInfo   *rsinfo;
+
+    prepTuplestoreResult(fcinfo);
+
+    /* get a tuple descriptor for our result type */
+    switch (get_call_result_type(fcinfo, NULL, &tupdesc))
+    {
+        case TYPEFUNC_COMPOSITE:
+            /* success */
+            break;
+        case TYPEFUNC_RECORD:
+            /* failed to determine actual type of RECORD */
+            ereport(ERROR,
+                    (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+                errmsg("function returning record called in context "
+                       "that cannot accept type record")));
+            break;
+        default:
+            /* result type isn't composite */
+            elog(ERROR, "return type must be a row type");
+            break;
+    }
+
+    /* make sure we have a persistent copy of the tupdesc */
+    tupdesc = CreateTupleDescCopy(tupdesc);
+
+    rsinfo = (ReturnSetInfo *) fcinfo->resultinfo;
+    Assert(rsinfo->returnMode == SFRM_Materialize);
+
+    oldcontext          = MemoryContextSwitchTo(rsinfo->econtext->ecxt_per_query_memory);
+    tupstore            = tuplestore_begin_heap(true, false, work_mem);
+    rsinfo->setResult   = tupstore;
+    rsinfo->setDesc     = tupdesc;
+    MemoryContextSwitchTo(oldcontext);
+
+    /* deconstruct argument array */
+    input       = PG_GETARG_ARRAYTYPE_P(0);
+    i_eltype    = ARR_ELEMTYPE(input);
+    get_typlenbyvalalign(i_eltype, &i_typlen, &i_typbyval, &i_typalign);
+    deconstruct_array(input, i_eltype, i_typlen, i_typbyval, i_typalign, &i_data, &i_nulls, &arg_count );
+
+    offset  = palloc0(sizeof(*offset) * arg_count);
+    len     = palloc0(sizeof(*len) * arg_count);
+    pairs   = palloc0(sizeof(**pairs) * arg_count);
+    dvalues = palloc0(sizeof(*dvalues) * (arg_count + 1));
+    nulls   = palloc0(sizeof(*nulls) * (arg_count + 1));
+
+    for(int i = 0; i < arg_count; i++ )
+    {
+        bigistore   = (BigIStore *) i_data[i];
+        len[i]      = bigistore->len;
+        pairs[i]    = FIRST_PAIR(bigistore, BigIStorePair);
+    }
+
+
+    for(;;)
+    {
+        int32 current_key;
+
+        memset(nulls,false,(arg_count+1) * sizeof(bool));
+        /* set first key to null to indicate end */
+        nulls[0] = true;
+
+        for(int i = 0; i < arg_count; i++ ){
+            if(offset[i] >= len[i]){
+                nulls[i+1] = true;
+                continue;
+            }else{
+                if(nulls[0]){
+                    nulls[0] = false;
+                    current_key = pairs[i]->key;
+                }
+            }
+
+            /* when key matches take it */
+            if(current_key == pairs[i]->key)
+            {
+                dvalues[i+1] = Int64GetDatum(pairs[i]->val);
+                offset[i]++;
+                pairs[i]++;
+            }
+            /* if current_key is to big, all already set non null values must be reset */
+            else if(current_key > pairs[i]->key)
+            {
+                current_key = pairs[i]->key;
+                dvalues[i+1]  = Int64GetDatum(pairs[i]->val);
+                offset[i]++;
+                pairs[i]++;
+                /* set all we have seen so far to NULL*/
+                for(int j = 0; j < i; j++)
+                    if(!nulls[j+1])
+                    {
+                        offset[j]--;
+                        pairs[j]--;
+                        nulls[j+1] = true;
+                    }
+            }
+            else /* just wait for the next round this one is null*/
+            {
+                nulls[i+1] = true;
+            }
+
+        }
+        if (nulls[0])
+            break;
+
+        dvalues[0] = Int32GetDatum(current_key);
+        tuple      = heap_form_tuple(tupdesc, dvalues, nulls);
+        tuplestore_puttuple(tupstore, tuple);
+        /* clean up and return the tuplestore */
+        tuplestore_donestoring(tupstore);
+
+    }
+
+    PG_RETURN_NULL();
 }
 
 /*

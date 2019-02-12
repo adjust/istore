@@ -46,6 +46,30 @@ types.each do |type|
         query("SELECT * FROM each(NULL::#{type})").should match []
       end
 
+      it 'should mjoin multiple istores' do
+        query("SELECT * FROM mjoin('0 => 1, 3 => 1, 9 => 1'::#{type}, '2 => 2, 3 => 2, 8 => 2, 10=>2'::#{type})t(key int, a bigint, b bigint);").should match \
+         ['0', '1', nil ],
+         ['2', nil, '2' ],
+         ['3', '1', '2' ],
+         ['8', nil, '2' ],
+         ['9', '1', nil ],
+         ['10', nil, '2' ]
+
+        query("SELECT * FROM mjoin('0 => 1, 3 => 1, 9 => 1'::#{type}, '2 => 2, 3 => 2'::#{type})t(key int, a bigint, b bigint);").should match \
+         ['0', '1', nil ],
+         ['2', nil, '2' ],
+         ['3', '1', '2' ],
+         ['9', '1', nil ]
+
+        query("SELECT * FROM mjoin('2 => 1, 3 => 1'::#{type}, '2 => 2, 3 => 2'::#{type})t(key int, a bigint, b bigint);").should match \
+         ['2', '1', '2' ],
+         ['3', '1', '2' ]
+
+        query("SELECT * FROM mjoin('2 => 1, 3 => 1'::#{type}, '2 => 2, 3 => 2'::#{type}, '2 => 3, 3 => 3'::#{type})t(key int, a bigint, b bigint, c bigint);").should match \
+         ['2', '1', '2', '3' ],
+         ['3', '1', '2', '3' ]
+      end
+
       it 'should compact istores' do
         query("SELECT compact('0=>2, 1=>2, 3=>0 ,2=>2'::#{type})").should match \
         '"0"=>"2", "1"=>"2", "2"=>"2"'
