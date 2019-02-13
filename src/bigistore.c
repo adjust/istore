@@ -728,9 +728,6 @@ join(PG_FUNCTION_ARGS)
             break;
     }
 
-    /* make sure we have a persistent copy of the tupdesc */
-    tupdesc = CreateTupleDescCopy(tupdesc);
-
     rsinfo = (ReturnSetInfo *) fcinfo->resultinfo;
     Assert(rsinfo->returnMode == SFRM_Materialize);
 
