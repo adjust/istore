@@ -1,1 +1,1 @@
-DROP FUNCTION IF EXISTS mjoin(VARIADIC istores bigistore[]);
+DROP FUNCTION IF EXISTS join(VARIADIC istores bigistore[]);

@@ -18,9 +18,9 @@ RETURNS SETOF record
 AS 'istore','bigistore_each'
 LANGUAGE C STRICT IMMUTABLE;
 
-CREATE FUNCTION mjoin(VARIADIC istores bigistore[])
+CREATE FUNCTION join(VARIADIC istores bigistore[])
 RETURNS SETOF record
-AS 'istore','mjoin'
+AS 'istore','join'
 LANGUAGE C STRICT IMMUTABLE;
 
 CREATE FUNCTION min_key(bigistore)

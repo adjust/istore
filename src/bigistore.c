@@ -681,9 +681,9 @@ prepTuplestoreResult(FunctionCallInfo fcinfo)
 /*
  * return values per key for multiple bigistores as a set
  */
-PG_FUNCTION_INFO_V1(mjoin);
+PG_FUNCTION_INFO_V1(join);
 Datum
-mjoin(PG_FUNCTION_ARGS)
+join(PG_FUNCTION_ARGS)
 {
     MemoryContext    oldcontext;
     /* needed for VARIADIC array deconstruction */
@@ -705,7 +705,6 @@ mjoin(PG_FUNCTION_ARGS)
     int             *offset;        /* pair offset per arg */
     int             *len;           /* is->len per arg */
     BigIStorePair   **pairs;
-    BigIStore       *bigistore;
     ReturnSetInfo   *rsinfo;
 
     prepTuplestoreResult(fcinfo);
@@ -745,36 +744,42 @@ mjoin(PG_FUNCTION_ARGS)
     input       = PG_GETARG_ARRAYTYPE_P(0);
     i_eltype    = ARR_ELEMTYPE(input);
     get_typlenbyvalalign(i_eltype, &i_typlen, &i_typbyval, &i_typalign);
-    deconstruct_array(input, i_eltype, i_typlen, i_typbyval, i_typalign, &i_data, &i_nulls, &arg_count );
+    deconstruct_array(input, i_eltype, i_typlen, i_typbyval, i_typalign,
+                      &i_data, &i_nulls, &arg_count );
 
-    offset  = palloc0(sizeof(*offset) * arg_count);
-    len     = palloc0(sizeof(*len) * arg_count);
-    pairs   = palloc0(sizeof(**pairs) * arg_count);
-    dvalues = palloc0(sizeof(*dvalues) * (arg_count + 1));
-    nulls   = palloc0(sizeof(*nulls) * (arg_count + 1));
+    offset  = palloc0(sizeof(int) * arg_count);
+    len     = palloc0(sizeof(int) * arg_count);
+    pairs   = palloc0(sizeof(BigIStorePair *) * arg_count);
+    dvalues = palloc0(sizeof(Datum) * (arg_count + 1));
+    nulls   = palloc0(sizeof(bool) * (arg_count + 1));
 
     for(int i = 0; i < arg_count; i++ )
     {
-        bigistore   = (BigIStore *) i_data[i];
+        BigIStore *bigistore = (BigIStore *) i_data[i];
+
         len[i]      = bigistore->len;
         pairs[i]    = FIRST_PAIR(bigistore, BigIStorePair);
     }
-
 
     for(;;)
     {
         int32 current_key;
 
-        memset(nulls,false,(arg_count+1) * sizeof(bool));
+        memset(nulls, false, (arg_count+1) * sizeof(bool));
         /* set first key to null to indicate end */
         nulls[0] = true;
 
-        for(int i = 0; i < arg_count; i++ ){
-            if(offset[i] >= len[i]){
+        for(int i = 0; i < arg_count; i++ )
+        {
+            if(offset[i] >= len[i])
+            {
                 nulls[i+1] = true;
                 continue;
-            }else{
-                if(nulls[0]){
+            }
+            else
+            {
+                if(nulls[0])
+                {
                     nulls[0] = false;
                     current_key = pairs[i]->key;
                 }
@@ -791,17 +796,20 @@ mjoin(PG_FUNCTION_ARGS)
             else if(current_key > pairs[i]->key)
             {
                 current_key = pairs[i]->key;
-                dvalues[i+1]  = Int64GetDatum(pairs[i]->val);
+                dvalues[i+1] = Int64GetDatum(pairs[i]->val);
                 offset[i]++;
                 pairs[i]++;
+
                 /* set all we have seen so far to NULL*/
                 for(int j = 0; j < i; j++)
+                {
                     if(!nulls[j+1])
                     {
                         offset[j]--;
                         pairs[j]--;
                         nulls[j+1] = true;
                     }
+                }
             }
             else /* just wait for the next round this one is null*/
             {
@@ -817,7 +825,6 @@ mjoin(PG_FUNCTION_ARGS)
         tuplestore_puttuple(tupstore, tuple);
         /* clean up and return the tuplestore */
         tuplestore_donestoring(tupstore);
-
     }
 
     PG_RETURN_NULL();

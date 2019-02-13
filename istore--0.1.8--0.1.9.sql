@@ -1,4 +1,4 @@
-CREATE FUNCTION mjoin(VARIADIC istores bigistore[])
+CREATE FUNCTION join(VARIADIC istores bigistore[])
 RETURNS SETOF record
-AS 'istore','mjoin'
+AS 'istore','join'
 LANGUAGE C STRICT IMMUTABLE;
