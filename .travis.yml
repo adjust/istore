@@ -1,46 +1,64 @@
 sudo: required
+dist: xenial
 language: c
-
 matrix:
    include:
-     - env: postgres=9.2
-       addons:
-            postgresql: 9.2
-       install:
-            - sudo apt-get install postgresql-server-dev-9.2
-     - env: postgres=9.3
-       addons:
-            postgresql: 9.3
-       install:
-            - sudo apt-get install postgresql-server-dev-9.3
-     - env: postgres=9.4
-       addons:
-            postgresql: 9.4
-       install:
-            - sudo apt-get install postgresql-server-dev-9.4
-     - env: postgres=9.5
-       addons:
-            postgresql: 9.5
-       install:
-            - sudo apt-get install postgresql-server-dev-9.5
-     - env: postgres=9.6
-       addons:
-            postgresql: 9.6
-       install:
-            - sudo apt-get install postgresql-server-dev-9.6
-     - env: postgres=10
-       addons:
-            postgresql: 10
-       install:
-            - sudo apt-get install postgresql-10 postgresql-client-10 postgresql-server-dev-10
-            - export PGPORT=5433
+    - addons:
+          postgresql: "9.3"
+          apt:
+            packages:
+               - postgresql-9.3
+               - postgresql-client-9.3
+               - postgresql-server-dev-9.3
+       env:
+          - POSTGRESQL=9.3
+          - PGPORT=5433
+     - addons:
+          postgresql: "9.4"
+          apt:
+            packages:
+               - postgresql-server-dev-9.4
+       env:
+          - POSTGRESQL=9.4
+     - addons:
+          postgresql: "9.5"
+          apt:
+            packages:
+               - postgresql-server-dev-9.5
+       env:
+          - POSTGRESQL=9.5
+     - addons:
+          postgresql: "9.6"
+          apt:
+            packages:
+               - postgresql-server-dev-9.6
+       env:
+          - POSTGRESQL=9.6
+     - addons:
+          postgresql: "10"
+          apt:
+            packages:
+               - postgresql-server-dev-10
+       env:
+          - POSTGRESQL=10
+     - addons:
+          postgresql: "11"
+          apt:
+            packages:
+               - postgresql-11
+               - postgresql-client-11
+               - postgresql-server-dev-11
+       env:
+          - POSTGRESQL=11
+          - PGPORT=5433
 
    allow_failures:
-     - env: postgres=9.2
      - env: postgres=9.3
 
    fast_finish: true
 
+install:
+     - sudo make install
 
 script:
   - bash ./travis_script.sh
