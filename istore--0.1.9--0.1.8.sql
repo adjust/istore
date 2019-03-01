@@ -1,0 +1,14 @@
+DROP FUNCTION IF EXISTS istore_in_range(istore, int, int);
+DROP FUNCTION IF EXISTS istore_less_than(istore, int);
+DROP FUNCTION IF EXISTS istore_less_than_or_equal(istore, int);
+DROP FUNCTION IF EXISTS istore_greater_than(istore, int);
+DROP FUNCTION IF EXISTS istore_greater_than_or_equal(istore, int);
+DROP FUNCTION IF EXISTS istore_floor(istore, int);
+DROP FUNCTION IF EXISTS istore_ceiling(istore, int);
+DROP FUNCTION IF EXISTS istore_in_range(bigistore, bigint, bigint);
+DROP FUNCTION IF EXISTS istore_less_than(bigistore, bigint);
+DROP FUNCTION IF EXISTS istore_less_than_or_equal(bigistore, bigint);
+DROP FUNCTION IF EXISTS istore_greater_than(bigistore, bigint);
+DROP FUNCTION IF EXISTS istore_greater_than_or_equal(bigistore, bigint);
+DROP FUNCTION IF EXISTS istore_floor(bigistore, bigint);
+DROP FUNCTION IF EXISTS istore_ceiling(bigistore, bigint);

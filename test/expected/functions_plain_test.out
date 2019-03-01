@@ -1422,6 +1422,127 @@ SELECT concat(''::bigistore, ''::bigistore);
 
 ROLLBACK;
 BEGIN;
+-- bigistore functions istore_in_range shoud return true iff istore is in the given range;
+-- ./spec/istore/functions_plain_spec.rb:531;
+CREATE EXTENSION istore;
+SELECT istore_in_range('1=>-32768, 2 => 0, 3=>32767'::bigistore, -32768, 32767);
+ istore_in_range 
+-----------------
+ t
+(1 row)
+
+SELECT istore_in_range('1=>10, 2=>-1, 3=>5'::bigistore, -1, 10);
+ istore_in_range 
+-----------------
+ t
+(1 row)
+
+SELECT istore_in_range('1=>0, 2=>1, 3=>2'::bigistore, 3, -1);
+ istore_in_range 
+-----------------
+ f
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- bigistore functions istore_in_range should handle corner cases correctly;
+-- ./spec/istore/functions_plain_spec.rb:537;
+CREATE EXTENSION istore;
+SELECT istore_in_range(''::bigistore, -1, 1);
+ istore_in_range 
+-----------------
+ t
+(1 row)
+
+SELECT istore_in_range('-5=>0, 1=>0'::bigistore, 0, 0);
+ istore_in_range 
+-----------------
+ t
+(1 row)
+
+SELECT istore_in_range('1=>2, 3=>4'::bigistore, 5, 0);
+ istore_in_range 
+-----------------
+ f
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- bigistore functions istore_less_than, istore_greater_than, istore_less_than_or_equal, istore_greater_than_or_equal should also work with less than and greater than (or equal);
+-- ./spec/istore/functions_plain_spec.rb:545;
+CREATE EXTENSION istore;
+SELECT istore_less_than('1=>100, 2=>-100'::bigistore, 100);
+ istore_less_than 
+------------------
+ f
+(1 row)
+
+SELECT istore_less_than_or_equal('1=>100, 2=>-100'::bigistore, 100);
+ istore_less_than_or_equal 
+---------------------------
+ t
+(1 row)
+
+SELECT istore_greater_than('1=>100, 2=>-100'::bigistore, -100);
+ istore_greater_than 
+---------------------
+ f
+(1 row)
+
+SELECT istore_greater_than_or_equal('1=>100, 2=>-100'::bigistore, -100);
+ istore_greater_than_or_equal 
+------------------------------
+ t
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- bigistore functions istore_floor, istore_ceiling should accept corner cases;
+-- ./spec/istore/functions_plain_spec.rb:554;
+CREATE EXTENSION istore;
+SELECT istore_ceiling(''::bigistore, 0);
+ istore_ceiling 
+----------------
+ 
+(1 row)
+
+SELECT istore_floor(''::bigistore, 0);
+ istore_floor 
+--------------
+ 
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- bigistore functions istore_floor, istore_ceiling should filter out values based on floor and ceiling;
+-- ./spec/istore/functions_plain_spec.rb:559;
+CREATE EXTENSION istore;
+SELECT istore_floor('1=>-32768, -1=>32767'::bigistore, -32767);
+         istore_floor         
+------------------------------
+ "-1"=>"32767", "1"=>"-32767"
+(1 row)
+
+SELECT istore_ceiling('1=>-32768, -1=>32767'::bigistore, 32766);
+        istore_ceiling        
+------------------------------
+ "-1"=>"32766", "1"=>"-32768"
+(1 row)
+
+SELECT istore_floor('1=>1, 2=>2, 3=>3, 4=>4, 5=>5'::bigistore, 3);
+                   istore_floor                   
+--------------------------------------------------
+ "1"=>"3", "2"=>"3", "3"=>"3", "4"=>"4", "5"=>"5"
+(1 row)
+
+SELECT istore_ceiling('1=>1, 2=>2, 3=>3, 4=>4, 5=>5'::bigistore, 3);
+                  istore_ceiling                  
+--------------------------------------------------
+ "1"=>"1", "2"=>"2", "3"=>"3", "4"=>"3", "5"=>"3"
+(1 row)
+
+ROLLBACK;
+BEGIN;
 -- istore functions should find keys with exists;
 -- ./spec/istore/functions_plain_spec.rb:10;
 CREATE EXTENSION istore;
@@ -2835,6 +2956,127 @@ SELECT concat(''::istore, ''::istore);
  concat 
 --------
  
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- istore functions istore_in_range shoud return true iff istore is in the given range;
+-- ./spec/istore/functions_plain_spec.rb:531;
+CREATE EXTENSION istore;
+SELECT istore_in_range('1=>-32768, 2 => 0, 3=>32767'::istore, -32768, 32767);
+ istore_in_range 
+-----------------
+ t
+(1 row)
+
+SELECT istore_in_range('1=>10, 2=>-1, 3=>5'::istore, -1, 10);
+ istore_in_range 
+-----------------
+ t
+(1 row)
+
+SELECT istore_in_range('1=>0, 2=>1, 3=>2'::istore, 3, -1);
+ istore_in_range 
+-----------------
+ f
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- istore functions istore_in_range should handle corner cases correctly;
+-- ./spec/istore/functions_plain_spec.rb:537;
+CREATE EXTENSION istore;
+SELECT istore_in_range(''::istore, -1, 1);
+ istore_in_range 
+-----------------
+ t
+(1 row)
+
+SELECT istore_in_range('-5=>0, 1=>0'::istore, 0, 0);
+ istore_in_range 
+-----------------
+ t
+(1 row)
+
+SELECT istore_in_range('1=>2, 3=>4'::istore, 5, 0);
+ istore_in_range 
+-----------------
+ f
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- istore functions istore_less_than, istore_greater_than, istore_less_than_or_equal, istore_greater_than_or_equal should also work with less than and greater than (or equal);
+-- ./spec/istore/functions_plain_spec.rb:545;
+CREATE EXTENSION istore;
+SELECT istore_less_than('1=>100, 2=>-100'::istore, 100);
+ istore_less_than 
+------------------
+ f
+(1 row)
+
+SELECT istore_less_than_or_equal('1=>100, 2=>-100'::istore, 100);
+ istore_less_than_or_equal 
+---------------------------
+ t
+(1 row)
+
+SELECT istore_greater_than('1=>100, 2=>-100'::istore, -100);
+ istore_greater_than 
+---------------------
+ f
+(1 row)
+
+SELECT istore_greater_than_or_equal('1=>100, 2=>-100'::istore, -100);
+ istore_greater_than_or_equal 
+------------------------------
+ t
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- istore functions istore_floor, istore_ceiling should accept corner cases;
+-- ./spec/istore/functions_plain_spec.rb:554;
+CREATE EXTENSION istore;
+SELECT istore_ceiling(''::istore, 0);
+ istore_ceiling 
+----------------
+ 
+(1 row)
+
+SELECT istore_floor(''::istore, 0);
+ istore_floor 
+--------------
+ 
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- istore functions istore_floor, istore_ceiling should filter out values based on floor and ceiling;
+-- ./spec/istore/functions_plain_spec.rb:559;
+CREATE EXTENSION istore;
+SELECT istore_floor('1=>-32768, -1=>32767'::istore, -32767);
+         istore_floor         
+------------------------------
+ "-1"=>"32767", "1"=>"-32767"
+(1 row)
+
+SELECT istore_ceiling('1=>-32768, -1=>32767'::istore, 32766);
+        istore_ceiling        
+------------------------------
+ "-1"=>"32766", "1"=>"-32768"
+(1 row)
+
+SELECT istore_floor('1=>1, 2=>2, 3=>3, 4=>4, 5=>5'::istore, 3);
+                   istore_floor                   
+--------------------------------------------------
+ "1"=>"3", "2"=>"3", "3"=>"3", "4"=>"4", "5"=>"5"
+(1 row)
+
+SELECT istore_ceiling('1=>1, 2=>2, 3=>3, 4=>4, 5=>5'::istore, 3);
+                  istore_ceiling                  
+--------------------------------------------------
+ "1"=>"1", "2"=>"2", "3"=>"3", "4"=>"3", "5"=>"3"
 (1 row)
 
 ROLLBACK;

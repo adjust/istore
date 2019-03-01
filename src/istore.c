@@ -1314,3 +1314,146 @@ is_int32_arr_comp(const void *a, const void *b)
         return 0;
     return (*(const int32 *) a > *(const int32 *) b) ? 1 : -1;
 }
+
+static bool
+is_istore_in_range(IStore *is, int32 *lower, int32 *upper, bool inclusive)
+{
+    IStorePair    *pairs;
+    int32          val;
+
+    if (lower != NULL && upper != NULL && *lower > *upper)
+        return false;
+
+    if (is->len == 0)
+        return true;
+
+    pairs = FIRST_PAIR(is, IStorePair);
+    Assert(pairs != NULL);
+
+    for (int i = 0; i < is->len; i++)
+    {
+        val = pairs[i].val;
+        if (lower != NULL &&
+            (val < *lower ||
+                (!inclusive && val == *lower)))
+        return false;
+
+        if (upper != NULL &&
+            (val > *upper ||
+                 (!inclusive && val == *upper)))
+        return false;
+    }
+
+    return true;
+}
+
+static IStore *
+istore_limit(IStore *is, int32 *min, int32 *max)
+{
+    IStore      *result;
+    IStorePair  *pairs;
+    IStorePairs *new_pairs;
+    int32        val;
+
+    new_pairs = palloc(sizeof(IStorePairs));
+    istore_pairs_init(new_pairs, is->len);
+
+    if ((min != NULL && max != NULL && *min > *max) || is->len == 0)
+    {
+        FINALIZE_ISTORE(result, new_pairs);
+        return result;
+    }
+
+    pairs = FIRST_PAIR(is, IStorePair);
+    Assert(pairs != NULL);
+
+    for (int i = 0; i < is->len; i++) {
+        val = pairs[i].val;
+        if (min != NULL && val < *min)
+            val = *min;
+        else if (max != NULL && val > *max)
+            val = *max;
+        istore_pairs_insert(new_pairs, pairs[i].key, val);
+    }
+    FINALIZE_ISTORE(result, new_pairs);
+    return result;
+}
+
+PG_FUNCTION_INFO_V1(istore_in_range);
+Datum istore_in_range(PG_FUNCTION_ARGS)
+{
+    IStore *is = PG_GETARG_IS(0);
+    int32   lower = PG_GETARG_INT32(1);
+    int32   upper = PG_GETARG_INT32(2);
+    bool    result;
+
+    result = is_istore_in_range(is, &lower, &upper, true);
+    PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(istore_less_than);
+Datum istore_less_than(PG_FUNCTION_ARGS)
+{
+    IStore *is = PG_GETARG_IS(0);
+    int32   upper = PG_GETARG_INT32(1);
+    bool    result;
+
+    result = is_istore_in_range(is, NULL, &upper, false);
+    PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(istore_less_than_or_equal);
+Datum istore_less_than_or_equal(PG_FUNCTION_ARGS)
+{
+    IStore *is = PG_GETARG_IS(0);
+    int32   upper = PG_GETARG_INT32(1);
+    bool    result;
+
+    result = is_istore_in_range(is, NULL, &upper, true);
+    PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(istore_greater_than);
+Datum istore_greater_than(PG_FUNCTION_ARGS)
+{
+    IStore *is = PG_GETARG_IS(0);
+    int32   lower = PG_GETARG_INT32(1);
+    bool    result;
+
+    result = is_istore_in_range(is, &lower, NULL, false);
+    PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(istore_greater_than_or_equal);
+Datum istore_greater_than_or_equal(PG_FUNCTION_ARGS)
+{
+    IStore *is = PG_GETARG_IS(0);
+    int32   lower = PG_GETARG_INT32(1);
+    bool    result;
+
+    result = is_istore_in_range(is, &lower, NULL, true);
+    PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(istore_floor);
+Datum istore_floor(PG_FUNCTION_ARGS)
+{
+    IStore *result;
+    IStore *is = PG_GETARG_IS(0);
+    int32   min = PG_GETARG_INT32(1);
+
+    result = istore_limit(is, &min, NULL);
+    PG_RETURN_POINTER(result);
+
+}
+
+PG_FUNCTION_INFO_V1(istore_ceiling);
+Datum istore_ceiling(PG_FUNCTION_ARGS)
+{
+    IStore *result;
+    IStore *is = PG_GETARG_IS(0);
+    int32   max = PG_GETARG_INT32(1);
+
+    result = istore_limit(is, NULL, &max);
+    PG_RETURN_POINTER(result);
+}

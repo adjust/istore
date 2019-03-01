@@ -247,6 +247,42 @@ CREATE FUNCTION bigistore_avl_finalfn(internal)
     AS 'istore' ,'bigistore_avl_finalfn'
     LANGUAGE C IMMUTABLE;
 
+CREATE FUNCTION istore_in_range(bigistore, bigint, bigint)
+    RETURNS boolean
+    AS 'istore', 'bigistore_in_range'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION istore_less_than(bigistore, bigint)
+    RETURNS boolean
+    AS 'istore', 'bigistore_less_than'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION istore_less_than_or_equal(bigistore, bigint)
+    RETURNS boolean
+    AS 'istore', 'bigistore_less_than_or_equal'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION istore_greater_than(bigistore, bigint)
+    RETURNS boolean
+    AS 'istore', 'bigistore_greater_than'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION istore_greater_than_or_equal(bigistore, bigint)
+    RETURNS boolean
+    AS 'istore', 'bigistore_greater_than_or_equal'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION istore_floor(bigistore, bigint)
+    RETURNS bigistore
+    AS 'istore', 'bigistore_floor'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION istore_ceiling(bigistore, bigint)
+    RETURNS bigistore
+    AS 'istore', 'bigistore_ceiling'
+    LANGUAGE C IMMUTABLE STRICT;
+
+
 CREATE AGGREGATE SUM (
     sfunc = istore_sum_transfn,
     basetype = bigistore,
