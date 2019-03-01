@@ -580,7 +580,7 @@ Datum istore_array_add(PG_FUNCTION_ARGS)
  */
 
 static void
-setup_firstcall(FuncCallContext *funcctx, IStore *is, FunctionCallInfoData *fcinfo)
+setup_firstcall(FuncCallContext *funcctx, IStore *is, FunctionCallInfo fcinfo)
 {
     MemoryContext oldcontext;
     IStore *      st;

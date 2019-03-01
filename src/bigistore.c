@@ -581,7 +581,7 @@ Datum bigistore_array_add(PG_FUNCTION_ARGS)
  * case it was originally toasted.
  */
 static void
-setup_firstcall(FuncCallContext *funcctx, BigIStore *is, FunctionCallInfoData *fcinfo)
+setup_firstcall(FuncCallContext *funcctx, BigIStore *is, FunctionCallInfo fcinfo)
 {
     MemoryContext oldcontext;
     BigIStore *   st;
