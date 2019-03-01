@@ -1310,3 +1310,146 @@ Datum bigistore_exists_all(PG_FUNCTION_ARGS)
 
     PG_RETURN_BOOL(true);
 }
+
+static bool
+is_bigistore_in_range(BigIStore *is, int64 *lower, int64 *upper, bool inclusive)
+{
+    BigIStorePair *pairs;
+    int64          val;
+
+    if (lower != NULL && upper != NULL && *lower > *upper)
+        return false;
+
+    if (is->len == 0)
+        return true;
+
+    pairs = FIRST_PAIR(is, BigIStorePair);
+    Assert(pairs != NULL);
+
+    for (int i = 0; i < is->len; i++)
+    {
+        val = pairs[i].val;
+        if (lower != NULL &&
+            (val < *lower ||
+                (!inclusive && val == *lower)))
+        return false;
+
+        if (upper != NULL &&
+            (val > *upper ||
+                 (!inclusive && val == *upper)))
+        return false;
+    }
+
+    return true;
+}
+
+static BigIStore *
+bigistore_limit(BigIStore *is, int64 *min, int64 *max)
+{
+    BigIStore      *result;
+    BigIStorePair  *pairs;
+    BigIStorePairs *new_pairs;
+    int64           val;
+
+    new_pairs = palloc(sizeof(BigIStorePairs));
+    bigistore_pairs_init(new_pairs, is->len);
+
+    if ((min != NULL && max != NULL && *min > *max) || is->len == 0)
+    {
+        FINALIZE_BIGISTORE(result, new_pairs);
+        return result;
+    }
+
+    pairs = FIRST_PAIR(is, BigIStorePair);
+    Assert(pairs != NULL);
+
+    for (int i = 0; i < is->len; i++) {
+        val = pairs[i].val;
+        if (min != NULL && val < *min)
+            val = *min;
+        else if (max != NULL && val > *max)
+            val = *max;
+        bigistore_pairs_insert(new_pairs, pairs[i].key, val);
+    }
+    FINALIZE_BIGISTORE(result, new_pairs);
+    return result;
+}
+
+PG_FUNCTION_INFO_V1(bigistore_in_range);
+Datum bigistore_in_range(PG_FUNCTION_ARGS)
+{
+    BigIStore *is = PG_GETARG_BIGIS(0);
+    int64   lower = PG_GETARG_INT64(1);
+    int64   upper = PG_GETARG_INT64(2);
+    bool    result;
+
+    result = is_bigistore_in_range(is, &lower, &upper, true);
+    PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(bigistore_less_than);
+Datum bigistore_less_than(PG_FUNCTION_ARGS)
+{
+    BigIStore *is = PG_GETARG_BIGIS(0);
+    int64   upper = PG_GETARG_INT64(1);
+    bool    result;
+
+    result = is_bigistore_in_range(is, NULL, &upper, false);
+    PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(bigistore_less_than_or_equal);
+Datum bigistore_less_than_or_equal(PG_FUNCTION_ARGS)
+{
+    BigIStore *is = PG_GETARG_BIGIS(0);
+    int64   upper = PG_GETARG_INT64(1);
+    bool    result;
+
+    result = is_bigistore_in_range(is, NULL, &upper, true);
+    PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(bigistore_greater_than);
+Datum bigistore_greater_than(PG_FUNCTION_ARGS)
+{
+    BigIStore *is = PG_GETARG_BIGIS(0);
+    int64   lower = PG_GETARG_INT64(1);
+    bool    result;
+
+    result = is_bigistore_in_range(is, &lower, NULL, false);
+    PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(bigistore_greater_than_or_equal);
+Datum bigistore_greater_than_or_equal(PG_FUNCTION_ARGS)
+{
+    BigIStore *is = PG_GETARG_BIGIS(0);
+    int64   lower = PG_GETARG_INT64(1);
+    bool    result;
+
+    result = is_bigistore_in_range(is, &lower, NULL, true);
+    PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(bigistore_floor);
+Datum bigistore_floor(PG_FUNCTION_ARGS)
+{
+    BigIStore *result;
+    BigIStore *is = PG_GETARG_BIGIS(0);
+    int64      min = PG_GETARG_INT64(1);
+
+    result = bigistore_limit(is, &min, NULL);
+    PG_RETURN_POINTER(result);
+
+}
+
+PG_FUNCTION_INFO_V1(bigistore_ceiling);
+Datum bigistore_ceiling(PG_FUNCTION_ARGS)
+{
+    BigIStore *result;
+    BigIStore *is = PG_GETARG_BIGIS(0);
+    int64      max = PG_GETARG_INT64(1);
+
+    result = bigistore_limit(is, NULL, &max);
+    PG_RETURN_POINTER(result);
+}

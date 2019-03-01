@@ -526,6 +526,43 @@ types.each do |type|
             ''
         end
       end
+
+      describe 'istore_in_range' do
+        it 'shoud return true iff istore is in the given range' do
+          query("SELECT istore_in_range('1=>-32768, 2 => 0, 3=>32767'::#{type}, -32768, 32767)").should match 't'
+          query("SELECT istore_in_range('1=>10, 2=>-1, 3=>5'::#{type}, -1, 10)").should match 't'
+          query("SELECT istore_in_range('1=>0, 2=>1, 3=>2'::#{type}, 3, -1)").should match 'f'
+        end
+
+        it 'should handle corner cases correctly' do
+          query("SELECT istore_in_range(''::#{type}, -1, 1)").should match 't'
+          query("SELECT istore_in_range('-5=>0, 1=>0'::#{type}, 0, 0)").should match 't'
+          query("SELECT istore_in_range('1=>2, 3=>4'::#{type}, 5, 0)").should match 'f'
+        end
+      end
+
+      describe "istore_less_than, istore_greater_than, istore_less_than_or_equal, istore_greater_than_or_equal" do
+        it 'should also work with less than and greater than (or equal)' do
+          query("SELECT istore_less_than('1=>100, 2=>-100'::#{type}, 100)").should match 'f'
+          query("SELECT istore_less_than_or_equal('1=>100, 2=>-100'::#{type}, 100)").should match 't'
+          query("SELECT istore_greater_than('1=>100, 2=>-100'::#{type}, -100)").should match 'f'
+          query("SELECT istore_greater_than_or_equal('1=>100, 2=>-100'::#{type}, -100)").should match 't'
+        end
+      end
+
+      describe "istore_floor, istore_ceiling" do
+        it "should accept corner cases" do
+          query("SELECT istore_ceiling(''::#{type}, 0)").should match '';
+          query("SELECT istore_floor(''::#{type}, 0)").should match '';
+        end
+
+        it "should filter out values based on floor and ceiling" do
+          query("SELECT istore_floor('1=>-32768, -1=>32767'::#{type}, -32767)").should match '"-1"=>"32767", "1"=>"-32767"'
+          query("SELECT istore_ceiling('1=>-32768, -1=>32767'::#{type}, 32766)").should match '"-1"=>"32766", "1"=>"-32768"'
+          query("SELECT istore_floor('1=>1, 2=>2, 3=>3, 4=>4, 5=>5'::#{type}, 3)").should match '"1"=>"3", "2"=>"3", "3"=>"3", "4"=>"4", "5"=>"5"'
+          query("SELECT istore_ceiling('1=>1, 2=>2, 3=>3, 4=>4, 5=>5'::#{type}, 3)").should match '"1"=>"1", "2"=>"2", "3"=>"3", "4"=>"3", "5"=>"3"'
+        end
+      end
     end
   end
 end
