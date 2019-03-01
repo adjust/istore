@@ -152,6 +152,11 @@ CREATE FUNCTION istore_sum_transfn(internal, istore)
     AS 'istore' ,'istore_sum_transfn'
     LANGUAGE C IMMUTABLE;
 
+CREATE FUNCTION istore_sum_floor_transfn(internal, istore, int)
+    RETURNS internal
+    AS 'istore' ,'istore_sum_floor_transfn'
+    LANGUAGE C IMMUTABLE;
+
 CREATE FUNCTION istore_min_transfn(internal, istore)
     RETURNS internal
     AS 'istore'
@@ -254,6 +259,12 @@ CREATE FUNCTION istore_length(istore)
 CREATE AGGREGATE SUM (
     sfunc = istore_sum_transfn,
     basetype = istore,
+    stype = internal,
+    finalfunc = bigistore_agg_finalfn
+);
+
+CREATE AGGREGATE SUM_FLOOR(istore, int) (
+    sfunc = istore_sum_floor_transfn,
     stype = internal,
     finalfunc = bigistore_agg_finalfn
 );

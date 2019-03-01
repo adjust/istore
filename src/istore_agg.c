@@ -30,12 +30,15 @@ typedef struct
 {
     int32         size;
     int32         used;
-    BigIStorePair pairs[0];
+    int32         ifloor;   /* only for AGG_SUM_FLOOR for istore */
+    int64         bfloor;   /* only for AGG_SUM_FLOOR for bigistore */
+    BigIStorePair pairs[FLEXIBLE_ARRAY_MEMBER];
 } ISAggState;
 
 typedef enum
 {
     AGG_SUM,
+    AGG_SUM_FLOOR,
     AGG_MIN,
     AGG_MAX
 } ISAggType;
@@ -44,8 +47,8 @@ static inline ISAggState *
 state_init(MemoryContext agg_context)
 {
     ISAggState *state;
-    state =
-      (ISAggState *) MemoryContextAllocZero(agg_context, sizeof(ISAggState) + INITSTATESIZE * sizeof(BigIStorePair));
+    state = (ISAggState *) MemoryContextAllocZero(agg_context,
+        offsetof(ISAggState, pairs) + INITSTATESIZE * sizeof(BigIStorePair));
     state->size = INITSTATESIZE;
     return state;
 }
@@ -59,8 +62,242 @@ state_extend(ISAggState *state, int n)
     if (state->size < state->used + n)
     {
         state->size = state->size * 2 > state->used + n ? state->size * 2 : state->used + n;
-        state       = repalloc(state, sizeof(ISAggState) + state->size * sizeof(BigIStorePair));
+        state       = repalloc(state,
+            offsetof(ISAggState, pairs) + state->size * sizeof(BigIStorePair));
     }
+    return state;
+}
+
+/* for debug */
+#ifdef __GNUC__
+__attribute__((unused))
+#endif
+static void
+print_aggstate(ISAggState *state)
+{
+    for (int i=0; i < state->used; i++)
+        fprintf(stderr, "%d-%lu, ", state->pairs[i].key, state->pairs[i].val);
+    fprintf(stderr, "\n");
+}
+
+/*
+ * Sum pairs into first one.
+ * Also does overflow check.  If the inputs are of different signs then their sum
+ * cannot overflow.  If the inputs are of the same sign, their sum had
+ * better be that sign too.
+ */
+#define SUM_PAIRS(pairs1, pairs2)                                       \
+    do {                                                                \
+        if (SAMESIGN(pairs1->val, pairs2->val))                         \
+        {                                                               \
+            pairs1->val += pairs2->val;                                 \
+            if (!SAMESIGN(pairs1->val, pairs2->val))                    \
+                ereport(ERROR,                                          \
+                        (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),   \
+                         errmsg("bigint out of range")));               \
+        }                                                               \
+        else                                                            \
+            pairs1->val += pairs2->val;                                 \
+    } while (0)
+
+/* Internal SUM_FLOOR aggregation function for istore */
+static ISAggState *
+istore_agg_sum_floor_internal(ISAggState *state, IStore *istore)
+{
+    BigIStorePair *pairs1;
+    IStorePair    *pairs2;
+    int            index1 = 0, index2 = 0;
+    int            left;
+
+    pairs1 = state->pairs;
+    pairs2 = FIRST_PAIR(istore, IStorePair);
+    while (index1 < state->used && index2 < istore->len)
+    {
+        if (pairs1->key < pairs2->key)
+        {
+            // do nothing keep state
+            ++pairs1;
+            ++index1;
+        }
+        else if (pairs1->key > pairs2->key)
+        {
+            int i = 0,
+                c = 0;
+
+            // calculate how many new elements we have
+            while (index2 + i < istore->len && pairs1->key > pairs2[i].key)
+            {
+                if (pairs2[i].val >= state->ifloor)
+                    c++;
+
+                ++i;
+            }
+
+            if (c > 0)
+            {
+                // expand state capacity to store new items
+                state  = state_extend(state, c);
+                pairs1 = state->pairs + index1;
+
+                // move data c steps forward from index1
+                memmove(pairs1 + c, pairs1,
+                        (state->used - index1) * sizeof(BigIStorePair));
+                state->used += c;
+
+                for (int j = 0; j < i; j++)
+                {
+                    if (pairs2->val >= state->ifloor)
+                    {
+                        pairs1->key = pairs2->key;
+                        pairs1->val = pairs2->val;
+                        ++pairs1;
+                    }
+                    ++pairs2;
+                }
+                index1 += c;
+            }
+            else
+            {
+                // just move the position
+                pairs2 += i;
+            }
+            index2 += i;
+        }
+        else
+        {
+            // identical keys add values
+            if (pairs2->val >= state->ifloor)
+                SUM_PAIRS(pairs1, pairs2);
+
+            ++index1;
+            ++index2;
+            ++pairs1;
+            ++pairs2;
+        }
+    }
+
+    // append any leftovers
+    left = istore->len - index2;
+    if (left > 0)
+    {
+        state = state_extend(state, left);
+        pairs1 = state->pairs + index1;
+
+        for (int j = 0; j < left; j++)
+        {
+            if (pairs2->val >= state->ifloor)
+            {
+                pairs1->key = pairs2->key;
+                pairs1->val = pairs2->val;
+                ++pairs1;
+                ++state->used;
+            }
+            ++pairs2;
+        }
+    }
+
+    return state;
+}
+
+/*
+ * Internal SUM_FLOOR aggregation function for bigstore.
+ * It's basicly same as for istore, but for different type.
+ */
+static ISAggState *
+bigistore_agg_sum_floor_internal(ISAggState *state, BigIStore *istore)
+{
+    BigIStorePair *pairs1;
+    BigIStorePair *pairs2;
+    int            index1 = 0, index2 = 0;
+    int            left;
+
+    pairs1 = state->pairs;
+    pairs2 = FIRST_PAIR(istore, BigIStorePair);
+    while (index1 < state->used && index2 < istore->len)
+    {
+        if (pairs1->key < pairs2->key)
+        {
+            // do nothing keep state
+            ++pairs1;
+            ++index1;
+        }
+        else if (pairs1->key > pairs2->key)
+        {
+            int i = 0,
+                c = 0;
+
+            // calculate how many new elements we have
+            while (index2 + i < istore->len && pairs1->key > pairs2[i].key)
+            {
+                if (pairs2[i].val >= state->bfloor)
+                    c++;
+
+                ++i;
+            }
+
+            if (c > 0)
+            {
+                // expand state capacity to store new items
+                state  = state_extend(state, c);
+                pairs1 = state->pairs + index1;
+
+                // move data c steps forward from index1
+                memmove(pairs1 + c, pairs1,
+                        (state->used - index1) * sizeof(BigIStorePair));
+                state->used += c;
+
+                for (int j = 0; j < i; j++)
+                {
+                    if (pairs2->val >= state->bfloor)
+                    {
+                        pairs1->key = pairs2->key;
+                        pairs1->val = pairs2->val;
+                        ++pairs1;
+                    }
+                    ++pairs2;
+                }
+                index1 += c;
+            }
+            else
+            {
+                // just move to the right position
+                pairs2 += i;
+            }
+            index2 += i;
+        }
+        else
+        {
+            // identical keys add values
+            if (pairs2->val >= state->bfloor)
+                SUM_PAIRS(pairs1, pairs2);
+
+            ++index1;
+            ++index2;
+            ++pairs1;
+            ++pairs2;
+        }
+    }
+
+    // append any leftovers
+    left = istore->len - index2;
+    if (left > 0)
+    {
+        state = state_extend(state, left);
+        pairs1 = state->pairs + index1;
+
+        for (int j = 0; j < left; j++)
+        {
+            if (pairs2->val >= state->bfloor)
+            {
+                pairs1->key = pairs2->key;
+                pairs1->val = pairs2->val;
+                ++pairs1;
+                ++state->used;
+            }
+            ++pairs2;
+        }
+    }
+
     return state;
 }
 
@@ -86,10 +323,10 @@ istore_agg_internal(ISAggState *state, IStore *istore, ISAggType type)
         else if (pairs1->key > pairs2->key)
         {
             int i = 1;
+
+            // calculate how many new elements we have
             while (index2 + i < istore->len && pairs1->key > pairs2[i].key)
-            {
                 ++i;
-            }
 
             // expand state capacity to store new items
             state  = state_extend(state, i);
@@ -115,26 +352,18 @@ istore_agg_internal(ISAggState *state, IStore *istore, ISAggType type)
             // identical keys add values
             switch (type)
             {
+                case AGG_SUM_FLOOR:
+                    /* suppress compilation warning */
+                    elog(ERROR, "programming error");
                 case AGG_SUM:
-                    /*
-                     * Overflow check.  If the inputs are of different signs then their sum
-                     * cannot overflow.  If the inputs are of the same sign, their sum had
-                     * better be that sign too.
-                     */
-                    if (SAMESIGN(pairs1->val, pairs2->val))
-                    {
-                        pairs1->val += pairs2->val;
-                        if (!SAMESIGN(pairs1->val, pairs2->val))
-                            ereport(ERROR,
-                                    (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE), errmsg("bigint out of range")));
-                    }
-                    else
-                    {
-                        pairs1->val += pairs2->val;
-                    }
+                    SUM_PAIRS(pairs1, pairs2);
                     break;
-                case AGG_MIN: pairs1->val = MIN(pairs2->val, pairs1->val); break;
-                case AGG_MAX: pairs1->val = MAX(pairs2->val, pairs1->val);
+                case AGG_MIN:
+                    pairs1->val = MIN(pairs2->val, pairs1->val);
+                    break;
+                case AGG_MAX:
+                    pairs1->val = MAX(pairs2->val, pairs1->val);
+                    break;
             }
 
             ++index1;
@@ -151,6 +380,7 @@ istore_agg_internal(ISAggState *state, IStore *istore, ISAggType type)
         state = state_extend(state, left);
         state->used += left;
         pairs1 = state->pairs + index1;
+
         // we can't use memcpy here as pairs1 and pairs2 differ in type
         for (int j = 0; j < left; j++)
         {
@@ -165,14 +395,15 @@ istore_agg_internal(ISAggState *state, IStore *istore, ISAggType type)
 }
 
 static inline ISAggState *
-istore_agg_state_accum(ISAggState *state, int num_paris, BigIStorePair *pairs2, ISAggType type)
+istore_agg_state_accum(ISAggState *state, int num_pairs,
+                        BigIStorePair *pairs2, ISAggType type)
 {
     BigIStorePair *pairs1;
     int            index1 = 0, index2 = 0;
     int            left;
 
     pairs1 = state->pairs;
-    while (index1 < state->used && index2 < num_paris)
+    while (index1 < state->used && index2 < num_pairs)
     {
         if (pairs1->key < pairs2->key)
         {
@@ -183,7 +414,7 @@ istore_agg_state_accum(ISAggState *state, int num_paris, BigIStorePair *pairs2, 
         else if (pairs1->key > pairs2->key)
         {
             int i = 1;
-            while (index2 + i < num_paris && pairs1->key > pairs2[i].key)
+            while (index2 + i < num_pairs && pairs1->key > pairs2[i].key)
             {
                 ++i;
             }
@@ -208,6 +439,9 @@ istore_agg_state_accum(ISAggState *state, int num_paris, BigIStorePair *pairs2, 
             // identical keys - apply logic according to aggregation type
             switch (type)
             {
+                case AGG_SUM_FLOOR:
+                    /* Just pass through to AGG_SUM,
+                     * all work was done before */
                 case AGG_SUM:
                     /*
                      * Overflow check.  If the inputs are of different signs then their sum
@@ -238,7 +472,7 @@ istore_agg_state_accum(ISAggState *state, int num_paris, BigIStorePair *pairs2, 
     }
 
     // append any leftovers
-    left = num_paris - index2;
+    left = num_pairs - index2;
     if (left > 0)
     {
         state = state_extend(state, left);
@@ -253,7 +487,8 @@ istore_agg_state_accum(ISAggState *state, int num_paris, BigIStorePair *pairs2, 
 static inline ISAggState *
 bigistore_agg_internal(ISAggState *state, BigIStore *istore, ISAggType type)
 {
-    return istore_agg_state_accum(state, istore->len, FIRST_PAIR(istore, BigIStorePair), type);
+    return istore_agg_state_accum(state, istore->len,
+                FIRST_PAIR(istore, BigIStorePair), type);
 }
 
 /*
@@ -313,6 +548,20 @@ Datum istore_sum_transfn(PG_FUNCTION_ARGS)
 }
 
 /*
+ * SUM_FLOOR(istore) aggregate funtion
+ */
+PG_FUNCTION_INFO_V1(istore_sum_floor_transfn);
+Datum istore_sum_floor_transfn(PG_FUNCTION_ARGS)
+{
+    ISAggState *state;
+    INIT_AGG_STATE(state);
+    if (PG_ARGISNULL(0))                                                                                           \
+        state->ifloor = PG_GETARG_INT32(2);
+
+    PG_RETURN_POINTER(istore_agg_sum_floor_internal(state, PG_GETARG_IS(1)));
+}
+
+/*
  * SUM(bigistore) aggregate funtion
  */
 PG_FUNCTION_INFO_V1(bigistore_sum_transfn);
@@ -321,6 +570,20 @@ Datum bigistore_sum_transfn(PG_FUNCTION_ARGS)
     ISAggState *state;
     INIT_AGG_STATE(state);
     PG_RETURN_POINTER(bigistore_agg_internal(state, PG_GETARG_BIGIS(1), AGG_SUM));
+}
+
+/*
+ * SUM(bigistore) aggregate funtion
+ */
+PG_FUNCTION_INFO_V1(bigistore_sum_floor_transfn);
+Datum bigistore_sum_floor_transfn(PG_FUNCTION_ARGS)
+{
+    ISAggState *state;
+    INIT_AGG_STATE(state);
+    if (PG_ARGISNULL(0))                                                                                           \
+        state->bfloor = PG_GETARG_INT64(2);
+
+    PG_RETURN_POINTER(bigistore_agg_sum_floor_internal(state, PG_GETARG_BIGIS(1)));
 }
 
 /*

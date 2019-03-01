@@ -39,3 +39,21 @@ describe "extend" do
     end
   end
 end
+
+describe "extend" do
+  before do
+    install_extension
+  end
+  %w(istore bigistore).each do |type|
+    describe type do
+      it 'should correctly aggregate using sum_floor' do
+        query("CREATE TABLE test (v #{type})")
+        query("INSERT INTO test SELECT #{type}(array_agg(x), array_agg(x)) FROM generate_series(1, 21, 2) AS a(x)")
+        query("INSERT INTO test SELECT #{type}(array_agg(x), array_agg(x)) FROM generate_series(2, 22, 2) AS a(x)")
+        query("INSERT INTO test SELECT #{type}(array_agg(x), array_agg(x)) FROM generate_series(1, 21, 2) AS a(x)")
+        query("SELECT SUM_FLOOR(v, 10) FROM test").should match \
+        '"10"=>"10", "11"=>"22", "12"=>"12", "13"=>"26", "14"=>"14", "15"=>"30", "16"=>"16", "17"=>"34", "18"=>"18", "19"=>"38", "20"=>"20", "21"=>"42", "22"=>"22"'
+      end
+    end
+  end
+end

@@ -46,6 +46,7 @@ BEGIN
     EXECUTE $E$ ALTER FUNCTION skeys(istore) PARALLEL SAFE                                                            $E$;
     EXECUTE $E$ ALTER FUNCTION svals(istore) PARALLEL SAFE                                                            $E$;
     EXECUTE $E$ ALTER FUNCTION istore_sum_transfn(internal, istore) PARALLEL SAFE                                     $E$;
+    EXECUTE $E$ ALTER FUNCTION istore_sum_floor_transfn(internal, istore, int) PARALLEL SAFE                          $E$;
     EXECUTE $E$ ALTER FUNCTION istore_min_transfn(internal, istore) PARALLEL SAFE                                     $E$;
     EXECUTE $E$ ALTER FUNCTION istore_max_transfn(internal, istore) PARALLEL SAFE                                     $E$;
     EXECUTE $E$ ALTER FUNCTION istore_agg_finalfn_pairs(internal) PARALLEL SAFE                                       $E$;
@@ -115,15 +116,18 @@ BEGIN
     EXECUTE $E$ ALTER FUNCTION exists_any(bigistore,integer[]) PARALLEL SAFE                                          $E$;
     EXECUTE $E$ ALTER FUNCTION delete(bigistore,bigistore) PARALLEL SAFE                                              $E$;
     EXECUTE $E$ ALTER FUNCTION istore_sum_transfn(internal, bigistore) PARALLEL SAFE                                  $E$;
+    EXECUTE $E$ ALTER FUNCTION istore_sum_floor_transfn(internal, bigistore, bigint) PARALLEL SAFE                    $E$;
     EXECUTE $E$ ALTER FUNCTION istore_min_transfn(internal, bigistore) PARALLEL SAFE                                  $E$;
     EXECUTE $E$ ALTER FUNCTION istore_max_transfn(internal, bigistore) PARALLEL SAFE                                  $E$;
     EXECUTE $E$ ALTER FUNCTION bigistore_avl_transfn(internal, int, bigint) PARALLEL SAFE                             $E$;
     EXECUTE $E$ ALTER FUNCTION bigistore_avl_finalfn(internal) PARALLEL SAFE                                          $E$;
 
     EXECUTE $E$ DROP AGGREGATE SUM (istore) $E$;
+    EXECUTE $E$ DROP AGGREGATE SUM_FLOOR (istore, int) $E$;
     EXECUTE $E$ DROP AGGREGATE MIN (istore) $E$;
     EXECUTE $E$ DROP AGGREGATE MAX (istore) $E$;
     EXECUTE $E$ DROP AGGREGATE SUM (bigistore) $E$;
+    EXECUTE $E$ DROP AGGREGATE SUM_FLOOR (bigistore, bigint) $E$;
     EXECUTE $E$ DROP AGGREGATE MIN (bigistore) $E$;
     EXECUTE $E$ DROP AGGREGATE MAX (bigistore) $E$;
 
@@ -162,6 +166,16 @@ BEGIN
         parallel = SAFE
     ) $E$ ;
 
+    EXECUTE $E$ CREATE AGGREGATE SUM_FLOOR (istore, int) (
+        sfunc = istore_sum_floor_transfn,
+        stype = internal,
+        finalfunc = bigistore_agg_finalfn,
+        combinefunc = istore_agg_sum_combine,
+        serialfunc = istore_agg_serial,
+        deserialfunc = istore_agg_deserial,
+        parallel = SAFE
+    ) $E$ ;
+
     EXECUTE $E$ CREATE AGGREGATE MIN (istore) (
         sfunc = istore_min_transfn,
         stype = internal,
@@ -184,6 +198,16 @@ BEGIN
 
     EXECUTE $E$ CREATE AGGREGATE SUM (bigistore) (
         sfunc = istore_sum_transfn,
+        stype = internal,
+        finalfunc = bigistore_agg_finalfn,
+        combinefunc = istore_agg_sum_combine,
+        serialfunc = istore_agg_serial,
+        deserialfunc = istore_agg_deserial,
+        parallel = SAFE
+    )  $E$;
+
+    EXECUTE $E$ CREATE AGGREGATE SUM_FLOOR (bigistore, bigint) (
+        sfunc = istore_sum_floor_transfn,
         stype = internal,
         finalfunc = bigistore_agg_finalfn,
         combinefunc = istore_agg_sum_combine,

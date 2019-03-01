@@ -1,5 +1,5 @@
 GIT
-  remote: git@github.com:adjust/dumbo.git
+  remote: https://github.com/adjust/dumbo.git
   revision: e4a4821e86f0be26be8eb07f692610ba1b4bad12
   specs:
     dumbo (0.0.5)
@@ -54,7 +54,7 @@ GEM
     rspec-mocks (3.0.4)
       rspec-support (~> 3.0.0)
     rspec-support (3.0.4)
-    thor (0.20.0)
+    thor (0.20.3)
     thread_safe (0.3.6)
     tzinfo (1.2.4)
       thread_safe (~> 0.1)
@@ -71,4 +71,4 @@ DEPENDENCIES
   rspec
 
 BUNDLED WITH
-   1.14.6
+   1.17.3
