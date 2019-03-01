@@ -448,11 +448,14 @@ Datum bigistore_from_intarray(PG_FUNCTION_ARGS)
     {
         if (nulls[i])
             continue;
+
         switch (i_eltype)
         {
             case INT2OID: key = DatumGetInt16(i_data[i]); break;
             case INT4OID: key = DatumGetInt32(i_data[i]); break;
-            default: elog(ERROR, "unsupported array type");
+            default:
+				key = 0; /* keep compiler quiet */
+				elog(ERROR, "unsupported array type");
         }
 
         position = is_tree_find(key, tree);
@@ -522,14 +525,18 @@ bigistore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
         {
             case INT2OID: key = DatumGetInt16(i_data1[i]); break;
             case INT4OID: key = DatumGetInt32(i_data1[i]); break;
-            default: elog(ERROR, "unsupported array type");
+            default:
+				key = 0;  /* keep compiler quiet */
+				elog(ERROR, "unsupported array type");
         }
         switch (i_eltype2)
         {
             case INT2OID: value = DatumGetInt16(i_data2[i]); break;
             case INT4OID: value = DatumGetInt32(i_data2[i]); break;
             case INT8OID: value = DatumGetInt64(i_data2[i]); break;
-            default: elog(ERROR, "unsupported array type");
+            default:
+				value = 0; /* keep compiler quiet */
+				elog(ERROR, "unsupported array type");
         }
 
         position = is_tree_find(key, tree);

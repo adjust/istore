@@ -35,9 +35,9 @@ bigistore_agg_finalfn(PG_FUNCTION_ARGS)
 
     if (count == 0)
         PG_RETURN_NULL();
- 
+
     result = bigistore_array_sum(data, count, nulls);
- 
+
     if (result == 0)
         PG_RETURN_NULL();
     else
@@ -144,7 +144,6 @@ bigistore_array_sum(Datum *data, int count, bool *nulls)
     int              i,
                      n,
                      index;
-
 
     tree = NULL;
     n    = 0;

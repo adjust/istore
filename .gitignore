@@ -27,3 +27,5 @@ bench/benchmarks*
 vendor
 regression.diffs
 regression.out
+.deps
+.bundle

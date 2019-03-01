@@ -58,6 +58,38 @@ EXPLAIN(COSTS OFF) SELECT id, SUM(data) FROM data GROUP BY id ORDER BY id;
                      ->  Parallel Seq Scan on data
 (9 rows)
 
+SELECT SUM_FLOOR(data, 0) FROM data;
+                                                                                      sum_floor                                                                                      
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ "1"=>"546136500", "2"=>"546227500", "3"=>"546318500", "4"=>"546409500", "5"=>"546500500", "6"=>"546591500", "7"=>"546682500", "8"=>"546773500", "9"=>"546864500", "10"=>"546955500"
+(1 row)
+
+EXPLAIN(COSTS OFF) SELECT SUM_FLOOR(data, 0) FROM data;
+                 QUERY PLAN                  
+---------------------------------------------
+ Finalize Aggregate
+   ->  Gather
+         Workers Planned: 8
+         ->  Partial Aggregate
+               ->  Parallel Seq Scan on data
+(5 rows)
+
+SELECT SUM_FLOOR(data, 2000) FROM data;
+                                                                                      sum_floor                                                                                      
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ "1"=>"537093260", "2"=>"537198780", "3"=>"537304310", "4"=>"537409850", "5"=>"537515400", "6"=>"537620960", "7"=>"537726530", "8"=>"537832110", "9"=>"537937700", "10"=>"538043300"
+(1 row)
+
+EXPLAIN(COSTS OFF) SELECT SUM_FLOOR(data, 2000) FROM data;
+                 QUERY PLAN                  
+---------------------------------------------
+ Finalize Aggregate
+   ->  Gather
+         Workers Planned: 8
+         ->  Partial Aggregate
+               ->  Parallel Seq Scan on data
+(5 rows)
+
 SELECT MIN(data) FROM data;
                                                                 min                                                                
 -----------------------------------------------------------------------------------------------------------------------------------
@@ -197,6 +229,38 @@ EXPLAIN(COSTS OFF) SELECT id, SUM(data) FROM bigdata GROUP BY id ORDER BY id;
                      Group Key: id
                      ->  Parallel Seq Scan on bigdata
 (9 rows)
+
+SELECT SUM_FLOOR(data, 0) FROM data;
+                                                                                      sum_floor                                                                                      
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ "1"=>"546136500", "2"=>"546227500", "3"=>"546318500", "4"=>"546409500", "5"=>"546500500", "6"=>"546591500", "7"=>"546682500", "8"=>"546773500", "9"=>"546864500", "10"=>"546955500"
+(1 row)
+
+EXPLAIN(COSTS OFF) SELECT SUM_FLOOR(data, 0) FROM data;
+                 QUERY PLAN                  
+---------------------------------------------
+ Finalize Aggregate
+   ->  Gather
+         Workers Planned: 8
+         ->  Partial Aggregate
+               ->  Parallel Seq Scan on data
+(5 rows)
+
+SELECT SUM_FLOOR(data, 2000) FROM data;
+                                                                                      sum_floor                                                                                      
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ "1"=>"537093260", "2"=>"537198780", "3"=>"537304310", "4"=>"537409850", "5"=>"537515400", "6"=>"537620960", "7"=>"537726530", "8"=>"537832110", "9"=>"537937700", "10"=>"538043300"
+(1 row)
+
+EXPLAIN(COSTS OFF) SELECT SUM_FLOOR(data, 2000) FROM data;
+                 QUERY PLAN                  
+---------------------------------------------
+ Finalize Aggregate
+   ->  Gather
+         Workers Planned: 8
+         ->  Partial Aggregate
+               ->  Parallel Seq Scan on data
+(5 rows)
 
 SELECT MIN(data) FROM bigdata;
                                                                 min                                                                
