@@ -112,18 +112,17 @@ istore_apply_datum(IStore *arg1, Datum arg2, PGFunction applyfunc)
  * get the smallest key from an istore
  */
 PG_FUNCTION_INFO_V1(istore_min_key);
-Datum
-istore_min_key(PG_FUNCTION_ARGS)
+Datum istore_min_key(PG_FUNCTION_ARGS)
 {
     IStore *istore;
     int32   key;
 
     istore = PG_GETARG_IS(0);
-    if (istore->len == 0) 
+    if (istore->len == 0)
     {
         PG_RETURN_NULL();
     }
-    else 
+    else
     {
         key = FIRST_PAIR(istore, IStorePair)[0].key;
         PG_RETURN_INT32(key);
@@ -134,18 +133,17 @@ istore_min_key(PG_FUNCTION_ARGS)
  * get the biggest key from an istore
  */
 PG_FUNCTION_INFO_V1(istore_max_key);
-Datum
-istore_max_key(PG_FUNCTION_ARGS)
+Datum istore_max_key(PG_FUNCTION_ARGS)
 {
     IStore *istore;
     int32   key;
 
     istore = PG_GETARG_IS(0);
-    if (istore->len == 0) 
+    if (istore->len == 0)
     {
         PG_RETURN_NULL();
     }
-    else 
+    else
     {
         key = LAST_PAIR(istore, IStorePair)->key;
         PG_RETURN_INT32(key);
@@ -1058,6 +1056,51 @@ Datum istore_slice(PG_FUNCTION_ARGS)
         PG_RETURN_NULL();
 }
 
+PG_FUNCTION_INFO_V1(istore_slice_min_max);
+Datum istore_slice_min_max(PG_FUNCTION_ARGS)
+{
+    int32   min = PG_GETARG_INT32(1);
+    int32   max = PG_GETARG_INT32(2);
+    IStore *is  = PG_GETARG_IS_COPY(0);
+
+    int min_idx = 0;
+    int i       = 0;
+    int len     = is->len;
+
+    IStorePair *pairs;
+    pairs = FIRST_PAIR(is, IStorePair);
+
+    if (min > max)
+        ereport(ERROR, (errcode(ERRCODE_SYNTAX_ERROR), errmsg("min must be less or equal max")));
+
+    if (is->len <= 0 || pairs[is->len - 1].key < min || pairs[0].key > max)
+        PG_RETURN_NULL();
+
+    if (pairs[0].key >= min && pairs[is->len - 1].key <= min)
+        PG_RETURN_POINTER(is);
+
+    for (i = 0; i < len; i++)
+    {
+        if (pairs[i].key < min)
+            min_idx = i;
+
+        if (pairs[i].key < min || pairs[i].key > max)
+        {
+            --is->len;
+            is->buflen -= is_pair_buf_len(pairs + i);
+        }
+    }
+
+    if (is->len == 0)
+        PG_RETURN_NULL();
+
+    if (min_idx > 0)
+        memmove(pairs, pairs + min_idx + 1, (is->len * sizeof(IStorePair)));
+
+    SET_VARSIZE(is, ISHDRSZ + (is->len * sizeof(IStorePair)));
+    PG_RETURN_POINTER(is);
+}
+
 PG_FUNCTION_INFO_V1(istore_slice_to_array);
 Datum istore_slice_to_array(PG_FUNCTION_ARGS)
 {
@@ -1100,24 +1143,25 @@ Datum istore_slice_to_array(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(aout);
 }
 
-static IStore * istore_clamp_pass(IStore * is, int32 clamp_key, int delta_dir)
+static IStore *
+istore_clamp_pass(IStore *is, int32 clamp_key, int delta_dir)
 {
-    IStore      * result_is;
-    IStorePair  * pairs;
-    IStorePairs   creator;
-    int32 clamp_sum = 0;
-    int   index     = 0, count = 0, delta_buflen = 0;
+    IStore *    result_is;
+    IStorePair *pairs;
+    IStorePairs creator;
+    int32       clamp_sum = 0;
+    int         index = 0, count = 0, delta_buflen = 0;
 
     /* short circuit out of the funciton if there is nothing to clamp */
-    if(delta_dir > 0 && FIRST_PAIR(is, IStorePair)->key >= clamp_key)
+    if (delta_dir > 0 && FIRST_PAIR(is, IStorePair)->key >= clamp_key)
         return is;
-    if(delta_dir < 0 && LAST_PAIR(is, IStorePair)->key <= clamp_key) 
+    if (delta_dir < 0 && LAST_PAIR(is, IStorePair)->key <= clamp_key)
         return is;
 
     pairs = FIRST_PAIR(is, IStorePair);
     index = delta_dir > 0 ? 0 : is->len - 1;
-    while ( ((delta_dir > 0) && (index < is->len && pairs[index].key <= clamp_key)) ||
-            ((delta_dir < 0) && (index >= 0      && pairs[index].key >= clamp_key)) )
+    while (((delta_dir > 0) && (index < is->len && pairs[index].key <= clamp_key)) ||
+           ((delta_dir < 0) && (index >= 0 && pairs[index].key >= clamp_key)))
     {
         INTPL(pairs[index].val, clamp_sum, clamp_sum);
         delta_buflen += is_pair_buf_len(pairs + index);
@@ -1131,15 +1175,11 @@ static IStore * istore_clamp_pass(IStore * is, int32 clamp_key, int delta_dir)
     if (delta_dir > 0)
         pairs = pairs + index;
 
-    creator = (IStorePairs) {
-        .pairs  = pairs,
-        .buflen = is->buflen - delta_buflen,
-        .used   = is->len - count
-    };
+    creator = (IStorePairs){ .pairs = pairs, .buflen = is->buflen - delta_buflen, .used = is->len - count };
     FINALIZE_ISTORE_BASE(result_is, (&creator), IStorePair);
 
     /* put the clamp_sum in the clamp-key place */
-    pairs = delta_dir > 0 ? FIRST_PAIR(result_is, IStorePair) : LAST_PAIR(result_is, IStorePair);
+    pairs      = delta_dir > 0 ? FIRST_PAIR(result_is, IStorePair) : LAST_PAIR(result_is, IStorePair);
     pairs->key = clamp_key;
     pairs->val = clamp_sum;
     result_is->buflen += is_pair_buf_len(pairs);
@@ -1318,8 +1358,8 @@ is_int32_arr_comp(const void *a, const void *b)
 static bool
 is_istore_in_range(IStore *is, int32 *lower, int32 *upper, bool inclusive)
 {
-    IStorePair    *pairs;
-    int32          val;
+    IStorePair *pairs;
+    int32       val;
 
     if (lower != NULL && upper != NULL && *lower > *upper)
         return false;
@@ -1333,15 +1373,11 @@ is_istore_in_range(IStore *is, int32 *lower, int32 *upper, bool inclusive)
     for (int i = 0; i < is->len; i++)
     {
         val = pairs[i].val;
-        if (lower != NULL &&
-            (val < *lower ||
-                (!inclusive && val == *lower)))
-        return false;
+        if (lower != NULL && (val < *lower || (!inclusive && val == *lower)))
+            return false;
 
-        if (upper != NULL &&
-            (val > *upper ||
-                 (!inclusive && val == *upper)))
-        return false;
+        if (upper != NULL && (val > *upper || (!inclusive && val == *upper)))
+            return false;
     }
 
     return true;
@@ -1350,8 +1386,8 @@ is_istore_in_range(IStore *is, int32 *lower, int32 *upper, bool inclusive)
 static IStore *
 istore_limit(IStore *is, int32 *min, int32 *max)
 {
-    IStore      *result;
-    IStorePair  *pairs;
+    IStore *     result;
+    IStorePair * pairs;
     IStorePairs *new_pairs;
     int32        val;
 
@@ -1367,7 +1403,8 @@ istore_limit(IStore *is, int32 *min, int32 *max)
     pairs = FIRST_PAIR(is, IStorePair);
     Assert(pairs != NULL);
 
-    for (int i = 0; i < is->len; i++) {
+    for (int i = 0; i < is->len; i++)
+    {
         val = pairs[i].val;
         if (min != NULL && val < *min)
             val = *min;
@@ -1382,7 +1419,7 @@ istore_limit(IStore *is, int32 *min, int32 *max)
 PG_FUNCTION_INFO_V1(istore_in_range);
 Datum istore_in_range(PG_FUNCTION_ARGS)
 {
-    IStore *is = PG_GETARG_IS(0);
+    IStore *is    = PG_GETARG_IS(0);
     int32   lower = PG_GETARG_INT32(1);
     int32   upper = PG_GETARG_INT32(2);
     bool    result;
@@ -1394,7 +1431,7 @@ Datum istore_in_range(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(istore_less_than);
 Datum istore_less_than(PG_FUNCTION_ARGS)
 {
-    IStore *is = PG_GETARG_IS(0);
+    IStore *is    = PG_GETARG_IS(0);
     int32   upper = PG_GETARG_INT32(1);
     bool    result;
 
@@ -1405,7 +1442,7 @@ Datum istore_less_than(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(istore_less_than_or_equal);
 Datum istore_less_than_or_equal(PG_FUNCTION_ARGS)
 {
-    IStore *is = PG_GETARG_IS(0);
+    IStore *is    = PG_GETARG_IS(0);
     int32   upper = PG_GETARG_INT32(1);
     bool    result;
 
@@ -1416,7 +1453,7 @@ Datum istore_less_than_or_equal(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(istore_greater_than);
 Datum istore_greater_than(PG_FUNCTION_ARGS)
 {
-    IStore *is = PG_GETARG_IS(0);
+    IStore *is    = PG_GETARG_IS(0);
     int32   lower = PG_GETARG_INT32(1);
     bool    result;
 
@@ -1427,7 +1464,7 @@ Datum istore_greater_than(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(istore_greater_than_or_equal);
 Datum istore_greater_than_or_equal(PG_FUNCTION_ARGS)
 {
-    IStore *is = PG_GETARG_IS(0);
+    IStore *is    = PG_GETARG_IS(0);
     int32   lower = PG_GETARG_INT32(1);
     bool    result;
 
@@ -1439,19 +1476,18 @@ PG_FUNCTION_INFO_V1(istore_floor);
 Datum istore_floor(PG_FUNCTION_ARGS)
 {
     IStore *result;
-    IStore *is = PG_GETARG_IS(0);
+    IStore *is  = PG_GETARG_IS(0);
     int32   min = PG_GETARG_INT32(1);
 
     result = istore_limit(is, &min, NULL);
     PG_RETURN_POINTER(result);
-
 }
 
 PG_FUNCTION_INFO_V1(istore_ceiling);
 Datum istore_ceiling(PG_FUNCTION_ARGS)
 {
     IStore *result;
-    IStore *is = PG_GETARG_IS(0);
+    IStore *is  = PG_GETARG_IS(0);
     int32   max = PG_GETARG_INT32(1);
 
     result = istore_limit(is, NULL, &max);
