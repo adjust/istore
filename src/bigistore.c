@@ -1056,7 +1056,7 @@ Datum bigistore_slice(PG_FUNCTION_ARGS)
         PG_RETURN_POINTER(result);
     }
     else
-        PG_RETURN_NULL();
+        PG_RETURN_EMPTY_ISTORE();
 }
 
 PG_FUNCTION_INFO_V1(bigistore_slice_min_max);
@@ -1077,28 +1077,35 @@ Datum bigistore_slice_min_max(PG_FUNCTION_ARGS)
         ereport(ERROR, (errcode(ERRCODE_SYNTAX_ERROR), errmsg("min must be less or equal max")));
 
     if (is->len <= 0 || pairs[is->len - 1].key < min || pairs[0].key > max)
-        PG_RETURN_NULL();
+        PG_RETURN_EMPTY_ISTORE();
 
     if (pairs[0].key >= min && pairs[is->len - 1].key <= max)
         PG_RETURN_POINTER(is);
 
+    is->buflen = 0;
+    is->len    = 0;
+
     for (i = 0; i < len; i++)
     {
-        if (pairs[i].key < min)
+        // set the new starting index of pairs
+        if (pairs[i].key >= min && min_idx == 0)
             min_idx = i;
 
-        if (pairs[i].key < min || pairs[i].key > max)
+        if (pairs[i].key > max)
+            break;
+
+        if (pairs[i].key >= min && pairs[i].key <= max)
         {
-            --is->len;
-            is->buflen -= bigis_pair_buf_len(pairs + i);
+            ++is->len;
+            is->buflen += bigis_pair_buf_len(pairs + i);
         }
     }
 
     if (is->len == 0)
-        PG_RETURN_NULL();
+        PG_RETURN_EMPTY_ISTORE();
 
     if (min_idx > 0)
-        memmove(pairs, pairs + min_idx + 1, (is->len * sizeof(BigIStorePair)));
+        memmove(pairs, pairs + min_idx, (is->len * sizeof(BigIStorePair)));
 
     SET_VARSIZE(is, ISHDRSZ + (is->len * sizeof(BigIStorePair)));
     PG_RETURN_POINTER(is);
