@@ -1084,25 +1084,18 @@ Datum bigistore_slice_min_max(PG_FUNCTION_ARGS)
 
     is->buflen = 0;
     is->len    = 0;
+    // skip pairs lower than min
+    while (pairs[i].key < min && ++i)
+        ;
+    min_idx = i;
 
-    for (i = 0; i < len; i++)
+    for (; pairs[i].key <= max && i < len; i++)
     {
-        // set the new starting index of pairs
-        if (pairs[i].key >= min && min_idx == 0)
-            min_idx = i;
-
-        if (pairs[i].key > max)
-            break;
-
-        if (pairs[i].key >= min && pairs[i].key <= max)
-        {
-            ++is->len;
-            is->buflen += bigis_pair_buf_len(pairs + i);
-        }
+        ++is->len;
+        is->buflen += bigis_pair_buf_len(pairs + i);
     }
 
-    if (is->len == 0)
-        PG_RETURN_EMPTY_ISTORE();
+    Assert(is->len > 0);
 
     if (min_idx > 0)
         memmove(pairs, pairs + min_idx, (is->len * sizeof(BigIStorePair)));
