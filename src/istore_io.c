@@ -68,8 +68,10 @@ istore_in(PG_FUNCTION_ARGS)
         EMPTY_ISTORE(out);
         PG_RETURN_POINTER(out);
     }
-
-    tree = is_parse(&parser);
+	else if (parser.begin[0] == '(')
+		tree = is_parse_arr(&parser);
+	else
+		tree = is_parse(&parser);
 
     pairs = palloc0(sizeof(IStorePairs));
     n = is_tree_length(tree);
@@ -219,8 +221,10 @@ bigistore_in(PG_FUNCTION_ARGS)
         EMPTY_ISTORE(out);
         PG_RETURN_POINTER(out);
     }
-
-    tree = is_parse(&parser);
+	else if (parser.begin[0] == '(')
+		tree = is_parse_arr(&parser);
+	else
+		tree = is_parse(&parser);
 
     pairs = palloc0(sizeof(BigIStorePairs));
     n = is_tree_length(tree);
