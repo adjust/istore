@@ -182,6 +182,10 @@ CREATE INDEX hidx ON testistore USING GIN (i);
 
 ### Authors
 
+Alex Kliukin <alex.kliukin@adjust.com>, Berlin, adjust GmbH, Germany
+
+Ildar Musin <ildar@adjust.com>, Berlin, adjust GmbH, Germany
+
 Manuel Kniep <manuel@adjust.com>, Berlin, adjust GmbH, Germany
 
 Robert Abraham <robert@adust.com>, Berlin, adjust GmbH, Germany
