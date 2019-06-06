@@ -145,6 +145,7 @@ istore_to_json(istore)                        | integer[]                 | get 
 istore_to_array(istore)                       | integer[]                 | get istore's keys and values as an array of alternating keys and values     | istore_to_array('1=>4,2=>5'::istore)                            |  {1,4,2,5}
 istore_to_matrix(istore)                      | integer[]                 | get istore's keys and values as a two-dimensional array                     | istore_to_matrix('1=>4,2=>5'::istore)                           |  {{1,4},{2,5}}
 slice(istore, integer[])                      | istore                    | extract a subset of an istore                                               | slice('1=>4,2=>5'::istore, ARRAY[2])                            |  "2"=>"5"
+slice(istore, min integer, max integer)       | istore                    | extract a subset of an istore where keys are between min and max            | slice('1=>4,2=>5,3=>6,4=>7'::istore, 2, 3)                      |  "2"=>"5","3=>6"
 slice_array(istore, integer[])                | integer[]                 | extract a subset of an istore                                               | slice_array('1=>4,2=>5'::istore, ARRAY[2])                      |  {5}
 clamp_below(istore, integer)                  | istore                    | delete k/v pair up to a specified threshold and write their sum             | clamp_below('1=>4,2=>5,3=>6'::istore, 2)                        |  "2"=>"9","3"=>"6"
 clamp_above(istore, integer)                  | istore                    | delete k/v pair down to a specified threshold and write their sum           | clamp_above('1=>4,2=>5,3=>6'::istore, 2)                        |  "1"=>"4","2"=>"11"
@@ -180,6 +181,10 @@ CREATE INDEX hidx ON testistore USING GIN (i);
 ```
 
 ### Authors
+
+Alex Kliukin <alex.kliukin@adjust.com>, Berlin, adjust GmbH, Germany
+
+Ildar Musin <ildar@adjust.com>, Berlin, adjust GmbH, Germany
 
 Manuel Kniep <manuel@adjust.com>, Berlin, adjust GmbH, Germany
 

@@ -110,18 +110,17 @@ bigistore_apply_datum(BigIStore *arg1, Datum arg2, PGFunction applyfunc)
  * get the smallest key from an bigistore
  */
 PG_FUNCTION_INFO_V1(bigistore_min_key);
-Datum
-bigistore_min_key(PG_FUNCTION_ARGS)
+Datum bigistore_min_key(PG_FUNCTION_ARGS)
 {
     BigIStore *istore;
-    int32   key;
+    int32      key;
 
     istore = PG_GETARG_BIGIS(0);
-    if (istore->len == 0) 
+    if (istore->len == 0)
     {
         PG_RETURN_NULL();
     }
-    else 
+    else
     {
         key = FIRST_PAIR(istore, BigIStorePair)[0].key;
         PG_RETURN_INT32(key);
@@ -132,18 +131,17 @@ bigistore_min_key(PG_FUNCTION_ARGS)
  * get the biggest key from an bigistore
  */
 PG_FUNCTION_INFO_V1(bigistore_max_key);
-Datum
-bigistore_max_key(PG_FUNCTION_ARGS)
+Datum bigistore_max_key(PG_FUNCTION_ARGS)
 {
     BigIStore *istore;
-    int32   key;
+    int32      key;
 
     istore = PG_GETARG_BIGIS(0);
-    if (istore->len == 0) 
+    if (istore->len == 0)
     {
         PG_RETURN_NULL();
     }
-    else 
+    else
     {
         key = LAST_PAIR(istore, BigIStorePair)->key;
         PG_RETURN_INT32(key);
@@ -1058,7 +1056,52 @@ Datum bigistore_slice(PG_FUNCTION_ARGS)
         PG_RETURN_POINTER(result);
     }
     else
-        PG_RETURN_NULL();
+        PG_RETURN_EMPTY_ISTORE();
+}
+
+PG_FUNCTION_INFO_V1(bigistore_slice_min_max);
+Datum bigistore_slice_min_max(PG_FUNCTION_ARGS)
+{
+    int32      min = PG_GETARG_INT32(1);
+    int32      max = PG_GETARG_INT32(2);
+    BigIStore *is  = PG_GETARG_BIGIS_COPY(0);
+
+    int min_idx = 0;
+    int i       = 0;
+    int len     = is->len;
+
+    BigIStorePair *pairs;
+    pairs = FIRST_PAIR(is, BigIStorePair);
+
+    if (min > max)
+        ereport(ERROR, (errcode(ERRCODE_SYNTAX_ERROR), errmsg("min must be less or equal max")));
+
+    if (is->len <= 0 || pairs[is->len - 1].key < min || pairs[0].key > max)
+        PG_RETURN_EMPTY_ISTORE();
+
+    if (pairs[0].key >= min && pairs[is->len - 1].key <= max)
+        PG_RETURN_POINTER(is);
+
+    is->buflen = 0;
+    is->len    = 0;
+    // skip pairs lower than min
+    while (pairs[i].key < min && ++i)
+        ;
+    min_idx = i;
+
+    for (; pairs[i].key <= max && i < len; i++)
+    {
+        ++is->len;
+        is->buflen += bigis_pair_buf_len(pairs + i);
+    }
+
+    Assert(is->len > 0);
+
+    if (min_idx > 0)
+        memmove(pairs, pairs + min_idx, (is->len * sizeof(BigIStorePair)));
+
+    SET_VARSIZE(is, ISHDRSZ + (is->len * sizeof(BigIStorePair)));
+    PG_RETURN_POINTER(is);
 }
 
 PG_FUNCTION_INFO_V1(bigistore_slice_to_array);
@@ -1104,24 +1147,24 @@ Datum bigistore_slice_to_array(PG_FUNCTION_ARGS)
 }
 
 static BigIStore *
-bigistore_clamp_pass(BigIStore * is, int32 clamp_key, int delta_dir)
+bigistore_clamp_pass(BigIStore *is, int32 clamp_key, int delta_dir)
 {
-    BigIStore     * result_is;
-    BigIStorePair * pairs;
-    BigIStorePairs  creator;
-    int32 clamp_sum = 0;
-    int   index     = 0, count = 0, delta_buflen = 0;
+    BigIStore *    result_is;
+    BigIStorePair *pairs;
+    BigIStorePairs creator;
+    int32          clamp_sum = 0;
+    int            index = 0, count = 0, delta_buflen = 0;
 
     /* short circuit out of the funciton if there is nothing to clamp */
-    if(delta_dir > 0 && FIRST_PAIR(is, BigIStorePair)->key >= clamp_key)
+    if (delta_dir > 0 && FIRST_PAIR(is, BigIStorePair)->key >= clamp_key)
         return is;
-    if(delta_dir < 0 && LAST_PAIR(is, BigIStorePair)->key <= clamp_key) 
+    if (delta_dir < 0 && LAST_PAIR(is, BigIStorePair)->key <= clamp_key)
         return is;
 
     pairs = FIRST_PAIR(is, BigIStorePair);
     index = delta_dir > 0 ? 0 : is->len - 1;
-    while ( ((delta_dir > 0) && (index < is->len && pairs[index].key <= clamp_key)) ||
-            ((delta_dir < 0) && (index >= 0      && pairs[index].key >= clamp_key)) )
+    while (((delta_dir > 0) && (index < is->len && pairs[index].key <= clamp_key)) ||
+           ((delta_dir < 0) && (index >= 0 && pairs[index].key >= clamp_key)))
     {
         INTPL(pairs[index].val, clamp_sum, clamp_sum);
         delta_buflen += bigis_pair_buf_len(pairs + index);
@@ -1135,15 +1178,11 @@ bigistore_clamp_pass(BigIStore * is, int32 clamp_key, int delta_dir)
     if (delta_dir > 0)
         pairs = pairs + index;
 
-    creator = (BigIStorePairs) {
-        .pairs  = pairs,
-        .buflen = is->buflen - delta_buflen,
-        .used   = is->len - count
-    };
+    creator = (BigIStorePairs){ .pairs = pairs, .buflen = is->buflen - delta_buflen, .used = is->len - count };
     FINALIZE_ISTORE_BASE(result_is, (&creator), BigIStorePair);
 
     /* put the clamp_sum in the clamp-key place */
-    pairs = delta_dir > 0 ? FIRST_PAIR(result_is, BigIStorePair) : LAST_PAIR(result_is, BigIStorePair);
+    pairs      = delta_dir > 0 ? FIRST_PAIR(result_is, BigIStorePair) : LAST_PAIR(result_is, BigIStorePair);
     pairs->key = clamp_key;
     pairs->val = clamp_sum;
     result_is->buflen += bigis_pair_buf_len(pairs);
@@ -1329,15 +1368,11 @@ is_bigistore_in_range(BigIStore *is, int64 *lower, int64 *upper, bool inclusive)
     for (int i = 0; i < is->len; i++)
     {
         val = pairs[i].val;
-        if (lower != NULL &&
-            (val < *lower ||
-                (!inclusive && val == *lower)))
-        return false;
+        if (lower != NULL && (val < *lower || (!inclusive && val == *lower)))
+            return false;
 
-        if (upper != NULL &&
-            (val > *upper ||
-                 (!inclusive && val == *upper)))
-        return false;
+        if (upper != NULL && (val > *upper || (!inclusive && val == *upper)))
+            return false;
     }
 
     return true;
@@ -1346,8 +1381,8 @@ is_bigistore_in_range(BigIStore *is, int64 *lower, int64 *upper, bool inclusive)
 static BigIStore *
 bigistore_limit(BigIStore *is, int64 *min, int64 *max)
 {
-    BigIStore      *result;
-    BigIStorePair  *pairs;
+    BigIStore *     result;
+    BigIStorePair * pairs;
     BigIStorePairs *new_pairs;
     int64           val;
 
@@ -1363,7 +1398,8 @@ bigistore_limit(BigIStore *is, int64 *min, int64 *max)
     pairs = FIRST_PAIR(is, BigIStorePair);
     Assert(pairs != NULL);
 
-    for (int i = 0; i < is->len; i++) {
+    for (int i = 0; i < is->len; i++)
+    {
         val = pairs[i].val;
         if (min != NULL && val < *min)
             val = *min;
@@ -1378,10 +1414,10 @@ bigistore_limit(BigIStore *is, int64 *min, int64 *max)
 PG_FUNCTION_INFO_V1(bigistore_in_range);
 Datum bigistore_in_range(PG_FUNCTION_ARGS)
 {
-    BigIStore *is = PG_GETARG_BIGIS(0);
-    int64   lower = PG_GETARG_INT64(1);
-    int64   upper = PG_GETARG_INT64(2);
-    bool    result;
+    BigIStore *is    = PG_GETARG_BIGIS(0);
+    int64      lower = PG_GETARG_INT64(1);
+    int64      upper = PG_GETARG_INT64(2);
+    bool       result;
 
     result = is_bigistore_in_range(is, &lower, &upper, true);
     PG_RETURN_BOOL(result);
@@ -1390,9 +1426,9 @@ Datum bigistore_in_range(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(bigistore_less_than);
 Datum bigistore_less_than(PG_FUNCTION_ARGS)
 {
-    BigIStore *is = PG_GETARG_BIGIS(0);
-    int64   upper = PG_GETARG_INT64(1);
-    bool    result;
+    BigIStore *is    = PG_GETARG_BIGIS(0);
+    int64      upper = PG_GETARG_INT64(1);
+    bool       result;
 
     result = is_bigistore_in_range(is, NULL, &upper, false);
     PG_RETURN_BOOL(result);
@@ -1401,9 +1437,9 @@ Datum bigistore_less_than(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(bigistore_less_than_or_equal);
 Datum bigistore_less_than_or_equal(PG_FUNCTION_ARGS)
 {
-    BigIStore *is = PG_GETARG_BIGIS(0);
-    int64   upper = PG_GETARG_INT64(1);
-    bool    result;
+    BigIStore *is    = PG_GETARG_BIGIS(0);
+    int64      upper = PG_GETARG_INT64(1);
+    bool       result;
 
     result = is_bigistore_in_range(is, NULL, &upper, true);
     PG_RETURN_BOOL(result);
@@ -1412,9 +1448,9 @@ Datum bigistore_less_than_or_equal(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(bigistore_greater_than);
 Datum bigistore_greater_than(PG_FUNCTION_ARGS)
 {
-    BigIStore *is = PG_GETARG_BIGIS(0);
-    int64   lower = PG_GETARG_INT64(1);
-    bool    result;
+    BigIStore *is    = PG_GETARG_BIGIS(0);
+    int64      lower = PG_GETARG_INT64(1);
+    bool       result;
 
     result = is_bigistore_in_range(is, &lower, NULL, false);
     PG_RETURN_BOOL(result);
@@ -1423,9 +1459,9 @@ Datum bigistore_greater_than(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(bigistore_greater_than_or_equal);
 Datum bigistore_greater_than_or_equal(PG_FUNCTION_ARGS)
 {
-    BigIStore *is = PG_GETARG_BIGIS(0);
-    int64   lower = PG_GETARG_INT64(1);
-    bool    result;
+    BigIStore *is    = PG_GETARG_BIGIS(0);
+    int64      lower = PG_GETARG_INT64(1);
+    bool       result;
 
     result = is_bigistore_in_range(is, &lower, NULL, true);
     PG_RETURN_BOOL(result);
@@ -1435,19 +1471,18 @@ PG_FUNCTION_INFO_V1(bigistore_floor);
 Datum bigistore_floor(PG_FUNCTION_ARGS)
 {
     BigIStore *result;
-    BigIStore *is = PG_GETARG_BIGIS(0);
+    BigIStore *is  = PG_GETARG_BIGIS(0);
     int64      min = PG_GETARG_INT64(1);
 
     result = bigistore_limit(is, &min, NULL);
     PG_RETURN_POINTER(result);
-
 }
 
 PG_FUNCTION_INFO_V1(bigistore_ceiling);
 Datum bigistore_ceiling(PG_FUNCTION_ARGS)
 {
     BigIStore *result;
-    BigIStore *is = PG_GETARG_BIGIS(0);
+    BigIStore *is  = PG_GETARG_BIGIS(0);
     int64      max = PG_GETARG_INT64(1);
 
     result = bigistore_limit(is, NULL, &max);

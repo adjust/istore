@@ -182,6 +182,12 @@ CREATE FUNCTION slice(bigistore, integer[])
     RETURNS bigistore
     AS 'istore', 'bigistore_slice'
     LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION slice(bigistore, min integer, max integer)
+    RETURNS bigistore
+    AS 'istore', 'bigistore_slice_min_max'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION slice_array(bigistore, integer[])
     RETURNS integer[]
     AS 'istore', 'bigistore_slice_to_array'

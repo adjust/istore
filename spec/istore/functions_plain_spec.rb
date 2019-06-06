@@ -407,8 +407,21 @@ types.each do |type|
           hash_to_istore [0,10].map{|k| [k,sample_hash[type][k]]}.to_h
         end
 
-        it 'should return null if no key match' do
-          query("SELECT slice('1=>10, 2=>20, 3=>30, 4=>40, 5=>50, 7=>70, 9=>90'::#{type}, ARRAY[30,50,10,90])").should match nil
+        it 'should return empty istore if no key match' do
+          query("SELECT slice('1=>10, 2=>20, 3=>30, 4=>40, 5=>50, 7=>70, 9=>90'::#{type}, ARRAY[30,50,10,90])").should match ""
+        end
+      end
+
+      describe 'slice_min_max' do
+        it 'should return a partial istore' do
+          query("SELECT slice('1=>10, 2=>20, 3=>30, 4=>40, 5=>50, 7=>70, 9=>90'::#{type}, 3,6)").should match \
+          '"3"=>"30", "4"=>"40", "5"=>"50"'
+          query("SELECT slice(#{sample[type]}::#{type}, 0,10)").should match \
+          hash_to_istore [0,10].map{|k| [k,sample_hash[type][k]]}.to_h
+        end
+
+        it 'should return empty istore if no key match' do
+          query("SELECT slice('1=>10, 2=>20, 3=>30, 4=>40, 5=>50, 7=>70, 9=>90'::#{type},10,90)").should match ""
         end
       end
 
