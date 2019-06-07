@@ -72,6 +72,40 @@ types.each do |type|
         it 'should report invalid delimiter input' do
           expect{query("SELECT '2=>4, 10=5, 5=>17'::#{type}")}.to throw_error "invalid input syntax for istore: \"2=>4, 10=5, 5=>17\""
         end
+
+        it 'should report unexpected end of line' do
+          expect{query("SELECT '1=>2,2='::#{type}")}.to throw_error "invalid input syntax for istore: \"1=>2,2=\""
+        end
+      end
+
+      describe 'array input' do
+        it 'should parse normal arrays tuple' do
+          query("SELECT '([1,2], [11, 22])'::#{type}").should match \
+          '"1"=>"11", "2"=>"22"'
+        end
+        it 'should parse uneven arrays tuple' do
+          query("SELECT '([1,2,2], [11, 22])'::#{type}").should match \
+          '"1"=>"11", "2"=>"22"'
+        end
+        it 'should parse uneven arrays tuple' do
+          query("SELECT '([1,2], [11, 22, 33])'::#{type}").should match \
+          '"1"=>"11", "2"=>"22"'
+        end
+        it 'should parse array tuple without comma' do
+          query("SELECT '([1,2] [11, 22])'::#{type}").should match \
+          '"1"=>"11", "2"=>"22"'
+        end
+      end
+      describe 'array invalid input' do
+        it 'should report unexpected end of line' do
+          expect{query("SELECT '([1,2], ['::#{type}")}.to throw_error "invalid input syntax for istore: \"([1,2], [\""
+        end
+        it 'should report expected comma in values' do
+          expect{query("SELECT '([1,2], [1'::#{type}")}.to throw_error "invalid input syntax for istore: \"([1,2], [1\""
+        end
+        it 'should report expected number' do
+          expect{query("SELECT '([1,2], [1,'::#{type}")}.to throw_error "invalid input syntax for istore: \"([1,2], [1,\""
+        end
       end
     end
   end
