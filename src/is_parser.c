@@ -9,22 +9,44 @@
 #define WDEL 4
 #define WDELVAL 5
 
+static inline void
+raise_out_of_range(char *str)
+{
+	ereport(ERROR,
+		(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
+		errmsg("istore \"%s\" is out of range", str)));
+}
+
+static inline void
+raise_unexpected_sign(char sign, char *str, char *context)
+{
+	if (sign)
+		ereport(ERROR,
+			(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+			 errmsg("invalid input syntax for istore: \"%s\"", str),
+			 errdetail("unexpected sign %c, %s", sign, context)));
+	else
+		ereport(ERROR,
+			(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+			 errmsg("invalid input syntax for istore: \"%s\"", str),
+			 errdetail("unexpected end of line, %s", context)));
+}
+
 #define GET_NUM(ptr, _num, whole)                                            \
     do {                                                                     \
         long _l;                                                             \
         bool neg = false;                                                    \
+		char *begin = ptr;													 \
         if (*(ptr) == '-')                                                   \
             neg = true;                                                      \
         _l   = strtol(ptr, &ptr, 10);                                        \
+		if (ptr == begin)													 \
+			raise_unexpected_sign(*ptr, whole, "expected number");			 \
         _num = _l;                                                           \
         if ((neg && _num > 0) || (_l == LONG_MIN) )                          \
-            ereport(ERROR,                                                   \
-                (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),                \
-                errmsg("istore \"%s\" is out of range", whole)));            \
+			raise_out_of_range(whole);									     \
         else if ((!neg && _num < 0) || (_l == LONG_MAX ))                    \
-            ereport(ERROR,                                                   \
-                (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),                \
-                errmsg("istore \"%s\" is out of range", whole)));            \
+			raise_out_of_range(whole);									     \
     } while (0)
 
 
@@ -36,15 +58,6 @@
 #define SKIP_ESCAPED(_ptr) \
     if (*_ptr == '"')      \
             _ptr++;
-
-static inline void
-raise_unexpected_sign(char sign, char *str)
-{
-    ereport(ERROR,
-        (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-         errmsg("invalid input syntax for istore: \"%s\"", str),
-         errdetail(sign ? "unexpected sign %c, in istore key" : "unexpected end %c", sign)));
-}
 
 /*
  * parse cstring into an AVL tree
@@ -78,7 +91,7 @@ is_parse(ISParser *parser)
                 parser->ptr++;
             }
             else
-                raise_unexpected_sign(*(parser->ptr), parser->begin);
+                raise_unexpected_sign(*(parser->ptr), parser->begin, "in istore key");
         }
         else if (parser->state == WGT)
         {
@@ -88,7 +101,7 @@ is_parse(ISParser *parser)
                 parser->ptr++;
             }
             else
-                raise_unexpected_sign(*(parser->ptr), parser->begin);
+                raise_unexpected_sign(*(parser->ptr), parser->begin, "expected '>'");
         }
         else if (parser->state == WVAL)
         {
@@ -108,7 +121,7 @@ is_parse(ISParser *parser)
             else if (*(parser->ptr) == ',')
                 parser->state = WKEY;
             else
-                raise_unexpected_sign(*(parser->ptr), parser->begin);
+                raise_unexpected_sign(*(parser->ptr), parser->begin, "in istore value");
 
             parser->ptr++;
         }
@@ -129,7 +142,6 @@ is_parse_arr(ISParser *parser)
 {
     int32    key;
     int64    val;
-    size_t   len = strlen(parser->begin);
 
     parser->state = WKEY;
     parser->ptr   = index(parser->begin, '[');
@@ -145,7 +157,7 @@ is_parse_arr(ISParser *parser)
     parser->ptr++;
     parser->ptr2++;
 
-    while (parser->ptr < parser->ptr2 && parser->ptr2 < parser->begin + len)
+    while (1)
     {
         if (parser->state == WKEY)
         {
@@ -164,7 +176,7 @@ is_parse_arr(ISParser *parser)
             else if (*(parser->ptr) == ',')
                 parser->state = WDELVAL;
             else
-                raise_unexpected_sign(*(parser->ptr), parser->begin);
+                raise_unexpected_sign(*(parser->ptr), parser->begin, "expected ',' in keys");
 
             parser->ptr++;
         }
@@ -177,7 +189,7 @@ is_parse_arr(ISParser *parser)
             else if (*(parser->ptr2) == ',')
                 parser->state = WKEY;
             else
-                raise_unexpected_sign(*(parser->ptr2), parser->begin);
+                raise_unexpected_sign(*(parser->ptr2), parser->begin, "expected ',' in values");
 
             parser->ptr2++;
         }

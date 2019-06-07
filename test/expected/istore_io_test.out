@@ -65,7 +65,7 @@ SELECT '2=>4, 1=>foo, 5=>17'::bigistore;
 ERROR:  invalid input syntax for istore: "2=>4, 1=>foo, 5=>17"
 LINE 1: SELECT '2=>4, 1=>foo, 5=>17'::bigistore;
                ^
-DETAIL:  unexpected sign f, in istore value
+DETAIL:  unexpected sign f, expected number
 ROLLBACK;
 BEGIN;
 -- bigistore istore_io invalid input should report invalid value input;
@@ -113,7 +113,7 @@ SELECT '2=>4, foo=>5, 5=>17'::bigistore;
 ERROR:  invalid input syntax for istore: "2=>4, foo=>5, 5=>17"
 LINE 1: SELECT '2=>4, foo=>5, 5=>17'::bigistore;
                ^
-DETAIL:  unexpected sign f, in istore key
+DETAIL:  unexpected sign f, expected number
 ROLLBACK;
 BEGIN;
 -- bigistore istore_io invalid input should report to big key input;
@@ -142,6 +142,90 @@ ERROR:  invalid input syntax for istore: "2=>4, 10=5, 5=>17"
 LINE 1: SELECT '2=>4, 10=5, 5=>17'::bigistore;
                ^
 DETAIL:  unexpected sign 5, expected '>'
+ROLLBACK;
+BEGIN;
+-- bigistore istore_io invalid input should report unexpected end of line;
+-- ./spec/istore/istore_io_spec.rb:76;
+CREATE EXTENSION istore;
+SELECT '1=>2,2='::bigistore;
+ERROR:  invalid input syntax for istore: "1=>2,2="
+LINE 1: SELECT '1=>2,2='::bigistore;
+               ^
+DETAIL:  unexpected end of line, expected '>'
+ROLLBACK;
+BEGIN;
+-- bigistore istore_io array input should parse normal arrays tuple;
+-- ./spec/istore/istore_io_spec.rb:82;
+CREATE EXTENSION istore;
+SELECT '([1,2], [11, 22])'::bigistore;
+      bigistore       
+----------------------
+ "1"=>"11", "2"=>"22"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- bigistore istore_io array input should parse uneven arrays tuple;
+-- ./spec/istore/istore_io_spec.rb:86;
+CREATE EXTENSION istore;
+SELECT '([1,2,2], [11, 22])'::bigistore;
+      bigistore       
+----------------------
+ "1"=>"11", "2"=>"22"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- bigistore istore_io array input should parse uneven arrays tuple;
+-- ./spec/istore/istore_io_spec.rb:90;
+CREATE EXTENSION istore;
+SELECT '([1,2], [11, 22, 33])'::bigistore;
+      bigistore       
+----------------------
+ "1"=>"11", "2"=>"22"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- bigistore istore_io array input should parse array tuple without comma;
+-- ./spec/istore/istore_io_spec.rb:94;
+CREATE EXTENSION istore;
+SELECT '([1,2] [11, 22])'::bigistore;
+      bigistore       
+----------------------
+ "1"=>"11", "2"=>"22"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- bigistore istore_io array invalid input should report unexpected end of line;
+-- ./spec/istore/istore_io_spec.rb:100;
+CREATE EXTENSION istore;
+SELECT '([1,2], ['::bigistore;
+ERROR:  invalid input syntax for istore: "([1,2], ["
+LINE 1: SELECT '([1,2], ['::bigistore;
+               ^
+DETAIL:  unexpected end of line, expected number
+ROLLBACK;
+BEGIN;
+-- bigistore istore_io array invalid input should report expected comma in values;
+-- ./spec/istore/istore_io_spec.rb:103;
+CREATE EXTENSION istore;
+SELECT '([1,2], [1'::bigistore;
+ERROR:  invalid input syntax for istore: "([1,2], [1"
+LINE 1: SELECT '([1,2], [1'::bigistore;
+               ^
+DETAIL:  unexpected end of line, expected ',' in values
+ROLLBACK;
+BEGIN;
+-- bigistore istore_io array invalid input should report expected number;
+-- ./spec/istore/istore_io_spec.rb:106;
+CREATE EXTENSION istore;
+SELECT '([1,2], [1,'::bigistore;
+ERROR:  invalid input syntax for istore: "([1,2], [1,"
+LINE 1: SELECT '([1,2], [1,'::bigistore;
+               ^
+DETAIL:  unexpected end of line, expected number
 ROLLBACK;
 BEGIN;
 -- istore istore_io should persist istores;
@@ -210,7 +294,7 @@ SELECT '2=>4, 1=>foo, 5=>17'::istore;
 ERROR:  invalid input syntax for istore: "2=>4, 1=>foo, 5=>17"
 LINE 1: SELECT '2=>4, 1=>foo, 5=>17'::istore;
                ^
-DETAIL:  unexpected sign f, in istore value
+DETAIL:  unexpected sign f, expected number
 ROLLBACK;
 BEGIN;
 -- istore istore_io invalid input should report invalid value input;
@@ -258,7 +342,7 @@ SELECT '2=>4, foo=>5, 5=>17'::istore;
 ERROR:  invalid input syntax for istore: "2=>4, foo=>5, 5=>17"
 LINE 1: SELECT '2=>4, foo=>5, 5=>17'::istore;
                ^
-DETAIL:  unexpected sign f, in istore key
+DETAIL:  unexpected sign f, expected number
 ROLLBACK;
 BEGIN;
 -- istore istore_io invalid input should report to big key input;
@@ -287,4 +371,88 @@ ERROR:  invalid input syntax for istore: "2=>4, 10=5, 5=>17"
 LINE 1: SELECT '2=>4, 10=5, 5=>17'::istore;
                ^
 DETAIL:  unexpected sign 5, expected '>'
+ROLLBACK;
+BEGIN;
+-- istore istore_io invalid input should report unexpected end of line;
+-- ./spec/istore/istore_io_spec.rb:76;
+CREATE EXTENSION istore;
+SELECT '1=>2,2='::istore;
+ERROR:  invalid input syntax for istore: "1=>2,2="
+LINE 1: SELECT '1=>2,2='::istore;
+               ^
+DETAIL:  unexpected end of line, expected '>'
+ROLLBACK;
+BEGIN;
+-- istore istore_io array input should parse normal arrays tuple;
+-- ./spec/istore/istore_io_spec.rb:82;
+CREATE EXTENSION istore;
+SELECT '([1,2], [11, 22])'::istore;
+        istore        
+----------------------
+ "1"=>"11", "2"=>"22"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- istore istore_io array input should parse uneven arrays tuple;
+-- ./spec/istore/istore_io_spec.rb:86;
+CREATE EXTENSION istore;
+SELECT '([1,2,2], [11, 22])'::istore;
+        istore        
+----------------------
+ "1"=>"11", "2"=>"22"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- istore istore_io array input should parse uneven arrays tuple;
+-- ./spec/istore/istore_io_spec.rb:90;
+CREATE EXTENSION istore;
+SELECT '([1,2], [11, 22, 33])'::istore;
+        istore        
+----------------------
+ "1"=>"11", "2"=>"22"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- istore istore_io array input should parse array tuple without comma;
+-- ./spec/istore/istore_io_spec.rb:94;
+CREATE EXTENSION istore;
+SELECT '([1,2] [11, 22])'::istore;
+        istore        
+----------------------
+ "1"=>"11", "2"=>"22"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- istore istore_io array invalid input should report unexpected end of line;
+-- ./spec/istore/istore_io_spec.rb:100;
+CREATE EXTENSION istore;
+SELECT '([1,2], ['::istore;
+ERROR:  invalid input syntax for istore: "([1,2], ["
+LINE 1: SELECT '([1,2], ['::istore;
+               ^
+DETAIL:  unexpected end of line, expected number
+ROLLBACK;
+BEGIN;
+-- istore istore_io array invalid input should report expected comma in values;
+-- ./spec/istore/istore_io_spec.rb:103;
+CREATE EXTENSION istore;
+SELECT '([1,2], [1'::istore;
+ERROR:  invalid input syntax for istore: "([1,2], [1"
+LINE 1: SELECT '([1,2], [1'::istore;
+               ^
+DETAIL:  unexpected end of line, expected ',' in values
+ROLLBACK;
+BEGIN;
+-- istore istore_io array invalid input should report expected number;
+-- ./spec/istore/istore_io_spec.rb:106;
+CREATE EXTENSION istore;
+SELECT '([1,2], [1,'::istore;
+ERROR:  invalid input syntax for istore: "([1,2], [1,"
+LINE 1: SELECT '([1,2], [1,'::istore;
+               ^
+DETAIL:  unexpected end of line, expected number
 ROLLBACK;
