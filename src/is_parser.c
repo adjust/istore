@@ -157,6 +157,11 @@ is_parse_arr(ISParser *parser)
     parser->ptr++;
     parser->ptr2++;
 
+    SKIP_SPACES(parser->ptr);
+	if (*(parser->ptr) == ']')
+		/* empty */
+		return parser->tree;
+
     while (1)
     {
         if (parser->state == WKEY)
