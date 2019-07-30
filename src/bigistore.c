@@ -10,6 +10,7 @@
 #include "utils/array.h"
 #include "utils/builtins.h"
 #include "utils/lsyscache.h"
+#include "utils/typcache.h"
 
 static inline Datum *bigistore_key_val_datums(BigIStore *is);
 
@@ -569,6 +570,76 @@ Datum bigistore_array_add(PG_FUNCTION_ARGS)
         PG_RETURN_NULL();
 
     return result;
+}
+
+/*
+ * bigistore from row(array, array)
+ */
+PG_FUNCTION_INFO_V1(row_to_bigistore);
+Datum row_to_bigistore(PG_FUNCTION_ARGS)
+{
+    HeapTupleHeader     td;
+    Oid                 tupType;
+    int32               tupTypmod;
+    TupleDesc           tupdesc;
+    HeapTupleData       tmptup,
+                       *tuple;
+    int                 i;
+
+    Datum               composite = PG_GETARG_DATUM(0),
+                        result;
+    ArrayType          *input[2];
+
+    if (PG_ARGISNULL(0))
+        PG_RETURN_NULL();
+
+    td = DatumGetHeapTupleHeader(composite);
+
+    /* Extract rowtype info and find a tupdesc */
+    tupType = HeapTupleHeaderGetTypeId(td);
+    tupTypmod = HeapTupleHeaderGetTypMod(td);
+    tupdesc = lookup_rowtype_tupdesc(tupType, tupTypmod);
+
+    if (tupdesc->natts != 2)
+        elog(ERROR, "expected two arrays in wholerow");
+
+    /* Build a temporary HeapTuple control structure */
+    tmptup.t_len = HeapTupleHeaderGetDatumLength(td);
+    tmptup.t_data = td;
+    tuple = &tmptup;
+
+    for (i = 0; i < tupdesc->natts; i++)
+    {
+        Datum       val;
+        bool        isnull;
+        Form_pg_attribute att = TupleDescAttr(tupdesc, i);
+        Oid         basetype;
+
+        if (att->attisdropped)
+            goto fail;
+
+        basetype = get_base_element_type(att->atttypid);
+        if (basetype == InvalidOid)
+            elog(ERROR, "expected only arrays in wholerow");
+
+        val = heap_getattr(tuple, i + 1, tupdesc, &isnull);
+
+        if (isnull)
+            goto fail;
+        else
+            input[i] = DatumGetArrayTypeP(val);
+    }
+
+    result = bigistore_add_from_int_arrays(input[0], input[1]);
+    if (result == 0)
+        goto fail;
+
+    ReleaseTupleDesc(tupdesc);
+    return result;
+
+fail:
+    ReleaseTupleDesc(tupdesc);
+    PG_RETURN_NULL();
 }
 
 /*
