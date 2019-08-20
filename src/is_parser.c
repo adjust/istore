@@ -8,6 +8,9 @@
 #define WGT  3
 #define WDEL 4
 #define WDELVAL 5
+#define WSQRBR 6
+#define WDELARR 7
+#define WENDBR 8
 
 static inline void
 raise_out_of_range(char *str)
@@ -24,7 +27,7 @@ raise_unexpected_sign(char sign, char *str, char *context)
 		ereport(ERROR,
 			(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
 			 errmsg("invalid input syntax for istore: \"%s\"", str),
-			 errdetail("unexpected sign %c, %s", sign, context)));
+			 errdetail("unexpected sign '%c', %s", sign, context)));
 	else
 		ereport(ERROR,
 			(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
@@ -44,9 +47,9 @@ raise_unexpected_sign(char sign, char *str, char *context)
 			raise_unexpected_sign(*ptr, whole, "expected number");			 \
         _num = _l;                                                           \
         if ((neg && _num > 0) || (_l == LONG_MIN) )                          \
-			raise_out_of_range(whole);									     \
+			raise_out_of_range(whole);										 \
         else if ((!neg && _num < 0) || (_l == LONG_MAX ))                    \
-			raise_out_of_range(whole);									     \
+			raise_out_of_range(whole);										 \
     } while (0)
 
 
@@ -143,6 +146,8 @@ is_parse_arr(ISParser *parser)
     int32    key;
     int64    val;
 
+	char *valarr;
+
     parser->state = WKEY;
     parser->ptr   = index(parser->begin, '[');
     parser->ptr2  = rindex(parser->begin, '[');
@@ -153,6 +158,7 @@ is_parse_arr(ISParser *parser)
              errmsg("invalid input syntax for istore: \"%s\"",
                     parser->begin)));
 
+	valarr = parser->ptr2;
     parser->tree  = NULL;
     parser->ptr++;
     parser->ptr2++;
@@ -177,7 +183,7 @@ is_parse_arr(ISParser *parser)
             SKIP_SPACES(parser->ptr);
 
             if (*(parser->ptr) == ']')
-                break;
+				parser->state = WSQRBR;
             else if (*(parser->ptr) == ',')
                 parser->state = WDELVAL;
             else
@@ -190,13 +196,28 @@ is_parse_arr(ISParser *parser)
             SKIP_SPACES(parser->ptr2);
 
             if (*(parser->ptr2) == ']')
-                break;
+                raise_unexpected_sign(*(parser->ptr2), parser->begin, "expected value");
             else if (*(parser->ptr2) == ',')
                 parser->state = WKEY;
             else
                 raise_unexpected_sign(*(parser->ptr2), parser->begin, "expected ',' in values");
 
             parser->ptr2++;
+        }
+        else if (parser->state == WDELARR)
+        {
+            SKIP_SPACES(parser->ptr);
+
+			if (*(parser->ptr) == ',')
+                parser->state = WENDBR;
+            else
+                raise_unexpected_sign(*(parser->ptr), parser->begin, "expected valid arrays delimiter");
+
+			/* check second array starting */
+            parser->ptr++;
+            SKIP_SPACES(parser->ptr);
+			if (parser->ptr != valarr)
+                raise_unexpected_sign(*(parser->ptr), parser->begin, "expected valid arrays delimiter");
         }
         else if (parser->state == WVAL)
         {
@@ -208,10 +229,31 @@ is_parse_arr(ISParser *parser)
             parser->state = WDEL;
             parser->tree = is_tree_insert(parser->tree, key, val);
         }
-        else
+        else if (parser->state == WSQRBR)
         {
-            elog(ERROR, "unknown parser state");
+            SKIP_SPACES(parser->ptr2);
+
+            if (*(parser->ptr2) == ']')
+				parser->state = WDELARR;
+			else
+                raise_unexpected_sign(*(parser->ptr2), parser->begin, "expected square bracket");
+
+            parser->ptr2++;
         }
+        else if (parser->state == WENDBR)
+        {
+            SKIP_SPACES(parser->ptr2);
+
+            if (*(parser->ptr2) != ')')
+                raise_unexpected_sign(*(parser->ptr2), parser->begin, "expected ending bracket");
+
+			break;
+        }
+        else
+			ereport(ERROR,
+				(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+				 errmsg("invalid input syntax for istore: \"%s\"",
+						parser->begin)));
     }
 
     return parser->tree;

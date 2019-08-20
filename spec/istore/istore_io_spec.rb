@@ -77,23 +77,22 @@ types.each do |type|
           expect{query("SELECT '1=>2,2='::#{type}")}.to throw_error "invalid input syntax for istore: \"1=>2,2=\""
         end
       end
-
       describe 'array input' do
         it 'should parse normal arrays tuple' do
           query("SELECT '([1,2], [11, 22])'::#{type}").should match \
           '"1"=>"11", "2"=>"22"'
         end
-        it 'should parse uneven arrays tuple' do
-          query("SELECT '([1,2,2], [11, 22])'::#{type}").should match \
+        it 'should parse normal arrays tuple with spaces' do
+          query("SELECT '([1, 2] ,[ 11, 22])'::#{type}").should match \
           '"1"=>"11", "2"=>"22"'
         end
-        it 'should parse uneven arrays tuple' do
-          query("SELECT '([1,2], [11, 22, 33])'::#{type}").should match \
-          '"1"=>"11", "2"=>"22"'
+        it 'should parse normal small arrays tuple' do
+          query("SELECT '([1],[11])'::#{type}").should match \
+          '"1"=>"11"'
         end
-        it 'should parse array tuple without comma' do
-          query("SELECT '([1,2] [11, 22])'::#{type}").should match \
-          '"1"=>"11", "2"=>"22"'
+        it 'should parse normal empty arrays tuple' do
+          query("SELECT '([],[])'::#{type}").should match \
+          ''
         end
       end
       describe 'array invalid input' do
@@ -105,6 +104,18 @@ types.each do |type|
         end
         it 'should report expected number' do
           expect{query("SELECT '([1,2], [1,'::#{type}")}.to throw_error "invalid input syntax for istore: \"([1,2], [1,\""
+        end
+        it 'should report on uneven tuples' do
+          expect{query("SELECT '([1,2], [1,2,3])'::#{type}")}.to throw_error "invalid input syntax for istore: \"([1,2], [1,2,3])\""
+        end
+        it 'should report on uneven tuples' do
+          expect{query("SELECT '([1,2,3],[1,2])'::#{type}")}.to throw_error "invalid input syntax for istore: \"([1,2,3],[1,2])\""
+        end
+        it 'should report arrays delimiter' do
+          expect{query("SELECT '([1,2]|[1,2])'::#{type}")}.to throw_error "invalid input syntax for istore: \"([1,2]|[1,2])\""
+        end
+        it 'should report on ending bracket' do
+          expect{query("SELECT '([1,2],[1,2]'::#{type}")}.to throw_error "invalid input syntax for istore: \"([1,2],[1,2]\""
         end
       end
       describe 'arrays row input' do
