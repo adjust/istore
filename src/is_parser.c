@@ -15,41 +15,41 @@
 static inline void
 raise_out_of_range(char *str)
 {
-	ereport(ERROR,
-		(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-		errmsg("istore \"%s\" is out of range", str)));
+    ereport(ERROR,
+        (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
+        errmsg("istore \"%s\" is out of range", str)));
 }
 
 static inline void
 raise_unexpected_sign(char sign, char *str, char *context)
 {
-	if (sign)
-		ereport(ERROR,
-			(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-			 errmsg("invalid input syntax for istore: \"%s\"", str),
-			 errdetail("unexpected sign '%c', %s", sign, context)));
-	else
-		ereport(ERROR,
-			(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-			 errmsg("invalid input syntax for istore: \"%s\"", str),
-			 errdetail("unexpected end of line, %s", context)));
+    if (sign)
+        ereport(ERROR,
+            (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+             errmsg("invalid input syntax for istore: \"%s\"", str),
+             errdetail("unexpected sign '%c', %s", sign, context)));
+    else
+        ereport(ERROR,
+            (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+             errmsg("invalid input syntax for istore: \"%s\"", str),
+             errdetail("unexpected end of line, %s", context)));
 }
 
 #define GET_NUM(ptr, _num, whole)                                            \
     do {                                                                     \
         long _l;                                                             \
         bool neg = false;                                                    \
-		char *begin = ptr;													 \
+        char *begin = ptr;                                                   \
         if (*(ptr) == '-')                                                   \
             neg = true;                                                      \
         _l   = strtol(ptr, &ptr, 10);                                        \
-		if (ptr == begin)													 \
-			raise_unexpected_sign(*ptr, whole, "expected number");			 \
+        if (ptr == begin)                                                    \
+            raise_unexpected_sign(*ptr, whole, "expected number");           \
         _num = _l;                                                           \
         if ((neg && _num > 0) || (_l == LONG_MIN) )                          \
-			raise_out_of_range(whole);										 \
+            raise_out_of_range(whole);                                       \
         else if ((!neg && _num < 0) || (_l == LONG_MAX ))                    \
-			raise_out_of_range(whole);										 \
+            raise_out_of_range(whole);                                       \
     } while (0)
 
 
@@ -146,7 +146,7 @@ is_parse_arr(ISParser *parser)
     int32    key;
     int64    val;
 
-	char *valarr;
+    char *valarr;
 
     parser->state = WKEY;
     parser->ptr   = index(parser->begin, '[');
@@ -158,15 +158,15 @@ is_parse_arr(ISParser *parser)
              errmsg("invalid input syntax for istore: \"%s\"",
                     parser->begin)));
 
-	valarr = parser->ptr2;
+    valarr = parser->ptr2;
     parser->tree  = NULL;
     parser->ptr++;
     parser->ptr2++;
 
     SKIP_SPACES(parser->ptr);
-	if (*(parser->ptr) == ']')
-		/* empty */
-		return parser->tree;
+    if (*(parser->ptr) == ']')
+        /* empty */
+        return parser->tree;
 
     while (1)
     {
@@ -183,7 +183,7 @@ is_parse_arr(ISParser *parser)
             SKIP_SPACES(parser->ptr);
 
             if (*(parser->ptr) == ']')
-				parser->state = WSQRBR;
+                parser->state = WSQRBR;
             else if (*(parser->ptr) == ',')
                 parser->state = WDELVAL;
             else
@@ -208,15 +208,15 @@ is_parse_arr(ISParser *parser)
         {
             SKIP_SPACES(parser->ptr);
 
-			if (*(parser->ptr) == ',')
+            if (*(parser->ptr) == ',')
                 parser->state = WENDBR;
             else
                 raise_unexpected_sign(*(parser->ptr), parser->begin, "expected valid arrays delimiter");
 
-			/* check second array starting */
+            /* check second array starting */
             parser->ptr++;
             SKIP_SPACES(parser->ptr);
-			if (parser->ptr != valarr)
+            if (parser->ptr != valarr)
                 raise_unexpected_sign(*(parser->ptr), parser->begin, "expected valid arrays delimiter");
         }
         else if (parser->state == WVAL)
@@ -234,8 +234,8 @@ is_parse_arr(ISParser *parser)
             SKIP_SPACES(parser->ptr2);
 
             if (*(parser->ptr2) == ']')
-				parser->state = WDELARR;
-			else
+                parser->state = WDELARR;
+            else
                 raise_unexpected_sign(*(parser->ptr2), parser->begin, "expected square bracket");
 
             parser->ptr2++;
@@ -247,13 +247,13 @@ is_parse_arr(ISParser *parser)
             if (*(parser->ptr2) != ')')
                 raise_unexpected_sign(*(parser->ptr2), parser->begin, "expected ending bracket");
 
-			break;
+            break;
         }
         else
-			ereport(ERROR,
-				(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-				 errmsg("invalid input syntax for istore: \"%s\"",
-						parser->begin)));
+            ereport(ERROR,
+                (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+                 errmsg("invalid input syntax for istore: \"%s\"",
+                        parser->begin)));
     }
 
     return parser->tree;
