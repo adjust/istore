@@ -103,6 +103,11 @@ CREATE FUNCTION bigistore(integer[], bigint[])
     AS 'istore', 'bigistore_array_add'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION row_to_bigistore(record)
+    RETURNS bigistore
+    AS 'istore', 'row_to_bigistore'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION istore(integer[], bigint[])
     RETURNS bigistore
     AS 'istore', 'bigistore_array_add'

@@ -7,11 +7,13 @@
 typedef struct ISParser {
     char    *begin;
     char    *ptr;
+    char    *ptr2;	/* parsing from arrays */
     int      state;
     AvlNode *tree;
 } ISParser;
 
 AvlNode* is_parse(ISParser *parser);
+AvlNode* is_parse_arr(ISParser *parser);
 
 #define EMPTY_ISTORE(_istore)          \
     do {                               \

@@ -97,6 +97,11 @@ CREATE FUNCTION istore(integer[], integer[])
     AS 'istore', 'istore_array_add'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION row_to_istore(record)
+    RETURNS istore
+    AS 'istore', 'row_to_istore'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION fill_gaps(istore, integer, integer DEFAULT 0)
     RETURNS istore
     AS 'istore', 'istore_fill_gaps'

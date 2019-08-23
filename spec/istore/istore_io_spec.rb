@@ -72,6 +72,66 @@ types.each do |type|
         it 'should report invalid delimiter input' do
           expect{query("SELECT '2=>4, 10=5, 5=>17'::#{type}")}.to throw_error "invalid input syntax for istore: \"2=>4, 10=5, 5=>17\""
         end
+
+        it 'should report unexpected end of line' do
+          expect{query("SELECT '1=>2,2='::#{type}")}.to throw_error "invalid input syntax for istore: \"1=>2,2=\""
+        end
+      end
+      describe 'array input' do
+        it 'should parse normal arrays tuple' do
+          query("SELECT '([1,2], [11, 22])'::#{type}").should match \
+          '"1"=>"11", "2"=>"22"'
+        end
+        it 'should parse normal arrays tuple with spaces' do
+          query("SELECT '([1, 2] ,[ 11, 22])'::#{type}").should match \
+          '"1"=>"11", "2"=>"22"'
+        end
+        it 'should parse normal small arrays tuple' do
+          query("SELECT '([1],[11])'::#{type}").should match \
+          '"1"=>"11"'
+        end
+        it 'should parse normal empty arrays tuple' do
+          query("SELECT '([],[])'::#{type}").should match \
+          ''
+        end
+      end
+      describe 'array invalid input' do
+        it 'should report unexpected end of line' do
+          expect{query("SELECT '([1,2], ['::#{type}")}.to throw_error "invalid input syntax for istore: \"([1,2], [\""
+        end
+        it 'should report expected comma in values' do
+          expect{query("SELECT '([1,2], [1'::#{type}")}.to throw_error "invalid input syntax for istore: \"([1,2], [1\""
+        end
+        it 'should report expected number' do
+          expect{query("SELECT '([1,2], [1,'::#{type}")}.to throw_error "invalid input syntax for istore: \"([1,2], [1,\""
+        end
+        it 'should report on uneven tuples' do
+          expect{query("SELECT '([1,2], [1,2,3])'::#{type}")}.to throw_error "invalid input syntax for istore: \"([1,2], [1,2,3])\""
+        end
+        it 'should report on uneven tuples' do
+          expect{query("SELECT '([1,2,3],[1,2])'::#{type}")}.to throw_error "invalid input syntax for istore: \"([1,2,3],[1,2])\""
+        end
+        it 'should report arrays delimiter' do
+          expect{query("SELECT '([1,2]|[1,2])'::#{type}")}.to throw_error "invalid input syntax for istore: \"([1,2]|[1,2])\""
+        end
+        it 'should report on ending bracket' do
+          expect{query("SELECT '([1,2],[1,2]'::#{type}")}.to throw_error "invalid input syntax for istore: \"([1,2],[1,2]\""
+        end
+      end
+      describe 'arrays row input' do
+        it "should create #{type} from row" do
+          query("SELECT row_to_#{type}((array[1,2], array[11, 22]))").should match \
+          '"1"=>"11", "2"=>"22"'
+        end
+        it "should fail on other kind of rows (case 1)" do
+          expect{query("SELECT row_to_#{type}((array[1,2], array[11, 22], array[1,2]))")}.to throw_error "expected two arrays in wholerow"
+        end
+        it "should fail on other kind of rows (case 2)" do
+          expect{query("SELECT row_to_#{type}((array[1,2], 'qwerty'))")}.to throw_error "expected only arrays in wholerow"
+        end
+        it "should fail on other kind of rows (case 3)" do
+          expect{query("SELECT row_to_#{type}((array[1,2], array['1', '2']))")}.to throw_error "unsupported array type"
+        end
       end
     end
   end
