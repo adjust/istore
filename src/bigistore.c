@@ -521,6 +521,11 @@ bigistore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
         {
             case INT2OID: key = DatumGetInt16(i_data1[i]); break;
             case INT4OID: key = DatumGetInt32(i_data1[i]); break;
+            case INT8OID:
+			{
+				key = DatumGetInt32(DirectFunctionCall1(int84, i_data1[i]));
+				break;
+			}
             default: elog(ERROR, "unsupported array type");
         }
         switch (i_eltype2)

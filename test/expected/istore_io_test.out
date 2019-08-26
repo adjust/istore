@@ -279,25 +279,50 @@ SELECT row_to_bigistore((array[1,2], array[11, 22]));
 
 ROLLBACK;
 BEGIN;
--- bigistore istore_io arrays row input should fail on other kind of rows (case 1);
+-- bigistore istore_io arrays row input should create bigistore from row with int8 keys;
 -- ./spec/istore/istore_io_spec.rb:126;
+CREATE EXTENSION istore;
+SELECT row_to_bigistore((array[1::int8,2::int8], array[11, 22]));
+   row_to_bigistore   
+----------------------
+ "1"=>"11", "2"=>"22"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- bigistore istore_io arrays row input should fail on other kind of rows (case 1);
+-- ./spec/istore/istore_io_spec.rb:130;
 CREATE EXTENSION istore;
 SELECT row_to_bigistore((array[1,2], array[11, 22], array[1,2]));
 ERROR:  expected two arrays in wholerow
 ROLLBACK;
 BEGIN;
 -- bigistore istore_io arrays row input should fail on other kind of rows (case 2);
--- ./spec/istore/istore_io_spec.rb:129;
+-- ./spec/istore/istore_io_spec.rb:133;
 CREATE EXTENSION istore;
 SELECT row_to_bigistore((array[1,2], 'qwerty'));
 ERROR:  expected only arrays in wholerow
 ROLLBACK;
 BEGIN;
 -- bigistore istore_io arrays row input should fail on other kind of rows (case 3);
--- ./spec/istore/istore_io_spec.rb:132;
+-- ./spec/istore/istore_io_spec.rb:136;
 CREATE EXTENSION istore;
 SELECT row_to_bigistore((array[1,2], array['1', '2']));
 ERROR:  unsupported array type
+ROLLBACK;
+BEGIN;
+-- bigistore istore_io arrays row input should fail on integer overflow (INT_MAX);
+-- ./spec/istore/istore_io_spec.rb:139;
+CREATE EXTENSION istore;
+SELECT row_to_bigistore((array[4147483647,2], array[11, 22]));
+ERROR:  integer out of range
+ROLLBACK;
+BEGIN;
+-- bigistore istore_io arrays row input should fail on integer overflow (INT_MIN);
+-- ./spec/istore/istore_io_spec.rb:142;
+CREATE EXTENSION istore;
+SELECT row_to_bigistore((array[-4147483648,2], array[11, 22]));
+ERROR:  integer out of range
 ROLLBACK;
 BEGIN;
 -- istore istore_io should persist istores;
@@ -580,23 +605,48 @@ SELECT row_to_istore((array[1,2], array[11, 22]));
 
 ROLLBACK;
 BEGIN;
--- istore istore_io arrays row input should fail on other kind of rows (case 1);
+-- istore istore_io arrays row input should create istore from row with int8 keys;
 -- ./spec/istore/istore_io_spec.rb:126;
+CREATE EXTENSION istore;
+SELECT row_to_istore((array[1::int8,2::int8], array[11, 22]));
+    row_to_istore     
+----------------------
+ "1"=>"11", "2"=>"22"
+(1 row)
+
+ROLLBACK;
+BEGIN;
+-- istore istore_io arrays row input should fail on other kind of rows (case 1);
+-- ./spec/istore/istore_io_spec.rb:130;
 CREATE EXTENSION istore;
 SELECT row_to_istore((array[1,2], array[11, 22], array[1,2]));
 ERROR:  expected two arrays in wholerow
 ROLLBACK;
 BEGIN;
 -- istore istore_io arrays row input should fail on other kind of rows (case 2);
--- ./spec/istore/istore_io_spec.rb:129;
+-- ./spec/istore/istore_io_spec.rb:133;
 CREATE EXTENSION istore;
 SELECT row_to_istore((array[1,2], 'qwerty'));
 ERROR:  expected only arrays in wholerow
 ROLLBACK;
 BEGIN;
 -- istore istore_io arrays row input should fail on other kind of rows (case 3);
--- ./spec/istore/istore_io_spec.rb:132;
+-- ./spec/istore/istore_io_spec.rb:136;
 CREATE EXTENSION istore;
 SELECT row_to_istore((array[1,2], array['1', '2']));
 ERROR:  unsupported array type
+ROLLBACK;
+BEGIN;
+-- istore istore_io arrays row input should fail on integer overflow (INT_MAX);
+-- ./spec/istore/istore_io_spec.rb:139;
+CREATE EXTENSION istore;
+SELECT row_to_istore((array[4147483647,2], array[11, 22]));
+ERROR:  integer out of range
+ROLLBACK;
+BEGIN;
+-- istore istore_io arrays row input should fail on integer overflow (INT_MIN);
+-- ./spec/istore/istore_io_spec.rb:142;
+CREATE EXTENSION istore;
+SELECT row_to_istore((array[-4147483648,2], array[11, 22]));
+ERROR:  integer out of range
 ROLLBACK;

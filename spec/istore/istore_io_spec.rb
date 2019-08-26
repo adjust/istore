@@ -123,6 +123,10 @@ types.each do |type|
           query("SELECT row_to_#{type}((array[1,2], array[11, 22]))").should match \
           '"1"=>"11", "2"=>"22"'
         end
+        it "should create #{type} from row with int8 keys" do
+          query("SELECT row_to_#{type}((array[1::int8,2::int8], array[11, 22]))").should match \
+          '"1"=>"11", "2"=>"22"'
+        end
         it "should fail on other kind of rows (case 1)" do
           expect{query("SELECT row_to_#{type}((array[1,2], array[11, 22], array[1,2]))")}.to throw_error "expected two arrays in wholerow"
         end
@@ -131,6 +135,12 @@ types.each do |type|
         end
         it "should fail on other kind of rows (case 3)" do
           expect{query("SELECT row_to_#{type}((array[1,2], array['1', '2']))")}.to throw_error "unsupported array type"
+        end
+        it "should fail on integer overflow (INT_MAX)" do
+          expect{query("SELECT row_to_#{type}((array[4147483647,2], array[11, 22]))")}.to throw_error "integer out of range"
+        end
+        it "should fail on integer overflow (INT_MIN)" do
+          expect{query("SELECT row_to_#{type}((array[-4147483648,2], array[11, 22]))")}.to throw_error "integer out of range"
         end
       end
     end
