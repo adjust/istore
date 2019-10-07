@@ -143,7 +143,7 @@ is_parse(ISParser *parser)
 AvlNode*
 is_parse_arr(ISParser *parser)
 {
-    int32    key;
+    int32    key = 0;	/* keep compiler quiet */
     int64    val;
 
     char *valarr;
