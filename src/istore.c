@@ -1573,3 +1573,61 @@ Datum istore_ceiling(PG_FUNCTION_ARGS)
     result = istore_limit(is, NULL, &max);
     PG_RETURN_POINTER(result);
 }
+
+IStore *istore_pack(IStorePairs *pairs)
+{
+    IStore *istore;
+    //char    keys_packed[pairs->used * sizeof(int32)];
+    int     i;
+    Size    vals_size = pairs->used * sizeof(int32);
+    Size    keys_size = pairs->used * sizeof(int32);
+    int32  *keys = palloc(keys_size);
+    int32  *vals = palloc(vals_size);
+
+    for (i = 0; i < pairs->used; ++i)
+    {
+        keys[i] = pairs->pairs[i].key;
+        vals[i] = pairs->pairs[i].val;
+    }
+
+    istore = palloc0(ISHDRSZ + vals_size + keys_size);
+    memcpy((char *) istore + ISHDRSZ, (char *) vals, vals_size);
+    /* TODO: pack keys */
+    memcpy((char *) istore + ISHDRSZ + vals_size, (char *) keys, keys_size);
+
+    istore->buflen = pairs->buflen;
+    ISTORE_SET_LENGTH(istore, pairs->used);
+    ISTORE_SET_PACKED(istore);
+    SET_VARSIZE(istore, ISHDRSZ + vals_size + keys_size);
+    return istore;
+}
+
+IStore *istore_unpack(IStore *orig)
+{
+    IStore *istore;
+    int32   len = ISTORE_GET_LENGTH(orig);
+    int32  *keys;
+    int32  *vals;
+    int     i;
+    IStorePair *pairs;
+
+    if (!ISTORE_IS_PACKED(orig))
+        return orig;
+
+    istore = palloc0(ISHDRSZ + sizeof(IStorePair) * len);
+    ISTORE_SET_LENGTH(istore, len);
+    pairs = FIRST_PAIR(istore, IStorePair);
+
+    vals = (int32 *) ((char *) orig + ISHDRSZ);
+    keys = (int32 *) ((char *) orig + ISHDRSZ + sizeof(int32) * len);
+
+    for (i = 0; i < len; ++i)
+    {
+        pairs[i].key = keys[i];
+        pairs[i].val = vals[i];
+        istore->buflen += is_pair_buf_len(&pairs[i]);
+    }
+
+    SET_VARSIZE(istore, ISHDRSZ + sizeof(IStorePair) * len);
+    return istore;
+}
