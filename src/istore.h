@@ -112,6 +112,7 @@ int is_int32_arr_comp(const void *a, const void *b);
  * get the istore
  */
 #define PG_GETARG_IS(x) istore_unpack((IStore *) PG_DETOAST_DATUM(PG_GETARG_DATUM(x)))
+#define PG_GETARG_IS_V2(x) (IStore *) PG_DETOAST_DATUM(PG_GETARG_DATUM(x)) /* TODO: convert old format */
 #define PG_GETARG_BIGIS(x) (BigIStore *) PG_DETOAST_DATUM(PG_GETARG_DATUM(x))
 #define PG_GETARG_IS_COPY(x) (IStore *) PG_DETOAST_DATUM_COPY(PG_GETARG_DATUM(x))
 #define PG_GETARG_BIGIS_COPY(x) (BigIStore *) PG_DETOAST_DATUM_COPY(PG_GETARG_DATUM(x))
@@ -170,6 +171,9 @@ int is_int32_arr_comp(const void *a, const void *b);
     do { \
         (_istore)->len |= ISTORE_PACKED_FLAG; \
     } while (0)
+#define ISTORE_KEYS(_istore) ((int32 *) ((char *) (_istore) + ISHDRSZ))
+#define ISTORE_VALUES(_istore) \
+    ((int32 *) ((char *) (_istore) + ISHDRSZ + ISTORE_GET_LENGTH(_istore) * sizeof(int32)))
 
 #define SAMESIGN(a, b) (((a) < 0) == ((b) < 0))
 #define INTPL(_a, _b, _r)                                                                                              \

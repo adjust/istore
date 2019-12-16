@@ -12,6 +12,8 @@
 #include "utils/lsyscache.h"
 #include "utils/typcache.h"
 
+#include <smmintrin.h>
+
 PG_MODULE_MAGIC;
 
 static inline Datum *istore_key_val_datums(IStore *is);
@@ -242,6 +244,28 @@ istore_find(IStore *is, int32 key, int *off_out)
     return result;
 }
 
+static int32
+binsearch(int32 *vals, int32 len, int32 x)
+{
+    int low = 0;
+    int max = len;
+    int mid = 0;
+
+    while (low < max)
+    {
+        mid = low + (max - low) / 2;
+        if (x < vals[mid])
+            max = mid;
+        else if (x > vals[mid])
+            low = mid + 1;
+        else
+        {
+            return mid;
+        }
+    }
+    return -1;
+}
+
 /*
  * Implementation of operator ?(istore, int)
  */
@@ -249,12 +273,10 @@ PG_FUNCTION_INFO_V1(istore_exist);
 Datum istore_exist(PG_FUNCTION_ARGS)
 {
     bool    found;
-    IStore *in  = PG_GETARG_IS(0);
+    IStore *in  = PG_GETARG_IS_V2(0);
     int32   key = PG_GETARG_INT32(1);
-    if (istore_find(in, key, NULL))
-        found = true;
-    else
-        found = false;
+
+    found = binsearch(ISTORE_KEYS(in), ISTORE_GET_LENGTH(in), key) >= 0;
     PG_RETURN_BOOL(found);
 }
 
@@ -264,13 +286,15 @@ Datum istore_exist(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(istore_fetchval);
 Datum istore_fetchval(PG_FUNCTION_ARGS)
 {
-    IStorePair *pair;
-    IStore *    in  = PG_GETARG_IS(0);
+    IStore *    in  = PG_GETARG_IS_V2(0);
     int32       key = PG_GETARG_INT32(1);
-    if ((pair = istore_find(in, key, NULL)) == NULL)
-        PG_RETURN_NULL();
-    else
-        PG_RETURN_INT64(pair->val);
+    int32      *keys = ISTORE_KEYS(in);
+    int32       pos;
+
+    pos = binsearch(keys, ISTORE_GET_LENGTH(in), key);
+    if (pos >= 0)
+        PG_RETURN_INT32(ISTORE_VALUES(in)[pos]);
+    PG_RETURN_NULL();
 }
 
 /*
@@ -287,19 +311,40 @@ Datum istore_add(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(istore_merge(is1, is2, int4pl, int4up));
 }
 
+static inline void
+simd_array_add_scalar(int32_t *arr, int32_t len, int32_t val)
+{
+    __m128i addendum = _mm_set1_epi32(val);
+    int     simd_len;
+    int     i = 0;
+
+    /*
+     * We process values in batches of 4 per one simd instruction. And then we
+     * process what is left in a regular per-value fashion.
+     */
+    simd_len = len - len % 4;
+    for (i = 0; i < simd_len; i += 4)
+    {
+        __m128i v = _mm_load_si128((__m128i *) (arr + i));
+        _mm_store_si128((__m128i *) (arr + i), _mm_add_epi32(v, addendum));
+    }
+
+    for (; i < len; ++i)
+        arr[i] += val;
+}
+
 /*
  * Increment values of an istore
  */
 PG_FUNCTION_INFO_V1(istore_add_integer);
 Datum istore_add_integer(PG_FUNCTION_ARGS)
 {
-    IStore *is;
-    Datum   int_arg;
+    IStore     *is      = PG_GETARG_IS_V2(0);
+    Datum       int_arg = PG_GETARG_DATUM(1);
 
-    is      = PG_GETARG_IS(0);
-    int_arg = PG_GETARG_DATUM(1);
+    simd_array_add_scalar(ISTORE_VALUES(is), ISTORE_GET_LENGTH(is), int_arg);
 
-    PG_RETURN_POINTER(istore_apply_datum(is, int_arg, int4pl));
+    PG_RETURN_POINTER(is);
 }
 
 /*
@@ -324,13 +369,12 @@ Datum istore_subtract(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(istore_subtract_integer);
 Datum istore_subtract_integer(PG_FUNCTION_ARGS)
 {
-    IStore *is;
-    Datum   int_arg;
+    IStore     *is      = PG_GETARG_IS_V2(0);
+    Datum       int_arg = PG_GETARG_DATUM(1);
 
-    is      = PG_GETARG_IS(0);
-    int_arg = PG_GETARG_DATUM(1);
+    simd_array_add_scalar(ISTORE_VALUES(is), ISTORE_GET_LENGTH(is), -int_arg);
 
-    PG_RETURN_POINTER(istore_apply_datum(is, int_arg, int4mi));
+    PG_RETURN_POINTER(is);
 }
 
 /*
@@ -1591,9 +1635,8 @@ IStore *istore_pack(IStorePairs *pairs)
     }
 
     istore = palloc0(ISHDRSZ + vals_size + keys_size);
-    memcpy((char *) istore + ISHDRSZ, (char *) vals, vals_size);
-    /* TODO: pack keys */
-    memcpy((char *) istore + ISHDRSZ + vals_size, (char *) keys, keys_size);
+    memcpy((char *) istore + ISHDRSZ, (char *) keys, keys_size);
+    memcpy((char *) istore + ISHDRSZ + keys_size, (char *) vals, vals_size);
 
     istore->buflen = pairs->buflen;
     ISTORE_SET_LENGTH(istore, pairs->used);
@@ -1618,8 +1661,8 @@ IStore *istore_unpack(IStore *orig)
     ISTORE_SET_LENGTH(istore, len);
     pairs = FIRST_PAIR(istore, IStorePair);
 
-    vals = (int32 *) ((char *) orig + ISHDRSZ);
-    keys = (int32 *) ((char *) orig + ISHDRSZ + sizeof(int32) * len);
+    keys = (int32 *) ((char *) orig + ISHDRSZ);
+    vals = (int32 *) ((char *) orig + ISHDRSZ + sizeof(int32) * len);
 
     for (i = 0; i < len; ++i)
     {
