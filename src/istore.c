@@ -244,25 +244,23 @@ istore_find(IStore *is, int32 key, int *off_out)
     return result;
 }
 
+/* Branchless implementation of binary search */
 static int32
-binsearch(int32 *vals, int32 len, int32 x)
+binsearch(int32 *vals, int32 len, int32 key)
 {
-    int low = 0;
-    int max = len;
-    int mid = 0;
+    int32_t pos = 0;
+    int32_t step = len;
+    int32_t n = len;
 
-    while (low < max)
+    while (step = n/2)
     {
-        mid = low + (max - low) / 2;
-        if (x < vals[mid])
-            max = mid;
-        else if (x > vals[mid])
-            low = mid + 1;
-        else
-        {
-            return mid;
-        }
+        pos = key >= vals[pos + step] ? pos + step : pos;
+        n -= step;
     }
+
+    if (vals[pos] == key)
+        return pos;
+
     return -1;
 }
 
