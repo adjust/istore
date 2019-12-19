@@ -1065,14 +1065,15 @@ istore_key_val_datums(IStore *is)
     Datum *     d;
     IStorePair *pairs;
     int         index = 0;
+    int32       len = ISTORE_GET_LENGTH(is);
 
-    if (is->len == 0)
+    if (len == 0)
         return NULL;
 
     pairs = FIRST_PAIR(is, IStorePair);
-    d     = (Datum *) palloc(sizeof(Datum) * is->len * 2);
+    d     = (Datum *) palloc(sizeof(Datum) * len * 2);
 
-    while (index < is->len)
+    while (index < len)
     {
         d[index * 2]     = pairs[index].key;
         d[index * 2 + 1] = pairs[index].val;
@@ -1084,40 +1085,38 @@ istore_key_val_datums(IStore *is)
 PG_FUNCTION_INFO_V1(istore_to_array);
 Datum istore_to_array(PG_FUNCTION_ARGS)
 {
-    IStore *   is;
-    Datum *    d;
-    ArrayType *a;
+    IStore     *is = PG_GETARG_IS(0);
+    int32       len = ISTORE_GET_LENGTH(is);
+    Datum      *d;
+    ArrayType  *a;
 
-    is = PG_GETARG_IS(0);
-
-    if (is->len == 0)
+    if (len == 0)
     {
         a = construct_empty_array(INT4OID);
         PG_RETURN_POINTER(a);
     }
     d = istore_key_val_datums(is);
-    a = construct_array(d, is->len * 2, INT4OID, sizeof(int32), true, 'i');
+    a = construct_array(d, len * 2, INT4OID, sizeof(int32), true, 'i');
     PG_RETURN_POINTER(a);
 }
 
 PG_FUNCTION_INFO_V1(istore_to_matrix);
 Datum istore_to_matrix(PG_FUNCTION_ARGS)
 {
-    IStore *   is;
+    IStore *   is = PG_GETARG_IS(0);
+    int32      len = ISTORE_GET_LENGTH(is);
     Datum *    d;
     int        out_size[2] = { 0, 2 };
     int        lb[2]       = { 1, 1 };
     ArrayType *a;
 
-    is = PG_GETARG_IS(0);
-
-    if (is->len == 0)
+    if (len == 0)
     {
         a = construct_empty_array(INT4OID);
         PG_RETURN_POINTER(a);
     }
 
-    out_size[0] = is->len;
+    out_size[0] = len;
     d           = istore_key_val_datums(is);
     a           = construct_md_array(d, NULL, 2, out_size, lb, INT4OID, sizeof(int32), true, 'i');
     PG_RETURN_POINTER(a);
@@ -1129,6 +1128,7 @@ Datum istore_slice(PG_FUNCTION_ARGS)
     IStorePair * pairs;
     IStore *     result;
     IStore *     is      = PG_GETARG_IS(0);
+    int32        len     = ISTORE_GET_LENGTH(is);
     IStorePairs *creator = NULL;
     ArrayType *  a       = PG_GETARG_ARRAYTYPE_P_COPY(1);
     int32 *      ar      = (int32 *) ARR_DATA_PTR(a);
@@ -1142,12 +1142,12 @@ Datum istore_slice(PG_FUNCTION_ARGS)
     pairs   = FIRST_PAIR(is, IStorePair);
     creator = palloc0(sizeof *creator);
 
-    istore_pairs_init(creator, MIN(is->len, alen));
+    istore_pairs_init(creator, MIN(len, alen));
 
     if (alen > 1)
         qsort((void *) ar, alen, sizeof(int32), is_int32_arr_comp);
 
-    while (index1 < is->len && index2 < alen)
+    while (index1 < len && index2 < alen)
     {
         if (pairs[index1].key < ar[index2])
         {
@@ -1180,10 +1180,11 @@ Datum istore_slice_min_max(PG_FUNCTION_ARGS)
     int32   min = PG_GETARG_INT32(1);
     int32   max = PG_GETARG_INT32(2);
     IStore *is  = PG_GETARG_IS_COPY(0);
+    int32   len = ISTORE_GET_LENGTH(is);
+    int32   new_len = 0;
 
     int min_idx = 0;
     int i       = 0;
-    int len     = is->len;
 
     IStorePair *pairs;
     pairs = FIRST_PAIR(is, IStorePair);
@@ -1191,10 +1192,10 @@ Datum istore_slice_min_max(PG_FUNCTION_ARGS)
     if (min > max)
         ereport(ERROR, (errcode(ERRCODE_SYNTAX_ERROR), errmsg("min must be less or equal max")));
 
-    if (is->len <= 0 || pairs[is->len - 1].key < min || pairs[0].key > max)
+    if (len <= 0 || pairs[len - 1].key < min || pairs[0].key > max)
         PG_RETURN_EMPTY_ISTORE();
 
-    if (pairs[0].key >= min && pairs[is->len - 1].key <= max)
+    if (pairs[0].key >= min && pairs[len - 1].key <= max)
         PG_RETURN_POINTER(is);
 
     is->buflen = 0;
@@ -1207,19 +1208,20 @@ Datum istore_slice_min_max(PG_FUNCTION_ARGS)
 
     for (; pairs[i].key <= max && i < len; i++)
     {
-        ++is->len;
+        ++new_len;
         is->buflen += is_pair_buf_len(pairs + i);
     }
 
-    Assert(is->len > 0);
+    Assert(new_len > 0);
 
-    if (is->len == 0)
+    if (new_len == 0)
         PG_RETURN_EMPTY_ISTORE();
 
     if (min_idx > 0)
-        memmove(pairs, pairs + min_idx, (is->len * sizeof(IStorePair)));
+        memmove(pairs, pairs + min_idx, (new_len * sizeof(IStorePair)));
 
-    SET_VARSIZE(is, ISHDRSZ + (is->len * sizeof(IStorePair)));
+    SET_VARSIZE(is, ISHDRSZ + (new_len * sizeof(IStorePair)));
+    ISTORE_SET_LENGTH(is, new_len);
     PG_RETURN_POINTER(is);
 }
 
