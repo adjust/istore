@@ -1226,8 +1226,8 @@ Datum istore_slice_min_max(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(istore_slice_to_array);
 Datum istore_slice_to_array(PG_FUNCTION_ARGS)
 {
-    IStorePair *pair;
-    IStore *    is   = PG_GETARG_IS(0);
+    IStore *    is   = PG_GETARG_IS_V2(0);
+    int32      *values = ISTORE_VALUES(is);
     ArrayType * a    = PG_GETARG_ARRAYTYPE_P(1);
     int32 *     ar   = (int32 *) ARR_DATA_PTR(a);
     int         alen = ArrayGetNItems(ARR_NDIM(a), ARR_DIMS(a));
@@ -1248,6 +1248,9 @@ Datum istore_slice_to_array(PG_FUNCTION_ARGS)
 
     for (i = 0; i < alen; ++i)
     {
+#if 0
+        IStorePair *pair;
+
         if ((pair = istore_find(is, ar[i], NULL)) == NULL)
         {
             out_datums[i] = (Datum) 0;
@@ -1258,6 +1261,13 @@ Datum istore_slice_to_array(PG_FUNCTION_ARGS)
             out_datums[i] = pair->val;
             out_nulls[i]  = false;
         }
+#else
+        int32   pos;
+
+        pos = binsearch(ISTORE_KEYS(is), ISTORE_GET_LENGTH(is), ar[i]);
+        out_datums[i] = (Datum) (pos >= 0 ? values[pos] : 0);
+        out_nulls[i] = pos >= 0 ? false : true;
+#endif
     }
 
     aout = construct_md_array(out_datums, out_nulls, 1, dims, lbs, INT4OID, sizeof(int32), true, 'i');
@@ -1430,7 +1440,7 @@ Datum istore_delete_istore(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(istore_exists_any);
 Datum istore_exists_any(PG_FUNCTION_ARGS)
 {
-    IStore *   is   = PG_GETARG_IS(0);
+    IStore *   is   = PG_GETARG_IS_V2(0);
     ArrayType *a    = PG_GETARG_ARRAYTYPE_P(1);
     int32 *    ar   = (int32 *) ARR_DATA_PTR(a);
     int        alen = ArrayGetNItems(ARR_NDIM(a), ARR_DIMS(a));
@@ -1441,8 +1451,12 @@ Datum istore_exists_any(PG_FUNCTION_ARGS)
 
     for (i = 0; i < alen; i++)
     {
+        if (binsearch(ISTORE_KEYS(is), ISTORE_GET_LENGTH(is), ar[i]) >= 0)
+            PG_RETURN_BOOL(true);
+#if 0
         if (istore_find(is, ar[i], NULL) != NULL)
             PG_RETURN_BOOL(true);
+#endif
     }
 
     PG_RETURN_BOOL(false);
@@ -1451,7 +1465,7 @@ Datum istore_exists_any(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(istore_exists_all);
 Datum istore_exists_all(PG_FUNCTION_ARGS)
 {
-    IStore *   is   = PG_GETARG_IS(0);
+    IStore *   is   = PG_GETARG_IS_V2(0);
     ArrayType *a    = PG_GETARG_ARRAYTYPE_P(1);
     int32 *    ar   = (int32 *) ARR_DATA_PTR(a);
     int        alen = ArrayGetNItems(ARR_NDIM(a), ARR_DIMS(a));
@@ -1462,8 +1476,12 @@ Datum istore_exists_all(PG_FUNCTION_ARGS)
 
     for (i = 0; i < alen; i++)
     {
+        if (binsearch(ISTORE_KEYS(is), ISTORE_GET_LENGTH(is), ar[i]) < 0)
+            PG_RETURN_BOOL(false);
+#if 0
         if (istore_find(is, ar[i], NULL) == NULL)
             PG_RETURN_BOOL(false);
+#endif
     }
 
     PG_RETURN_BOOL(true);
