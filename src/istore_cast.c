@@ -26,7 +26,10 @@ bigistore_to_istore(PG_FUNCTION_ARGS)
     index   = 0;
     istore_pairs_init(creator, is->len);
     while (index < is->len){
-        istore_pairs_insert(creator, pairs[index].key, DirectFunctionCall1(int84, pairs[index].val));
+        istore_pairs_insert(creator,
+                            pairs[index].key,
+                            DatumGetInt32(DirectFunctionCall1(int84,
+                                                              Int64GetDatum(pairs[index].val))));
         ++index;
     }
     FINALIZE_ISTORE(result, creator);

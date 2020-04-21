@@ -49,14 +49,20 @@ istore_merge(IStore *arg1, IStore *arg2, PGFunction mergefunc, PGFunction miss1f
         else if (pairs1[index1].key > pairs2[index2].key)
         {
             if (miss1func != NULL)
-                istore_pairs_insert(creator, pairs2[index2].key, DirectFunctionCall1(miss1func, pairs2[index2].val));
+                istore_pairs_insert(creator,
+                                    pairs2[index2].key,
+                                    DatumGetInt32(DirectFunctionCall1(miss1func,
+                                                                      Int32GetDatum(pairs2[index2].val))));
             ++index2;
         }
         else
         {
             if (mergefunc != NULL)
-                istore_pairs_insert(
-                  creator, pairs1[index1].key, DirectFunctionCall2(mergefunc, pairs1[index1].val, pairs2[index2].val));
+                istore_pairs_insert(creator,
+                                    pairs1[index1].key,
+                                    DatumGetInt32(DirectFunctionCall2(mergefunc,
+                                                                      Int32GetDatum(pairs1[index1].val),
+                                                                      Int32GetDatum(pairs2[index2].val))));
             else
                 istore_pairs_insert(creator, pairs1[index1].key, pairs2[index2].val);
             ++index1;
@@ -74,7 +80,10 @@ istore_merge(IStore *arg1, IStore *arg2, PGFunction mergefunc, PGFunction miss1f
 
         while (index2 < arg2->len)
         {
-            istore_pairs_insert(creator, pairs2[index2].key, DirectFunctionCall1(miss1func, pairs2[index2].val));
+            istore_pairs_insert(creator,
+                                pairs2[index2].key,
+                                DatumGetInt32(DirectFunctionCall1(miss1func,
+                                                                  Int32GetDatum(pairs2[index2].val))));
             ++index2;
         }
     }
@@ -86,6 +95,9 @@ istore_merge(IStore *arg1, IStore *arg2, PGFunction mergefunc, PGFunction miss1f
 
 /*
  * apply PGFunction applyfunc on each value of arg1 with arg2
+ * XXX: passing raw datums here is dangerous, as it may lead to the buffer
+ * overflow attack if we pass a value smaller than int32. We should change the
+ * second arg to in32.
  */
 static IStore *
 istore_apply_datum(IStore *arg1, Datum arg2, PGFunction applyfunc)
@@ -101,7 +113,11 @@ istore_apply_datum(IStore *arg1, Datum arg2, PGFunction applyfunc)
     istore_pairs_init(creator, arg1->len);
     while (index < arg1->len)
     {
-        istore_pairs_insert(creator, pairs[index].key, DirectFunctionCall2(applyfunc, pairs[index].val, arg2));
+        istore_pairs_insert(creator,
+                            pairs[index].key,
+                            DatumGetInt32(DirectFunctionCall2(applyfunc,
+                                                              Int32GetDatum(pairs[index].val),
+                                                              arg2)));
         ++index;
     }
     FINALIZE_ISTORE(result, creator);
@@ -201,13 +217,17 @@ Datum istore_sum_up(PG_FUNCTION_ARGS)
     if (PG_NARGS() == 1)
     {
         while (index < is->len)
-            result = DirectFunctionCall2(int84pl, result, pairs[index++].val);
+            result = DatumGetInt64(DirectFunctionCall2(int84pl,
+                                                      DatumGetInt64(result),
+                                                      DatumGetInt32(pairs[index++].val)));
     }
     else
     {
         end_key = PG_GETARG_INT32(1) > pairs[is->len - 1].key ? pairs[is->len - 1].key : PG_GETARG_INT32(1);
         while (index < is->len && pairs[index].key <= end_key)
-            result = DirectFunctionCall2(int84pl, result, pairs[index++].val);
+            result = DatumGetInt64(DirectFunctionCall2(int84pl,
+                                                       DatumGetInt64(result),
+                                                       DatumGetInt32(pairs[index++].val)));
     }
 
     PG_RETURN_INT64(result);
@@ -542,7 +562,9 @@ istore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
             ++n;
         }
         else
-            position->value = DirectFunctionCall2(int4pl, position->value, value);
+            position->value = DatumGetInt32(DirectFunctionCall2(int4pl,
+                                                                DatumGetInt32((int32)(position->value)),
+                                                                DatumGetInt32(value)));
     }
 
     pairs = palloc0(sizeof *pairs);
@@ -804,7 +826,9 @@ Datum istore_accumulate(PG_FUNCTION_ARGS)
         if (index2 < is->len && index1 == pairs[index2].key)
         {
 
-            sum = DirectFunctionCall2(int4pl, sum, pairs[index2].val);
+            sum = DatumGetInt32(DirectFunctionCall2(int4pl,
+                                                    Int32GetDatum(sum),
+                                                    Int32GetDatum(pairs[index2].val)));
             ++index2;
         }
         istore_pairs_insert(creator, index1, sum);

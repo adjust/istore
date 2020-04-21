@@ -217,6 +217,10 @@ types.each do |type|
           query("SELECT bigistore(Array[5,3,4]::int[], Array[5000000000,4000000000,5]::bigint[])").should match \
           '"3"=>"4000000000", "4"=>"5", "5"=>"5000000000"'
         end
+        if type == :istore
+          query("SELECT istore(Array[1,1]::int[], Array[-1,-1]::int[])").should match \
+          '"1"=>"-2"'
+        end
       end
 
       it 'should fill gaps' do

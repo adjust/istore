@@ -47,14 +47,20 @@ bigistore_merge(BigIStore *arg1, BigIStore *arg2, PGFunction mergefunc, PGFuncti
         else if (pairs1[index1].key > pairs2[index2].key)
         {
             if (miss1func != NULL)
-                bigistore_pairs_insert(creator, pairs2[index2].key, DirectFunctionCall1(miss1func, pairs2[index2].val));
+                bigistore_pairs_insert(creator,
+                                       pairs2[index2].key,
+                                       DatumGetInt64(DirectFunctionCall1(miss1func,
+                                                                         Int64GetDatum(pairs2[index2].val))));
             ++index2;
         }
         else
         {
             if (mergefunc != NULL)
-                bigistore_pairs_insert(
-                  creator, pairs1[index1].key, DirectFunctionCall2(mergefunc, pairs1[index1].val, pairs2[index2].val));
+                bigistore_pairs_insert(creator,
+                                      pairs1[index1].key,
+                                      DatumGetInt64(DirectFunctionCall2(mergefunc,
+                                                                        Int64GetDatum(pairs1[index1].val),
+                                                                        Int64GetDatum(pairs2[index2].val))));
             else
                 bigistore_pairs_insert(creator, pairs1[index1].key, pairs2[index2].val);
             ++index1;
@@ -72,7 +78,10 @@ bigistore_merge(BigIStore *arg1, BigIStore *arg2, PGFunction mergefunc, PGFuncti
 
         while (index2 < arg2->len)
         {
-            bigistore_pairs_insert(creator, pairs2[index2].key, DirectFunctionCall1(miss1func, pairs2[index2].val));
+            bigistore_pairs_insert(creator,
+                                   pairs2[index2].key,
+                                   DatumGetInt64(DirectFunctionCall1(miss1func,
+                                                                     Int64GetDatum(pairs2[index2].val))));
             ++index2;
         }
     }
@@ -84,6 +93,9 @@ bigistore_merge(BigIStore *arg1, BigIStore *arg2, PGFunction mergefunc, PGFuncti
 
 /*
  * apply PGFunction applyfunc on each value of arg1 with arg2
+ * XXX: passing raw datums here is dangerous, as it may lead to the buffer
+ * overflow attack if we pass a value smaller than int64. We should change the
+ * second arg to in64.
  */
 static BigIStore *
 bigistore_apply_datum(BigIStore *arg1, Datum arg2, PGFunction applyfunc)
@@ -99,7 +111,9 @@ bigistore_apply_datum(BigIStore *arg1, Datum arg2, PGFunction applyfunc)
     bigistore_pairs_init(creator, arg1->len);
     while (index < arg1->len)
     {
-        bigistore_pairs_insert(creator, pairs[index].key, DirectFunctionCall2(applyfunc, pairs[index].val, arg2));
+        bigistore_pairs_insert(creator,
+                               pairs[index].key,
+                               DatumGetInt64(DirectFunctionCall2(applyfunc, Int64GetDatum(pairs[index].val), arg2)));
         ++index;
     }
     FINALIZE_BIGISTORE(result, creator);
@@ -199,13 +213,17 @@ Datum bigistore_sum_up(PG_FUNCTION_ARGS)
     if (PG_NARGS() == 1)
     {
         while (index < is->len)
-            result = DirectFunctionCall2(int8pl, result, pairs[index++].val);
+            result = DatumGetInt64(DirectFunctionCall2(int8pl,
+                                                       Int64GetDatum(result),
+                                                       Int64GetDatum(pairs[index++].val)));
     }
     else
     {
         end_key = PG_GETARG_INT32(1) > pairs[is->len - 1].key ? pairs[is->len - 1].key : PG_GETARG_INT32(1);
         while (index < is->len && pairs[index].key <= end_key)
-            result = DirectFunctionCall2(int8pl, result, pairs[index++].val);
+            result = DatumGetInt64(DirectFunctionCall2(int8pl,
+                                                       Int64GetDatum(result),
+                                                       Int64GetDatum(pairs[index++].val)));
     }
 
     PG_RETURN_INT64(result);
@@ -544,7 +562,9 @@ bigistore_add_from_int_arrays(ArrayType *input1, ArrayType *input2)
             ++n;
         }
         else
-            position->value = DirectFunctionCall2(int8pl, position->value, value);
+            position->value = DatumGetInt64(DirectFunctionCall2(int8pl,
+                                                                Int64GetDatum(position->value),
+                                                                Int64GetDatum(value)));
     }
 
     pairs = palloc0(sizeof *pairs);
@@ -806,7 +826,9 @@ Datum bigistore_accumulate(PG_FUNCTION_ARGS)
         if (index2 < is->len && index1 == pairs[index2].key)
         {
 
-            sum = DirectFunctionCall2(int8pl, sum, pairs[index2].val);
+            sum = DatumGetInt64(DirectFunctionCall2(int8pl,
+                                                    Int64GetDatum(sum),
+                                                    Int64GetDatum(pairs[index2].val)));
             ++index2;
         }
         bigistore_pairs_insert(creator, index1, sum);
