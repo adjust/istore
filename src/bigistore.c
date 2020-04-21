@@ -95,7 +95,7 @@ bigistore_merge(BigIStore *arg1, BigIStore *arg2, PGFunction mergefunc, PGFuncti
  * apply PGFunction applyfunc on each value of arg1 with arg2
  * XXX: passing raw datums here is dangerous, as it may lead to the buffer
  * overflow attack if we pass a value smaller than int64. We should change the
- * second arg to in64.
+ * second arg to int64.
  */
 static BigIStore *
 bigistore_apply_datum(BigIStore *arg1, Datum arg2, PGFunction applyfunc)

@@ -97,7 +97,7 @@ istore_merge(IStore *arg1, IStore *arg2, PGFunction mergefunc, PGFunction miss1f
  * apply PGFunction applyfunc on each value of arg1 with arg2
  * XXX: passing raw datums here is dangerous, as it may lead to the buffer
  * overflow attack if we pass a value smaller than int32. We should change the
- * second arg to in32.
+ * second arg to int32.
  */
 static IStore *
 istore_apply_datum(IStore *arg1, Datum arg2, PGFunction applyfunc)
