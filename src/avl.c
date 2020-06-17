@@ -186,7 +186,9 @@ is_tree_insert(AvlNode *t, int32 key, int64 value)
         }
         else
         {
-            t->value = DirectFunctionCall2(int8pl, t->value, value);
+            t->value = DatumGetInt64(DirectFunctionCall2(int8pl,
+                                                         Int64GetDatum(t->value),
+                                                         Int64GetDatum(value)));
             return t;
         }
     }

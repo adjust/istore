@@ -63,7 +63,10 @@ istore_tree_to_pairs(AvlNode *p, IStorePairs *pairs)
     if (p == NULL)
         return;
     istore_tree_to_pairs(p->left, pairs);
-    istore_pairs_insert(pairs, p->key, DirectFunctionCall1(int84, p->value));
+    istore_pairs_insert(pairs,
+                        p->key,
+                        DatumGetInt32(DirectFunctionCall1(int84,
+                                                          Int64GetDatum(p->value))));
     istore_tree_to_pairs(p->right, pairs);
 }
 

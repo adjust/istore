@@ -165,7 +165,10 @@ bigistore_array_sum(Datum *data, int count, bool *nulls)
                 ++n;
             }
             else{
-                position->value = DirectFunctionCall2(int8pl, position->value, payload[index].val);
+                position->value =
+                    DatumGetInt64(DirectFunctionCall2(int8pl,
+                                                      Int64GetDatum(position->value),
+                                                      Int64GetDatum(payload[index].val)));
             }
         }
     }
