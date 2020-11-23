@@ -7,7 +7,7 @@ MODULE_big = istore
 OBJS = $(patsubst %.c,%.o,$(wildcard src/*.c))
 TESTS        = $(wildcard test/sql/*.sql)
 REGRESS      ?= $(patsubst test/sql/%.sql,%,$(TESTS))
-REGRESS_OPTS = --inputdir=test --load-language=plpgsql
+REGRESS_OPTS = --inputdir=test
 PG_CPPFLAGS  = --std=c99
 include $(PGXS)
 
