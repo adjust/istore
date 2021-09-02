@@ -474,6 +474,7 @@ SELECT clamp_below('-2=>1, -1=>1, 1=>1'::bigistore, 0);
 SELECT clamp_below('-5=>1, -1=>1, 0=>0, 1=>1'::bigistore, 0);
 SELECT clamp_below('-5=>1, -1=>1, 0=>1, 1=>1'::bigistore, 0);
 SELECT clamp_below('-5=>1, -1=>1, 0=>1, 1=>1'::bigistore, 2);
+SELECT clamp_below('1=>1, 2=>2147483647, 3=>42'::bigistore, 2);
 ROLLBACK;
 BEGIN;
 -- bigistore functions clamp should clamp keys that are above a specified threshold;

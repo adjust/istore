@@ -1250,7 +1250,7 @@ bigistore_clamp_pass(BigIStore *is, int32 clamp_key, int delta_dir)
     BigIStore *    result_is;
     BigIStorePair *pairs;
     BigIStorePairs creator;
-    int32          clamp_sum = 0;
+    int64          clamp_sum = 0;
     int            index = 0, count = 0, delta_buflen = 0;
 
     /* short circuit out of the funciton if there is nothing to clamp */
