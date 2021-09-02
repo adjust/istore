@@ -1373,6 +1373,8 @@ SELECT clamp_below('1=>1, 2=>2147483647, 3=>42'::bigistore, 2);
  "2"=>"2147483648", "3"=>"42"
 (1 row)
 
+SELECT clamp_below('1=>1, 2=>9223372036854775807, 3=>42'::bigistore, 2);
+ERROR:  integer out of range
 ROLLBACK;
 BEGIN;
 -- bigistore functions clamp should clamp keys that are above a specified threshold;
@@ -2945,6 +2947,8 @@ SELECT clamp_below('-5=>1, -1=>1, 0=>1, 1=>1'::istore, 2);
  "2"=>"4"
 (1 row)
 
+SELECT clamp_below('1=>1, 2=>2147483647, 3=>42'::istore, 2);
+ERROR:  integer out of range
 ROLLBACK;
 BEGIN;
 -- istore functions clamp should clamp keys that are above a specified threshold;

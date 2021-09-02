@@ -150,12 +150,21 @@ int is_int32_arr_comp(const void *a, const void *b);
     } while (0)
 
 #define SAMESIGN(a, b) (((a) < 0) == ((b) < 0))
+
+#if defined(HAVE__BUILTIN_OP_OVERFLOW)
 #define INTPL(_a, _b, _r)                                                                                              \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        _r = _a + _b;                                                                                                  \
-        if (SAMESIGN(_a, _b) && !SAMESIGN(_r, _a))                                                                     \
+    do {                                                                                                               \
+        if (__builtin_add_overflow(_a, _b, &_r))                                                                       \
             ereport(ERROR, (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE), errmsg("integer out of range")));             \
     } while (0)
+#else
+#define INTPL(_a, _b, _r)                                                                                              \
+    do {                                                                                                               \
+        int64 tmp = _a + _b;                                                                                           \
+        if (SAMESIGN(_a, _b) && !SAMESIGN(tmp, _a))                                                                    \
+            ereport(ERROR, (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE), errmsg("integer out of range")));             \
+        _r = tmp;                                                                                                      \
+    } while (0)
+#endif
 
 #endif // ISTORE_H

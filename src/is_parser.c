@@ -1,6 +1,5 @@
 #include "is_parser.h"
 #include <limits.h>
-#include <strings.h>
 
 #define WKEY 0
 #define WVAL 1
@@ -38,20 +37,14 @@ raise_unexpected_sign(char sign, char *str, char *context)
 #define GET_NUM(ptr, _num, whole)                                            \
     do {                                                                     \
         long _l;                                                             \
-        bool neg = false;                                                    \
         char *begin = ptr;                                                   \
-        if (*(ptr) == '-')                                                   \
-            neg = true;                                                      \
         _l   = strtol(ptr, &ptr, 10);                                        \
+        if (errno == ERANGE)                                                 \
+            raise_out_of_range(whole);                                       \
         if (ptr == begin)                                                    \
             raise_unexpected_sign(*ptr, whole, "expected number");           \
         _num = _l;                                                           \
-        if ((neg && _num > 0) || (_l == LONG_MIN) )                          \
-            raise_out_of_range(whole);                                       \
-        else if ((!neg && _num < 0) || (_l == LONG_MAX ))                    \
-            raise_out_of_range(whole);                                       \
     } while (0)
-
 
 #define SKIP_SPACES(_ptr)  \
     while (isspace(*_ptr)) \
@@ -68,7 +61,7 @@ raise_unexpected_sign(char sign, char *str, char *context)
 AvlNode*
 is_parse(ISParser *parser)
 {
-    int32    key;
+    int64    key;
     int64    val;
 
     parser->state = WKEY;
@@ -82,6 +75,10 @@ is_parse(ISParser *parser)
             SKIP_SPACES(parser->ptr);
             SKIP_ESCAPED(parser->ptr);
             GET_NUM(parser->ptr, key, parser->begin);
+
+            if (key < PG_INT32_MIN || key > PG_INT32_MAX)
+                raise_out_of_range(parser->begin);
+
             parser->state = WEQ;
             SKIP_ESCAPED(parser->ptr);
         }
