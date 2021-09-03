@@ -140,7 +140,7 @@ is_parse(ISParser *parser)
 AvlNode*
 is_parse_arr(ISParser *parser)
 {
-    int32    key = 0;	/* keep compiler quiet */
+    int64    key = 0;	/* keep compiler quiet */
     int64    val;
 
     char *valarr;
@@ -172,6 +172,10 @@ is_parse_arr(ISParser *parser)
             SKIP_SPACES(parser->ptr);
             SKIP_ESCAPED(parser->ptr);
             GET_NUM(parser->ptr, key, parser->begin);
+
+            if (key < PG_INT32_MIN || key > PG_INT32_MAX)
+                raise_out_of_range(parser->begin);
+
             parser->state = WVAL;
             SKIP_ESCAPED(parser->ptr);
         }
