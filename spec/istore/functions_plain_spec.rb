@@ -514,6 +514,15 @@ types.each do |type|
           query("SELECT clamp_below('-5=>1, -1=>1, 0=>0, 1=>1'::#{type}, 0)").should match '"0"=>"2", "1"=>"1"'
           query("SELECT clamp_below('-5=>1, -1=>1, 0=>1, 1=>1'::#{type}, 0)").should match '"0"=>"3", "1"=>"1"'
           query("SELECT clamp_below('-5=>1, -1=>1, 0=>1, 1=>1'::#{type}, 2)").should match '"2"=>"4"'
+          if type == :bigistore
+            query("SELECT clamp_below('1=>1, 2=>2147483647, 3=>42'::bigistore, 2)").should match '"2"=>"2147483648", "3"=>"42"'
+            expect{query("SELECT clamp_below('1=>1, 2=>9223372036854775807, 3=>42'::bigistore, 2)")}.to throw_error \
+            'integer out of range'
+          end
+          if type == :istore
+            expect{query("SELECT clamp_below('1=>1, 2=>2147483647, 3=>42'::istore, 2)")}.to throw_error \
+            'integer out of range'
+          end
         end
 
         it 'should clamp keys that are above a specified threshold' do

@@ -117,6 +117,9 @@ types.each do |type|
         it 'should report on ending bracket' do
           expect{query("SELECT '([1,2],[1,2]'::#{type}")}.to throw_error "invalid input syntax for istore: \"([1,2],[1,2]\""
         end
+        it 'should report integer out of range' do
+          expect{query("SELECT '([2147483648], [1])'::#{type}")}.to throw_error 'istore "([2147483648], [1])" is out of range'
+        end
       end
       describe 'arrays row input' do
         it "should create #{type} from row" do
