@@ -171,7 +171,6 @@ Datum bigistore_max_value(PG_FUNCTION_ARGS)
 {
     BigIStore     *is;
     BigIStorePair *pairs;
-    int           index;
     int64         value;
 
     is = PG_GETARG_BIGIS(0);
@@ -180,18 +179,15 @@ Datum bigistore_max_value(PG_FUNCTION_ARGS)
         PG_RETURN_NULL();
     }
 
-    index = 0;
     pairs = FIRST_PAIR(is, BigIStorePair);
-    value = pairs[index].val;
-
-    while (index < is->len)
+    value = pairs[0].val;
+    for (int i = 1; i < is->len; i++)
     {
-        if (value < pairs[index].val)
+        if (value < pairs[i].val)
         {
-            value = pairs[index].val;
+            value = pairs[i].val;
         }
 
-        ++index;
     }
 
     PG_RETURN_INT64(value);

@@ -175,26 +175,23 @@ Datum istore_max_value(PG_FUNCTION_ARGS)
 {
     IStore *    is;
     IStorePair *pairs;
-    int         index;
     int32       value;
 
-    is    = PG_GETARG_IS(0);
+    is = PG_GETARG_IS(0);
     if (is->len == 0)
     {
         PG_RETURN_NULL();
     }
 
-    index = 0;
     pairs = FIRST_PAIR(is, IStorePair);
-    value = pairs[index].val;
-    while (index < is->len)
+    value = pairs[0].val;
+    for (int i = 1; i < is->len; i++)
     {
-        if (value < pairs[index].val)
+        if (value < pairs[i].val)
         {
-            value = pairs[index].val;
+            value = pairs[i].val;
         }
         
-        ++index;
     }
 
     PG_RETURN_INT32(value);
