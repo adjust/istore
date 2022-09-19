@@ -185,8 +185,8 @@ Datum istore_max_value(PG_FUNCTION_ARGS)
     }
 
     index = 0;
-    value = pairs[index].val;
     pairs = FIRST_PAIR(is, IStorePair);
+    value = pairs[index].val;
     while (index < is->len)
     {
         if (value < pairs[index].val)
