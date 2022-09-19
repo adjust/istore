@@ -164,6 +164,40 @@ Datum bigistore_max_key(PG_FUNCTION_ARGS)
 }
 
 /*
+ * get the biggest value from a bigistore
+ */
+PG_FUNCTION_INFO_V1(bigistore_max_value);
+Datum bigistore_max_value(PG_FUNCTION_ARGS)
+{
+    BigIStore     *is;
+    BigIStorePair *pairs;
+    int           index;
+    int64         value;
+
+    is = PG_GETARG_BIGIS(0);
+    if (is->len == 0)
+    {
+        PG_RETURN_NULL();
+    }
+
+    index = 0;
+    pairs = FIRST_PAIR(is, BigIStorePair);
+    value = pairs[index].val;
+
+    while (index < is->len)
+    {
+        if (value < pairs[index].val)
+        {
+            value = pairs[index].val;
+        }
+
+        ++index;
+    }
+
+    PG_RETURN_INT32(value);
+}
+
+/*
  * remove zero values from bigistore
  */
 PG_FUNCTION_INFO_V1(bigistore_compact);
