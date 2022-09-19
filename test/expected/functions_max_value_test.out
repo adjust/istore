@@ -1,0 +1,71 @@
+BEGIN;
+CREATE EXTENSION istore;
+-- istore test cases
+SELECT max_value(''::istore);
+ max_value 
+-----------
+          
+(1 row)
+
+SELECT max_value('1=>1'::istore);
+ max_value 
+-----------
+         1
+(1 row)
+
+SELECT max_value('1=>1, 2=>1'::istore);
+ max_value 
+-----------
+         1
+(1 row)
+
+SELECT max_value('0=>2, 1=>4, 3=>0 ,2=>2'::istore);
+ max_value 
+-----------
+         4
+(1 row)
+
+SELECT max_value('10=>21, 11=>500, 13=>800 ,12=>4200'::istore);
+ max_value 
+-----------
+      4200
+(1 row)
+
+-- bigistore test cases
+SELECT max_value(''::bigistore);
+ max_value 
+-----------
+          
+(1 row)
+
+SELECT max_value('1=>1'::bigistore);
+ max_value 
+-----------
+         1
+(1 row)
+
+SELECT max_value('1=>1, 2=>1'::bigistore);
+ max_value 
+-----------
+         1
+(1 row)
+
+SELECT max_value('0=>2, 1=>4, 3=>0 ,2=>2'::bigistore);
+ max_value 
+-----------
+         4
+(1 row)
+
+SELECT max_value('10=>21, 11=>500, 13=>800 ,12=>4200'::bigistore);
+ max_value 
+-----------
+      4200
+(1 row)
+
+SELECT max_value('10=>21, 11=>500, 13=>800 ,12=>3147483647'::bigistore);
+ max_value  
+------------
+ 3147483647
+(1 row)
+
+ROLLBACK;
