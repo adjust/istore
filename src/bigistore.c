@@ -194,7 +194,7 @@ Datum bigistore_max_value(PG_FUNCTION_ARGS)
         ++index;
     }
 
-    PG_RETURN_INT32(value);
+    PG_RETURN_INT64(value);
 }
 
 /*
