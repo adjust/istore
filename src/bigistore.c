@@ -184,10 +184,7 @@ Datum bigistore_max_value(PG_FUNCTION_ARGS)
     for (int i = 1; i < is->len; i++)
     {
         if (value < pairs[i].val)
-        {
             value = pairs[i].val;
-        }
-
     }
 
     PG_RETURN_INT64(value);
