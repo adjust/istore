@@ -168,6 +168,33 @@ Datum istore_max_key(PG_FUNCTION_ARGS)
 }
 
 /*
+ * get the biggest value from an istore
+ */
+PG_FUNCTION_INFO_V1(istore_max_value);
+Datum istore_max_value(PG_FUNCTION_ARGS)
+{
+    IStore *    is;
+    IStorePair *pairs;
+    int32       value;
+
+    is = PG_GETARG_IS(0);
+    if (is->len == 0)
+    {
+        PG_RETURN_NULL();
+    }
+
+    pairs = FIRST_PAIR(is, IStorePair);
+    value = pairs[0].val;
+    for (int i = 1; i < is->len; i++)
+    {
+        if (value < pairs[i].val)
+            value = pairs[i].val;
+    }
+
+    PG_RETURN_INT32(value);
+}
+
+/*
  * remove zero values from istore
  */
 PG_FUNCTION_INFO_V1(istore_compact);

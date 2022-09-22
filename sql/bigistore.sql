@@ -28,6 +28,11 @@ CREATE FUNCTION max_key(bigistore)
     AS 'istore', 'bigistore_max_key'
     LANGUAGE C IMMUTABLE STRICT;
 
+CREATE FUNCTION max_value(bigistore)
+    RETURNS integer
+    AS 'istore', 'bigistore_max_value'
+    LANGUAGE C IMMUTABLE STRICT;
+
 CREATE FUNCTION compact(bigistore)
     RETURNS bigistore
     AS 'istore', 'bigistore_compact'
