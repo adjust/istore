@@ -1,10 +1,13 @@
 SET max_parallel_workers_per_gather = 8;
+ERROR:  unrecognized configuration parameter "max_parallel_workers_per_gather"
 SET force_parallel_mode = on;
+ERROR:  unrecognized configuration parameter "force_parallel_mode"
 CREATE TABLE data AS
 SELECT id, isagg(k, id+dup+k) as data
 FROM generate_series(1000,10000, 100) id, generate_series(1,10) k, generate_series(1,1000) dup
 GROUP BY id, dup ORDER BY id;
 ALTER TABLE data set (parallel_workers=8);
+ERROR:  unrecognized parameter "parallel_workers"
 SELECT SUM(NULL::istore) FROM data;
  sum 
 -----
@@ -18,14 +21,11 @@ SELECT SUM(data) FROM data;
 (1 row)
 
 EXPLAIN(COSTS OFF) SELECT SUM(data) FROM data;
-                 QUERY PLAN                  
----------------------------------------------
- Finalize Aggregate
-   ->  Gather
-         Workers Planned: 8
-         ->  Partial Aggregate
-               ->  Parallel Seq Scan on data
-(5 rows)
+       QUERY PLAN       
+------------------------
+ Aggregate
+   ->  Seq Scan on data
+(2 rows)
 
 SELECT id, SUM(data) FROM data GROUP BY id ORDER BY id LIMIT 10;
   id  |                                                                               sum                                                                               
@@ -43,18 +43,14 @@ SELECT id, SUM(data) FROM data GROUP BY id ORDER BY id LIMIT 10;
 (10 rows)
 
 EXPLAIN(COSTS OFF) SELECT id, SUM(data) FROM data GROUP BY id ORDER BY id;
-                    QUERY PLAN                     
----------------------------------------------------
+          QUERY PLAN          
+------------------------------
  Sort
    Sort Key: id
-   ->  Finalize HashAggregate
+   ->  HashAggregate
          Group Key: id
-         ->  Gather
-               Workers Planned: 8
-               ->  Partial HashAggregate
-                     Group Key: id
-                     ->  Parallel Seq Scan on data
-(9 rows)
+         ->  Seq Scan on data
+(5 rows)
 
 SELECT MIN(data) FROM data;
                                                                 min                                                                
@@ -63,14 +59,11 @@ SELECT MIN(data) FROM data;
 (1 row)
 
 EXPLAIN(COSTS OFF) SELECT MIN(data) FROM data;
-                 QUERY PLAN                  
----------------------------------------------
- Finalize Aggregate
-   ->  Gather
-         Workers Planned: 8
-         ->  Partial Aggregate
-               ->  Parallel Seq Scan on data
-(5 rows)
+       QUERY PLAN       
+------------------------
+ Aggregate
+   ->  Seq Scan on data
+(2 rows)
 
 SELECT id, MIN(data) FROM data GROUP BY id ORDER BY id LIMIT 10;
   id  |                                                                min                                                                
@@ -88,18 +81,14 @@ SELECT id, MIN(data) FROM data GROUP BY id ORDER BY id LIMIT 10;
 (10 rows)
 
 EXPLAIN(COSTS OFF) SELECT id, MIN(data) FROM data GROUP BY id ORDER BY id;
-                    QUERY PLAN                     
----------------------------------------------------
+          QUERY PLAN          
+------------------------------
  Sort
    Sort Key: id
-   ->  Finalize HashAggregate
+   ->  HashAggregate
          Group Key: id
-         ->  Gather
-               Workers Planned: 8
-               ->  Partial HashAggregate
-                     Group Key: id
-                     ->  Parallel Seq Scan on data
-(9 rows)
+         ->  Seq Scan on data
+(5 rows)
 
 SELECT MAX(data) FROM data;
                                                                      max                                                                     
@@ -108,14 +97,11 @@ SELECT MAX(data) FROM data;
 (1 row)
 
 EXPLAIN(COSTS OFF) SELECT MAX(data) FROM data;
-                 QUERY PLAN                  
----------------------------------------------
- Finalize Aggregate
-   ->  Gather
-         Workers Planned: 8
-         ->  Partial Aggregate
-               ->  Parallel Seq Scan on data
-(5 rows)
+       QUERY PLAN       
+------------------------
+ Aggregate
+   ->  Seq Scan on data
+(2 rows)
 
 SELECT id, MAX(data) FROM data GROUP BY id ORDER BY id LIMIT 10;
   id  |                                                                max                                                                
@@ -133,24 +119,21 @@ SELECT id, MAX(data) FROM data GROUP BY id ORDER BY id LIMIT 10;
 (10 rows)
 
 EXPLAIN(COSTS OFF) SELECT id, MAX(data) FROM data GROUP BY id ORDER BY id;
-                    QUERY PLAN                     
----------------------------------------------------
+          QUERY PLAN          
+------------------------------
  Sort
    Sort Key: id
-   ->  Finalize HashAggregate
+   ->  HashAggregate
          Group Key: id
-         ->  Gather
-               Workers Planned: 8
-               ->  Partial HashAggregate
-                     Group Key: id
-                     ->  Parallel Seq Scan on data
-(9 rows)
+         ->  Seq Scan on data
+(5 rows)
 
 CREATE TABLE bigdata AS
 SELECT id, isagg(k, (id+dup+k)::bigint) as data
 FROM generate_series(1000,10000, 100) id, generate_series(1,10) k, generate_series(1,1000) dup
 GROUP BY id, dup ORDER BY id;
 ALTER TABLE bigdata set (parallel_workers=8);
+ERROR:  unrecognized parameter "parallel_workers"
 SELECT SUM(data) FROM bigdata;
                                                                                          sum                                                                                         
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -158,14 +141,11 @@ SELECT SUM(data) FROM bigdata;
 (1 row)
 
 EXPLAIN(COSTS OFF) SELECT SUM(data) FROM bigdata;
-                   QUERY PLAN                   
-------------------------------------------------
- Finalize Aggregate
-   ->  Gather
-         Workers Planned: 8
-         ->  Partial Aggregate
-               ->  Parallel Seq Scan on bigdata
-(5 rows)
+        QUERY PLAN         
+---------------------------
+ Aggregate
+   ->  Seq Scan on bigdata
+(2 rows)
 
 SELECT id, SUM(data) FROM bigdata GROUP BY id ORDER BY id LIMIT 10;
   id  |                                                                               sum                                                                               
@@ -183,18 +163,14 @@ SELECT id, SUM(data) FROM bigdata GROUP BY id ORDER BY id LIMIT 10;
 (10 rows)
 
 EXPLAIN(COSTS OFF) SELECT id, SUM(data) FROM bigdata GROUP BY id ORDER BY id;
-                      QUERY PLAN                      
-------------------------------------------------------
+           QUERY PLAN            
+---------------------------------
  Sort
    Sort Key: id
-   ->  Finalize HashAggregate
+   ->  HashAggregate
          Group Key: id
-         ->  Gather
-               Workers Planned: 8
-               ->  Partial HashAggregate
-                     Group Key: id
-                     ->  Parallel Seq Scan on bigdata
-(9 rows)
+         ->  Seq Scan on bigdata
+(5 rows)
 
 SELECT MIN(data) FROM bigdata;
                                                                 min                                                                
@@ -203,14 +179,11 @@ SELECT MIN(data) FROM bigdata;
 (1 row)
 
 EXPLAIN(COSTS OFF) SELECT MIN(data) FROM bigdata;
-                   QUERY PLAN                   
-------------------------------------------------
- Finalize Aggregate
-   ->  Gather
-         Workers Planned: 8
-         ->  Partial Aggregate
-               ->  Parallel Seq Scan on bigdata
-(5 rows)
+        QUERY PLAN         
+---------------------------
+ Aggregate
+   ->  Seq Scan on bigdata
+(2 rows)
 
 SELECT id, MIN(data) FROM bigdata GROUP BY id ORDER BY id LIMIT 10;
   id  |                                                                min                                                                
@@ -228,18 +201,14 @@ SELECT id, MIN(data) FROM bigdata GROUP BY id ORDER BY id LIMIT 10;
 (10 rows)
 
 EXPLAIN(COSTS OFF) SELECT id, MIN(data) FROM bigdata GROUP BY id ORDER BY id;
-                      QUERY PLAN                      
-------------------------------------------------------
+           QUERY PLAN            
+---------------------------------
  Sort
    Sort Key: id
-   ->  Finalize HashAggregate
+   ->  HashAggregate
          Group Key: id
-         ->  Gather
-               Workers Planned: 8
-               ->  Partial HashAggregate
-                     Group Key: id
-                     ->  Parallel Seq Scan on bigdata
-(9 rows)
+         ->  Seq Scan on bigdata
+(5 rows)
 
 SELECT MAX(data) FROM bigdata;
                                                                      max                                                                     
@@ -248,14 +217,11 @@ SELECT MAX(data) FROM bigdata;
 (1 row)
 
 EXPLAIN(COSTS OFF) SELECT MAX(data) FROM bigdata;
-                   QUERY PLAN                   
-------------------------------------------------
- Finalize Aggregate
-   ->  Gather
-         Workers Planned: 8
-         ->  Partial Aggregate
-               ->  Parallel Seq Scan on bigdata
-(5 rows)
+        QUERY PLAN         
+---------------------------
+ Aggregate
+   ->  Seq Scan on bigdata
+(2 rows)
 
 SELECT id, MAX(data) FROM bigdata GROUP BY id ORDER BY id LIMIT 10;
   id  |                                                                max                                                                
@@ -273,18 +239,14 @@ SELECT id, MAX(data) FROM bigdata GROUP BY id ORDER BY id LIMIT 10;
 (10 rows)
 
 EXPLAIN(COSTS OFF) SELECT id, MAX(data) FROM bigdata GROUP BY id ORDER BY id;
-                      QUERY PLAN                      
-------------------------------------------------------
+           QUERY PLAN            
+---------------------------------
  Sort
    Sort Key: id
-   ->  Finalize HashAggregate
+   ->  HashAggregate
          Group Key: id
-         ->  Gather
-               Workers Planned: 8
-               ->  Partial HashAggregate
-                     Group Key: id
-                     ->  Parallel Seq Scan on bigdata
-(9 rows)
+         ->  Seq Scan on bigdata
+(5 rows)
 
 -- sanity checks
 SELECT SUM(data->5) FROM data;
