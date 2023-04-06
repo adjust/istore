@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/adjust/istore.svg?branch=master)](https://travis-ci.org/adjust/istore)
+[![Build Status](https://github.com/adjust/istore/actions/workflows/ci.yml/badge.svg)](https://github.com/adjust/istore/actions/workflows/ci.yml)
 
 # istore
 
