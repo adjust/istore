@@ -142,3 +142,6 @@ SELECT row_to_istore((array[1,2], array['1', '2']));
 SELECT row_to_istore((array[4147483647,2], array[11, 22]));
 -- istore istore_io arrays row input should fail on integer overflow (INT_MIN);
 SELECT row_to_istore((array[-4147483648,2], array[11, 22]));
+-- istore should not fail on consecutive call of strtol
+select id, '1=>1'::bigistore from (values (2147483648)) v(id);
+select id, '1=>1'::bigistore from (values (2147483648)) v(id);
