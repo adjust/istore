@@ -1,7 +1,4 @@
-BEGIN;
 -- bigistore functions should find keys with exists;
--- ./spec/istore/functions_plain_spec.rb:10;
-CREATE EXTENSION istore;
 SELECT exist('1=>1'::bigistore, 1);
  exist 
 -------
@@ -26,11 +23,7 @@ SELECT exist('1=>1, -1=>0'::bigistore, -1);
  t
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should fetchvals;
--- ./spec/istore/functions_plain_spec.rb:17;
-CREATE EXTENSION istore;
 SELECT fetchval('1=>1'::bigistore, 1);
  fetchval 
 ----------
@@ -55,11 +48,7 @@ SELECT fetchval('1=>1, 1=>1'::bigistore, 2);
          
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should return set of ints;
--- ./spec/istore/functions_plain_spec.rb:24;
-CREATE EXTENSION istore;
 SELECT * FROM each('1=>1'::bigistore);
  key | value 
 -----+-------
@@ -102,22 +91,14 @@ SELECT * FROM each(NULL::bigistore);
 -----+-------
 (0 rows)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should compact istores;
--- ./spec/istore/functions_plain_spec.rb:49;
-CREATE EXTENSION istore;
 SELECT compact('0=>2, 1=>2, 3=>0 ,2=>2'::bigistore);
            compact            
 ------------------------------
  "0"=>"2", "1"=>"2", "2"=>"2"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should add istores;
--- ./spec/istore/functions_plain_spec.rb:54;
-CREATE EXTENSION istore;
 SELECT add('1=>1, 2=>1'::bigistore, '1=>1, 2=>1'::bigistore);
         add         
 --------------------
@@ -166,17 +147,13 @@ SELECT add('-1=>-1, 2=>1'::bigistore, 0);
  "-1"=>"-1", "2"=>"1"
 (1 row)
 
-SELECT add(bigistore(Array[]::integer[], Array[]::integer[]), '1=>0'::bigistore);;
+SELECT add(bigistore(Array[]::integer[], Array[]::integer[]), '1=>0'::bigistore);
    add    
 ----------
  "1"=>"0"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should substract istores;
--- ./spec/istore/functions_plain_spec.rb:75;
-CREATE EXTENSION istore;
 SELECT subtract('1=>1, 2=>1'::bigistore, '1=>1, 2=>1'::bigistore);
       subtract      
 --------------------
@@ -225,17 +202,13 @@ SELECT subtract('-1=>-1, 2=>1'::bigistore, 0);
  "-1"=>"-1", "2"=>"1"
 (1 row)
 
-SELECT subtract(bigistore(Array[]::integer[], Array[]::integer[]), '1=>0'::bigistore);;
+SELECT subtract(bigistore(Array[]::integer[], Array[]::integer[]), '1=>0'::bigistore);
  subtract 
 ----------
  "1"=>"0"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should multiply istores;
--- ./spec/istore/functions_plain_spec.rb:96;
-CREATE EXTENSION istore;
 SELECT multiply('1=>1, 2=>1'::bigistore, '1=>1, 2=>1'::bigistore);
       multiply      
 --------------------
@@ -284,11 +257,7 @@ SELECT multiply('-1=>-1, 2=>1'::bigistore, 0);
  "-1"=>"0", "2"=>"0"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should divide istores;
--- ./spec/istore/functions_plain_spec.rb:115;
-CREATE EXTENSION istore;
 SELECT divide('1=>1, 2=>1'::bigistore, '1=>1, 2=>1'::bigistore);
        divide       
 --------------------
@@ -349,25 +318,13 @@ SELECT divide('-1=>-1, 2=>1'::bigistore, -1);
  "-1"=>"1", "2"=>"-1"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should raise division by zero error;
--- ./spec/istore/functions_plain_spec.rb:137;
-CREATE EXTENSION istore;
 SELECT divide('-1=>-1, 2=>1'::bigistore, 0);
 ERROR:  division by zero
-ROLLBACK;
-BEGIN;
 -- bigistore functions should raise division by zero error;
--- ./spec/istore/functions_plain_spec.rb:141;
-CREATE EXTENSION istore;
 SELECT divide('-1=>-1, 2=>1'::bigistore, '2=>0');
 ERROR:  division by zero
-ROLLBACK;
-BEGIN;
 -- bigistore functions should generate #{type} from array;
--- ./spec/istore/functions_plain_spec.rb:145;
-CREATE EXTENSION istore;
 SELECT bigistore(ARRAY[1]);
  bigistore 
 -----------
@@ -434,11 +391,7 @@ SELECT bigistore(ARRAY[]::integer[]);
  
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should sum up istores;
--- ./spec/istore/functions_plain_spec.rb:167;
-CREATE EXTENSION istore;
 SELECT sum_up('1=>1'::bigistore);
  sum_up 
 --------
@@ -469,50 +422,34 @@ SELECT sum_up('1=>1 ,2=>-1, 1=>1'::bigistore);
       1
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should sum istores from table;
--- ./spec/istore/functions_plain_spec.rb:175;
-CREATE EXTENSION istore;
-CREATE TABLE test (a bigistore);
-INSERT INTO test VALUES('1=>1'),('2=>1'), ('3=>1');
-SELECT SUM(a) FROM test;
+CREATE TABLE test1 (a bigistore);
+INSERT INTO test1 VALUES('1=>1'),('2=>1'), ('3=>1');
+SELECT SUM(a) FROM test1;
              sum              
 ------------------------------
  "1"=>"1", "2"=>"1", "3"=>"1"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should sum istores from table;
--- ./spec/istore/functions_plain_spec.rb:182;
-CREATE EXTENSION istore;
-CREATE TABLE test (a bigistore);
-INSERT INTO test VALUES('1=>1'),('2=>1'),('3=>1'),(NULL),('3=>3');
-SELECT SUM(a) FROM test;
+CREATE TABLE test2 (a bigistore);
+INSERT INTO test2 VALUES('1=>1'),('2=>1'),('3=>1'),(NULL),('3=>3');
+SELECT SUM(a) FROM test2;
              sum              
 ------------------------------
  "1"=>"1", "2"=>"1", "3"=>"4"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should sum istores from table;
--- ./spec/istore/functions_plain_spec.rb:189;
-CREATE EXTENSION istore;
-CREATE TABLE test (a bigistore);
-INSERT INTO test VALUES('1=>1'),('2=>1'),('3=>1'),(NULL),('3=>0');
-SELECT SUM(a) FROM test;
+CREATE TABLE test3 (a bigistore);
+INSERT INTO test3 VALUES('1=>1'),('2=>1'),('3=>1'),(NULL),('3=>0');
+SELECT SUM(a) FROM test3;
              sum              
 ------------------------------
  "1"=>"1", "2"=>"1", "3"=>"1"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should merge correctly scatter keys;
--- ./spec/istore/functions_plain_spec.rb:196;
-CREATE EXTENSION istore;
 SELECT SUM(x) FROM (VALUES ('1=>1, 5=>5'::istore), ('3=>3, 7=>7')) as v(x);
                   sum                   
 ----------------------------------------
@@ -537,11 +474,7 @@ SELECT SUM(x) FROM (VALUES ('3=>3, 7=>7'::bigistore), ('1=>1, 5=>5')) as v(x);
  "1"=>"1", "3"=>"3", "5"=>"5", "7"=>"7"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should return istores from arrays;
--- ./spec/istore/functions_plain_spec.rb:207;
-CREATE EXTENSION istore;
 SELECT bigistore(Array[5,3,4,5], Array[1,2,3,4]);
           bigistore           
 ------------------------------
@@ -566,11 +499,7 @@ SELECT bigistore(Array[5,3,4]::int[], Array[5000000000,4000000000,5]::bigint[]);
  "3"=>"4000000000", "4"=>"5", "5"=>"5000000000"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should fill gaps;
--- ./spec/istore/functions_plain_spec.rb:226;
-CREATE EXTENSION istore;
 SELECT fill_gaps('2=>17, 4=>3'::bigistore, 5, 0);
                           fill_gaps                          
 -------------------------------------------------------------
@@ -627,11 +556,7 @@ SELECT fill_gaps(NULL::bigistore, 3, 0);
 
 SELECT fill_gaps('2=>17, 4=>3'::bigistore, -5, 0);
 ERROR:  parameter upto must be >= 0
-ROLLBACK;
-BEGIN;
 -- bigistore functions should fill accumulate;
--- ./spec/istore/functions_plain_spec.rb:255;
-CREATE EXTENSION istore;
 SELECT accumulate('2=>17, 4=>3'::bigistore);
            accumulate            
 ---------------------------------
@@ -680,11 +605,7 @@ SELECT accumulate('-5=> 5, 3=> 5'::bigistore);
  "-5"=>"5", "-4"=>"5", "-3"=>"5", "-2"=>"5", "-1"=>"5", "0"=>"5", "1"=>"5", "2"=>"5", "3"=>"10"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should fill accumulate upto;
--- ./spec/istore/functions_plain_spec.rb:271;
-CREATE EXTENSION istore;
 SELECT accumulate('2=>17, 4=>3'::bigistore, 8);
                                  accumulate                                  
 -----------------------------------------------------------------------------
@@ -739,22 +660,14 @@ SELECT accumulate('-5=> 5, 3=> 5'::bigistore, 2);
  "-5"=>"5", "-4"=>"5", "-3"=>"5", "-2"=>"5", "-1"=>"5", "0"=>"5", "1"=>"5", "2"=>"5"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should accumulate big numbers;
--- ./spec/istore/functions_plain_spec.rb:288;
-CREATE EXTENSION istore;
 SELECT accumulate('0=>20000000000, 1=>10000000000, 3=>10000000000'::bigistore, 4);
                                              accumulate                                             
 ----------------------------------------------------------------------------------------------------
  "0"=>"20000000000", "1"=>"30000000000", "2"=>"30000000000", "3"=>"40000000000", "4"=>"40000000000"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should seed an #{type} from integer;
--- ./spec/istore/functions_plain_spec.rb:293;
-CREATE EXTENSION istore;
 SELECT istore_seed(2,5,8::bigint);
               istore_seed               
 ----------------------------------------
@@ -781,62 +694,38 @@ SELECT istore_seed(2,2,8::bigint);
 
 SELECT istore_seed(2,0,8::bigint);
 ERROR:  parameter upto must be >= from
-ROLLBACK;
-BEGIN;
 -- bigistore functions should throw an error if negativ seed span;
--- ./spec/istore/functions_plain_spec.rb:304;
-CREATE EXTENSION istore;
 SELECT istore_seed(-2,0,8);
 ERROR:  parameter from must be >= 0
-ROLLBACK;
-BEGIN;
 -- bigistore functions should merge istores by larger keys;
--- ./spec/istore/functions_plain_spec.rb:308;
-CREATE EXTENSION istore;
 SELECT istore_val_larger('1=>1,2=>1,3=>3'::bigistore, '1=>2,3=>1,4=>1');
            istore_val_larger            
 ----------------------------------------
  "1"=>"2", "2"=>"1", "3"=>"3", "4"=>"1"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should merge istores by smaller keys;
--- ./spec/istore/functions_plain_spec.rb:313;
-CREATE EXTENSION istore;
 SELECT istore_val_smaller('1=>1,2=>1,3=>3'::bigistore, '1=>2,3=>1,4=>1');
            istore_val_smaller           
 ----------------------------------------
  "1"=>"1", "2"=>"1", "3"=>"1", "4"=>"1"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should return #{type} with maxed values;
--- ./spec/istore/functions_plain_spec.rb:318;
-CREATE EXTENSION istore;
 SELECT MAX(s) FROM (VALUES('1=>5, 2=>2, 3=>3'::bigistore),('1=>1, 2=>5, 3=>3'),('1=>1, 2=>4, 3=>5'))t(s);
              max              
 ------------------------------
  "1"=>"5", "2"=>"5", "3"=>"5"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should return #{type} with maxed values;
--- ./spec/istore/functions_plain_spec.rb:323;
-CREATE EXTENSION istore;
 SELECT MIN(s) FROM (VALUES('1=>5, 2=>2, 3=>3'::bigistore),('1=>1, 2=>5, 3=>3'),('1=>1, 2=>4, 3=>5'))t(s);
              min              
 ------------------------------
  "1"=>"1", "2"=>"2", "3"=>"3"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should return keys as array;
--- ./spec/istore/functions_plain_spec.rb:328;
-CREATE EXTENSION istore;
 SELECT akeys('-5=>10, 0=>-5, 5=>0'::bigistore);
   akeys   
 ----------
@@ -849,11 +738,7 @@ SELECT akeys(''::bigistore);
  {}
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should return values as array;
--- ./spec/istore/functions_plain_spec.rb:333;
-CREATE EXTENSION istore;
 SELECT avals('-5=>10, 0=>-5, 5=>0'::bigistore);
    avals   
 -----------
@@ -866,11 +751,7 @@ SELECT avals(''::bigistore);
  {}
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should return keys as set;
--- ./spec/istore/functions_plain_spec.rb:337;
-CREATE EXTENSION istore;
 SELECT skeys('-5=>10, 0=>-5, 5=>0'::bigistore);
  skeys 
 -------
@@ -884,11 +765,7 @@ SELECT skeys(''::bigistore);
 -------
 (0 rows)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should return values set array;
--- ./spec/istore/functions_plain_spec.rb:345;
-CREATE EXTENSION istore;
 SELECT svals('-5=>10, 0=>-5, 5=>0'::bigistore);
  svals 
 -------
@@ -902,77 +779,49 @@ SELECT svals(''::bigistore);
 -------
 (0 rows)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should sum up istores;
--- ./spec/istore/functions_plain_spec.rb:353;
-CREATE EXTENSION istore;
 SELECT sum_up('10=>5, 15=>10'::istore);
  sum_up 
 --------
      15
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should sum up istores with big numbers;
--- ./spec/istore/functions_plain_spec.rb:357;
-CREATE EXTENSION istore;
 SELECT sum_up('10=>2000000000, 15=>1000000000'::istore);
    sum_up   
 ------------
  3000000000
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should sum up bigistores;
--- ./spec/istore/functions_plain_spec.rb:361;
-CREATE EXTENSION istore;
 SELECT sum_up('10=>5, 15=>10'::bigistore);
  sum_up 
 --------
      15
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should sum up istores with negative values;
--- ./spec/istore/functions_plain_spec.rb:365;
-CREATE EXTENSION istore;
 SELECT sum_up('10=>5, 15=>-10'::istore);
  sum_up 
 --------
      -5
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should sum up bigistores with negative values;
--- ./spec/istore/functions_plain_spec.rb:369;
-CREATE EXTENSION istore;
 SELECT sum_up('10=>5, 15=>-10'::bigistore);
  sum_up 
 --------
      -5
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should return length of empty istores;
--- ./spec/istore/functions_plain_spec.rb:373;
-CREATE EXTENSION istore;
 SELECT istore_length(bigistore(ARRAY[]::integer[],ARRAY[]::integer[]));
  istore_length 
 ---------------
              0
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should return length of non-empty istores;
--- ./spec/istore/functions_plain_spec.rb:377;
-CREATE EXTENSION istore;
 SELECT istore_length(bigistore(ARRAY[1],ARRAY[1]));
  istore_length 
 ---------------
@@ -991,11 +840,7 @@ SELECT istore_length('-2147483647 => 10, -10 => -9223372036854775807, 0 => 5, 10
              5
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should convert istore to json;
--- ./spec/istore/functions_plain_spec.rb:383;
-CREATE EXTENSION istore;
 SELECT istore_to_json('5=>50, 7=>70, 9=>90'::bigistore);
        istore_to_json        
 -----------------------------
@@ -1008,11 +853,7 @@ SELECT istore_to_json('-2147483647 => 10, -10 => -9223372036854775807, 0 => 5, 1
  {"-2147483647": 10, "-10": -9223372036854775807, "0": 5, "10": 9223372036854775806, "2147483647": 10}
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should convert istore to array;
--- ./spec/istore/functions_plain_spec.rb:390;
-CREATE EXTENSION istore;
 SELECT istore_to_array('5=>50, 7=>70, 9=>90'::bigistore);
  istore_to_array  
 ------------------
@@ -1031,11 +872,7 @@ SELECT istore_to_array(''::bigistore);
  {}
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should convert istore to matrix;
--- ./spec/istore/functions_plain_spec.rb:399;
-CREATE EXTENSION istore;
 SELECT istore_to_matrix('5=>50, 7=>70, 9=>90'::bigistore);
     istore_to_matrix    
 ------------------------
@@ -1048,11 +885,7 @@ SELECT istore_to_matrix('-2147483647 => 10, -10 => -9223372036854775807, 0 => 5,
  {{-2147483647,10},{-10,-9223372036854775807},{0,5},{10,9223372036854775806},{2147483647,10}}
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should be able to find the smallest key;
--- ./spec/istore/functions_plain_spec.rb:495;
-CREATE EXTENSION istore;
 SELECT min_key(''::bigistore);
  min_key 
 ---------
@@ -1077,11 +910,7 @@ SELECT min_key('0=>2, 1=>2, 3=>0 ,2=>2'::bigistore);
        0
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions should be able to find the biggest key;
--- ./spec/istore/functions_plain_spec.rb:502;
-CREATE EXTENSION istore;
 SELECT max_key(''::bigistore);
  max_key 
 ---------
@@ -1106,11 +935,7 @@ SELECT max_key('0=>2, 1=>2, 3=>0 ,2=>2'::bigistore);
        3
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions slice should return a partial istore;
--- ./spec/istore/functions_plain_spec.rb:407;
-CREATE EXTENSION istore;
 SELECT slice('1=>10, 2=>20, 3=>30, 4=>40, 5=>50, 7=>70, 9=>90'::bigistore, ARRAY[3,5,1,9,11]);
                    slice                    
 --------------------------------------------
@@ -1123,22 +948,14 @@ SELECT slice('-2147483647 => 10, -10 => -9223372036854775807, 0 => 5, 10 => 9223
  "0"=>"5", "10"=>"9223372036854775806"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions slice should return empty istore if no key match;
--- ./spec/istore/functions_plain_spec.rb:414;
-CREATE EXTENSION istore;
 SELECT slice('1=>10, 2=>20, 3=>30, 4=>40, 5=>50, 7=>70, 9=>90'::bigistore, ARRAY[30,50,10,90]);
  slice 
 -------
  
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions slice_min_max should return a partial istore;
--- ./spec/istore/functions_plain_spec.rb:420;
-CREATE EXTENSION istore;
 SELECT slice('1=>10, 2=>20, 3=>30, 4=>40, 5=>50, 7=>70, 9=>90'::bigistore, 3,6);
               slice              
 ---------------------------------
@@ -1151,22 +968,14 @@ SELECT slice('-2147483647 => 10, -10 => -9223372036854775807, 0 => 5, 10 => 9223
  "0"=>"5", "10"=>"9223372036854775806"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions slice_min_max should return empty istore if no key match;
--- ./spec/istore/functions_plain_spec.rb:427;
-CREATE EXTENSION istore;
 SELECT slice('1=>10, 2=>20, 3=>30, 4=>40, 5=>50, 7=>70, 9=>90'::bigistore,10,90);
  slice 
 -------
  
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions slice_array should return a values from istore;
--- ./spec/istore/functions_plain_spec.rb:433;
-CREATE EXTENSION istore;
 SELECT slice_array('1=>10, 2=>20, 3=>30, 4=>40, 5=>50, 7=>70, 9=>90'::bigistore, ARRAY[3,5,1,9,11]);
     slice_array     
 --------------------
@@ -1179,22 +988,14 @@ SELECT slice_array('-2147483647 => 10, -10 => -9223372036854775807, 0 => 5, 10 =
  {9223372036854775806,5}
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions slice_array should return null array if no key match;
--- ./spec/istore/functions_plain_spec.rb:440;
-CREATE EXTENSION istore;
 SELECT slice_array('1=>10, 2=>20, 3=>30, 4=>40, 5=>50, 7=>70, 9=>90'::bigistore, ARRAY[30,50,10,90]);
       slice_array      
 -----------------------
  {NULL,NULL,NULL,NULL}
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions delete should delete a key from istore;
--- ./spec/istore/functions_plain_spec.rb:447;
-CREATE EXTENSION istore;
 SELECT delete('1=>10, 2=>20, 3=>30, 4=>40, 5=>50, 7=>70, 9=>90'::bigistore,3);
                               delete                              
 ------------------------------------------------------------------
@@ -1207,22 +1008,14 @@ SELECT delete('-2147483647 => 10, -10 => -9223372036854775807, 0 => 5, 10 => 922
  "-2147483647"=>"10", "-10"=>"-9223372036854775807", "0"=>"5", "2147483647"=>"10"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions delete should return istore if key unmatched;
--- ./spec/istore/functions_plain_spec.rb:454;
-CREATE EXTENSION istore;
 SELECT delete('1=>10, 2=>20, 3=>30, 4=>40, 5=>50, 7=>70, 9=>90'::bigistore,6);
                                    delete                                    
 -----------------------------------------------------------------------------
  "1"=>"10", "2"=>"20", "3"=>"30", "4"=>"40", "5"=>"50", "7"=>"70", "9"=>"90"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions delete should delete multiple keys from istore;
--- ./spec/istore/functions_plain_spec.rb:459;
-CREATE EXTENSION istore;
 SELECT delete('1=>10, 2=>20, 3=>30, 4=>40, 5=>50, 7=>70, 9=>90'::bigistore,ARRAY[7,8,2,5,4]);
              delete              
 ---------------------------------
@@ -1235,33 +1028,21 @@ SELECT delete('-2147483647 => 10, -10 => -9223372036854775807, 0 => 5, 10 => 922
  "-2147483647"=>"10", "2147483647"=>"10"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions delete should return istore if keys are unmatched;
--- ./spec/istore/functions_plain_spec.rb:466;
-CREATE EXTENSION istore;
 SELECT delete('1=>10, 2=>20, 3=>30, 4=>40, 5=>50, 7=>70, 9=>90'::bigistore,ARRAY[8,6]);
                                    delete                                    
 -----------------------------------------------------------------------------
  "1"=>"10", "2"=>"20", "3"=>"30", "4"=>"40", "5"=>"50", "7"=>"70", "9"=>"90"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions delete should delete istore from istore;
--- ./spec/istore/functions_plain_spec.rb:471;
-CREATE EXTENSION istore;
 SELECT delete('-2147483647 => 10, -10 => -9223372036854775807, 0 => 5, 10 => 9223372036854775806, 2147483647 => 10'::bigistore, '0=>5, 10=>100');
                                                delete                                                
 -----------------------------------------------------------------------------------------------------
  "-2147483647"=>"10", "-10"=>"-9223372036854775807", "10"=>"9223372036854775806", "2147483647"=>"10"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions existence should check presence of a key;
--- ./spec/istore/functions_plain_spec.rb:478;
-CREATE EXTENSION istore;
 SELECT exist('-2147483647 => 10, -10 => -9223372036854775807, 0 => 5, 10 => 9223372036854775806, 2147483647 => 10'::bigistore, 10);
  exist 
 -------
@@ -1274,11 +1055,7 @@ SELECT exist('-2147483647 => 10, -10 => -9223372036854775807, 0 => 5, 10 => 9223
  f
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions existence should check presence of any key;
--- ./spec/istore/functions_plain_spec.rb:482;
-CREATE EXTENSION istore;
 SELECT exists_any('-2147483647 => 10, -10 => -9223372036854775807, 0 => 5, 10 => 9223372036854775806, 2147483647 => 10'::bigistore, Array[10,0]);
  exists_any 
 ------------
@@ -1291,17 +1068,13 @@ SELECT exists_any('-2147483647 => 10, -10 => -9223372036854775807, 0 => 5, 10 =>
  f
 (1 row)
 
-SELECT exists_any('1=>4,2=>5'::bigistore, ARRAY[]::int[]);;
+SELECT exists_any('1=>4,2=>5'::bigistore, ARRAY[]::int[]);
  exists_any 
 ------------
  f
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions existence should check presence of all key;
--- ./spec/istore/functions_plain_spec.rb:487;
-CREATE EXTENSION istore;
 SELECT exists_all('-2147483647 => 10, -10 => -9223372036854775807, 0 => 5, 10 => 9223372036854775806, 2147483647 => 10'::bigistore, Array[10,0]);
  exists_all 
 ------------
@@ -1314,23 +1087,19 @@ SELECT exists_all('-2147483647 => 10, -10 => -9223372036854775807, 0 => 5, 10 =>
  f
 (1 row)
 
-SELECT exists_all('1=>4,2=>5'::bigistore, ARRAY[1,3]);;
+SELECT exists_all('1=>4,2=>5'::bigistore, ARRAY[1,3]);
  exists_all 
 ------------
  f
 (1 row)
 
-SELECT exists_all('1=>4,2=>5'::bigistore, ARRAY[]::int[]);;
+SELECT exists_all('1=>4,2=>5'::bigistore, ARRAY[]::int[]);
  exists_all 
 ------------
  t
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions clamp should clamp keys that are below a specified threshold;
--- ./spec/istore/functions_plain_spec.rb:510;
-CREATE EXTENSION istore;
 SELECT clamp_below('1=>1'::bigistore, 0);
  clamp_below 
 -------------
@@ -1375,11 +1144,7 @@ SELECT clamp_below('1=>1, 2=>2147483647, 3=>42'::bigistore, 2);
 
 SELECT clamp_below('1=>1, 2=>9223372036854775807, 3=>42'::bigistore, 2);
 ERROR:  integer out of range
-ROLLBACK;
-BEGIN;
 -- bigistore functions clamp should clamp keys that are above a specified threshold;
--- ./spec/istore/functions_plain_spec.rb:528;
-CREATE EXTENSION istore;
 SELECT clamp_above('1=>1'::bigistore, 2);
  clamp_above 
 -------------
@@ -1416,11 +1181,7 @@ SELECT clamp_above('-1=>1, 0=>1, 1=>1, 2=>1'::bigistore, -6);
  "-6"=>"4"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions concat should concat two istores;
--- ./spec/istore/functions_plain_spec.rb:539;
-CREATE EXTENSION istore;
 SELECT concat('1=>4, 2=>5'::bigistore, '3=>4, 2=>7'::bigistore);
             concat            
 ------------------------------
@@ -1433,11 +1194,7 @@ SELECT concat('-2147483647 => 10, -10 => -9223372036854775807, 0 => 5, 10 => 922
  "-2147483647"=>"10", "-10"=>"-9223372036854775807", "0"=>"5", "10"=>"9223372036854775806", "2147483647"=>"10"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions concat should concat empty istores;
--- ./spec/istore/functions_plain_spec.rb:546;
-CREATE EXTENSION istore;
 SELECT concat('-2147483647 => 10, -10 => -9223372036854775807, 0 => 5, 10 => 9223372036854775806, 2147483647 => 10'::bigistore, ''::bigistore);
                                                     concat                                                     
 ---------------------------------------------------------------------------------------------------------------
@@ -1456,11 +1213,7 @@ SELECT concat(''::bigistore, ''::bigistore);
  
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions istore_in_range shoud return true iff istore is in the given range;
--- ./spec/istore/functions_plain_spec.rb:557;
-CREATE EXTENSION istore;
 SELECT istore_in_range('1=>-32768, 2 => 0, 3=>32767'::bigistore, -32768, 32767);
  istore_in_range 
 -----------------
@@ -1479,11 +1232,7 @@ SELECT istore_in_range('1=>0, 2=>1, 3=>2'::bigistore, 3, -1);
  f
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions istore_in_range should handle corner cases correctly;
--- ./spec/istore/functions_plain_spec.rb:563;
-CREATE EXTENSION istore;
 SELECT istore_in_range(''::bigistore, -1, 1);
  istore_in_range 
 -----------------
@@ -1502,11 +1251,7 @@ SELECT istore_in_range('1=>2, 3=>4'::bigistore, 5, 0);
  f
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions istore_less_than, istore_greater_than, istore_less_than_or_equal, istore_greater_than_or_equal should also work with less than and greater than (or equal);
--- ./spec/istore/functions_plain_spec.rb:571;
-CREATE EXTENSION istore;
 SELECT istore_less_than('1=>100, 2=>-100'::bigistore, 100);
  istore_less_than 
 ------------------
@@ -1531,11 +1276,7 @@ SELECT istore_greater_than_or_equal('1=>100, 2=>-100'::bigistore, -100);
  t
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions istore_floor, istore_ceiling should accept corner cases;
--- ./spec/istore/functions_plain_spec.rb:580;
-CREATE EXTENSION istore;
 SELECT istore_ceiling(''::bigistore, 0);
  istore_ceiling 
 ----------------
@@ -1548,11 +1289,7 @@ SELECT istore_floor(''::bigistore, 0);
  
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- bigistore functions istore_floor, istore_ceiling should filter out values based on floor and ceiling;
--- ./spec/istore/functions_plain_spec.rb:585;
-CREATE EXTENSION istore;
 SELECT istore_floor('1=>-32768, -1=>32767'::bigistore, -32767);
          istore_floor         
 ------------------------------
@@ -1577,11 +1314,7 @@ SELECT istore_ceiling('1=>1, 2=>2, 3=>3, 4=>4, 5=>5'::bigistore, 3);
  "1"=>"1", "2"=>"2", "3"=>"3", "4"=>"3", "5"=>"3"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should find keys with exists;
--- ./spec/istore/functions_plain_spec.rb:10;
-CREATE EXTENSION istore;
 SELECT exist('1=>1'::istore, 1);
  exist 
 -------
@@ -1606,11 +1339,7 @@ SELECT exist('1=>1, -1=>0'::istore, -1);
  t
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should fetchvals;
--- ./spec/istore/functions_plain_spec.rb:17;
-CREATE EXTENSION istore;
 SELECT fetchval('1=>1'::istore, 1);
  fetchval 
 ----------
@@ -1635,11 +1364,7 @@ SELECT fetchval('1=>1, 1=>1'::istore, 2);
          
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should return set of ints;
--- ./spec/istore/functions_plain_spec.rb:24;
-CREATE EXTENSION istore;
 SELECT * FROM each('1=>1'::istore);
  key | value 
 -----+-------
@@ -1682,22 +1407,14 @@ SELECT * FROM each(NULL::istore);
 -----+-------
 (0 rows)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should compact istores;
--- ./spec/istore/functions_plain_spec.rb:49;
-CREATE EXTENSION istore;
 SELECT compact('0=>2, 1=>2, 3=>0 ,2=>2'::istore);
            compact            
 ------------------------------
  "0"=>"2", "1"=>"2", "2"=>"2"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should add istores;
--- ./spec/istore/functions_plain_spec.rb:54;
-CREATE EXTENSION istore;
 SELECT add('1=>1, 2=>1'::istore, '1=>1, 2=>1'::istore);
         add         
 --------------------
@@ -1746,17 +1463,13 @@ SELECT add('-1=>-1, 2=>1'::istore, 0);
  "-1"=>"-1", "2"=>"1"
 (1 row)
 
-SELECT add(istore(Array[]::integer[], Array[]::integer[]), '1=>0'::istore);;
+SELECT add(istore(Array[]::integer[], Array[]::integer[]), '1=>0'::istore);
    add    
 ----------
  "1"=>"0"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should substract istores;
--- ./spec/istore/functions_plain_spec.rb:75;
-CREATE EXTENSION istore;
 SELECT subtract('1=>1, 2=>1'::istore, '1=>1, 2=>1'::istore);
       subtract      
 --------------------
@@ -1805,17 +1518,13 @@ SELECT subtract('-1=>-1, 2=>1'::istore, 0);
  "-1"=>"-1", "2"=>"1"
 (1 row)
 
-SELECT subtract(istore(Array[]::integer[], Array[]::integer[]), '1=>0'::istore);;
+SELECT subtract(istore(Array[]::integer[], Array[]::integer[]), '1=>0'::istore);
  subtract 
 ----------
  "1"=>"0"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should multiply istores;
--- ./spec/istore/functions_plain_spec.rb:96;
-CREATE EXTENSION istore;
 SELECT multiply('1=>1, 2=>1'::istore, '1=>1, 2=>1'::istore);
       multiply      
 --------------------
@@ -1864,11 +1573,7 @@ SELECT multiply('-1=>-1, 2=>1'::istore, 0);
  "-1"=>"0", "2"=>"0"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should divide istores;
--- ./spec/istore/functions_plain_spec.rb:115;
-CREATE EXTENSION istore;
 SELECT divide('1=>1, 2=>1'::istore, '1=>1, 2=>1'::istore);
        divide       
 --------------------
@@ -1929,25 +1634,13 @@ SELECT divide('-1=>-1, 2=>1'::istore, -1);
  "-1"=>"1", "2"=>"-1"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should raise division by zero error;
--- ./spec/istore/functions_plain_spec.rb:137;
-CREATE EXTENSION istore;
 SELECT divide('-1=>-1, 2=>1'::istore, 0);
 ERROR:  division by zero
-ROLLBACK;
-BEGIN;
 -- istore functions should raise division by zero error;
--- ./spec/istore/functions_plain_spec.rb:141;
-CREATE EXTENSION istore;
 SELECT divide('-1=>-1, 2=>1'::istore, '2=>0');
 ERROR:  division by zero
-ROLLBACK;
-BEGIN;
 -- istore functions should generate #{type} from array;
--- ./spec/istore/functions_plain_spec.rb:145;
-CREATE EXTENSION istore;
 SELECT istore(ARRAY[1]);
   istore  
 ----------
@@ -2014,11 +1707,7 @@ SELECT istore(ARRAY[]::integer[]);
  
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should sum up istores;
--- ./spec/istore/functions_plain_spec.rb:167;
-CREATE EXTENSION istore;
 SELECT sum_up('1=>1'::istore);
  sum_up 
 --------
@@ -2049,50 +1738,34 @@ SELECT sum_up('1=>1 ,2=>-1, 1=>1'::istore);
       1
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should sum istores from table;
--- ./spec/istore/functions_plain_spec.rb:175;
-CREATE EXTENSION istore;
-CREATE TABLE test (a istore);
-INSERT INTO test VALUES('1=>1'),('2=>1'), ('3=>1');
-SELECT SUM(a) FROM test;
+CREATE TABLE test4 (a istore);
+INSERT INTO test4 VALUES('1=>1'),('2=>1'), ('3=>1');
+SELECT SUM(a) FROM test4;
              sum              
 ------------------------------
  "1"=>"1", "2"=>"1", "3"=>"1"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should sum istores from table;
--- ./spec/istore/functions_plain_spec.rb:182;
-CREATE EXTENSION istore;
-CREATE TABLE test (a istore);
-INSERT INTO test VALUES('1=>1'),('2=>1'),('3=>1'),(NULL),('3=>3');
-SELECT SUM(a) FROM test;
+CREATE TABLE test5 (a istore);
+INSERT INTO test5 VALUES('1=>1'),('2=>1'),('3=>1'),(NULL),('3=>3');
+SELECT SUM(a) FROM test5;
              sum              
 ------------------------------
  "1"=>"1", "2"=>"1", "3"=>"4"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should sum istores from table;
--- ./spec/istore/functions_plain_spec.rb:189;
-CREATE EXTENSION istore;
-CREATE TABLE test (a istore);
-INSERT INTO test VALUES('1=>1'),('2=>1'),('3=>1'),(NULL),('3=>0');
-SELECT SUM(a) FROM test;
+CREATE TABLE test6 (a istore);
+INSERT INTO test6 VALUES('1=>1'),('2=>1'),('3=>1'),(NULL),('3=>0');
+SELECT SUM(a) FROM test6;
              sum              
 ------------------------------
  "1"=>"1", "2"=>"1", "3"=>"1"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should merge correctly scatter keys;
--- ./spec/istore/functions_plain_spec.rb:196;
-CREATE EXTENSION istore;
 SELECT SUM(x) FROM (VALUES ('1=>1, 5=>5'::istore), ('3=>3, 7=>7')) as v(x);
                   sum                   
 ----------------------------------------
@@ -2117,11 +1790,7 @@ SELECT SUM(x) FROM (VALUES ('3=>3, 7=>7'::bigistore), ('1=>1, 5=>5')) as v(x);
  "1"=>"1", "3"=>"3", "5"=>"5", "7"=>"7"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should return istores from arrays;
--- ./spec/istore/functions_plain_spec.rb:207;
-CREATE EXTENSION istore;
 SELECT istore(Array[5,3,4,5], Array[1,2,3,4]);
             istore            
 ------------------------------
@@ -2146,11 +1815,7 @@ SELECT istore(Array[1,1]::int[], Array[-1,-1]::int[]);
  "1"=>"-2"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should fill gaps;
--- ./spec/istore/functions_plain_spec.rb:226;
-CREATE EXTENSION istore;
 SELECT fill_gaps('2=>17, 4=>3'::istore, 5, 0);
                           fill_gaps                          
 -------------------------------------------------------------
@@ -2207,11 +1872,7 @@ SELECT fill_gaps(NULL::istore, 3, 0);
 
 SELECT fill_gaps('2=>17, 4=>3'::istore, -5, 0);
 ERROR:  parameter upto must be >= 0
-ROLLBACK;
-BEGIN;
 -- istore functions should fill accumulate;
--- ./spec/istore/functions_plain_spec.rb:255;
-CREATE EXTENSION istore;
 SELECT accumulate('2=>17, 4=>3'::istore);
            accumulate            
 ---------------------------------
@@ -2260,11 +1921,7 @@ SELECT accumulate('-5=> 5, 3=> 5'::istore);
  "-5"=>"5", "-4"=>"5", "-3"=>"5", "-2"=>"5", "-1"=>"5", "0"=>"5", "1"=>"5", "2"=>"5", "3"=>"10"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should fill accumulate upto;
--- ./spec/istore/functions_plain_spec.rb:271;
-CREATE EXTENSION istore;
 SELECT accumulate('2=>17, 4=>3'::istore, 8);
                                  accumulate                                  
 -----------------------------------------------------------------------------
@@ -2319,22 +1976,14 @@ SELECT accumulate('-5=> 5, 3=> 5'::istore, 2);
  "-5"=>"5", "-4"=>"5", "-3"=>"5", "-2"=>"5", "-1"=>"5", "0"=>"5", "1"=>"5", "2"=>"5"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should accumulate big numbers;
--- ./spec/istore/functions_plain_spec.rb:288;
-CREATE EXTENSION istore;
 SELECT accumulate('0=>20000000000, 1=>10000000000, 3=>10000000000'::bigistore, 4);
                                              accumulate                                             
 ----------------------------------------------------------------------------------------------------
  "0"=>"20000000000", "1"=>"30000000000", "2"=>"30000000000", "3"=>"40000000000", "4"=>"40000000000"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should seed an #{type} from integer;
--- ./spec/istore/functions_plain_spec.rb:293;
-CREATE EXTENSION istore;
 SELECT istore_seed(2,5,8::int);
               istore_seed               
 ----------------------------------------
@@ -2361,62 +2010,38 @@ SELECT istore_seed(2,2,8::int);
 
 SELECT istore_seed(2,0,8::int);
 ERROR:  parameter upto must be >= from
-ROLLBACK;
-BEGIN;
 -- istore functions should throw an error if negativ seed span;
--- ./spec/istore/functions_plain_spec.rb:304;
-CREATE EXTENSION istore;
 SELECT istore_seed(-2,0,8);
 ERROR:  parameter from must be >= 0
-ROLLBACK;
-BEGIN;
 -- istore functions should merge istores by larger keys;
--- ./spec/istore/functions_plain_spec.rb:308;
-CREATE EXTENSION istore;
 SELECT istore_val_larger('1=>1,2=>1,3=>3'::istore, '1=>2,3=>1,4=>1');
            istore_val_larger            
 ----------------------------------------
  "1"=>"2", "2"=>"1", "3"=>"3", "4"=>"1"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should merge istores by smaller keys;
--- ./spec/istore/functions_plain_spec.rb:313;
-CREATE EXTENSION istore;
 SELECT istore_val_smaller('1=>1,2=>1,3=>3'::istore, '1=>2,3=>1,4=>1');
            istore_val_smaller           
 ----------------------------------------
  "1"=>"1", "2"=>"1", "3"=>"1", "4"=>"1"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should return #{type} with maxed values;
--- ./spec/istore/functions_plain_spec.rb:318;
-CREATE EXTENSION istore;
 SELECT MAX(s) FROM (VALUES('1=>5, 2=>2, 3=>3'::istore),('1=>1, 2=>5, 3=>3'),('1=>1, 2=>4, 3=>5'))t(s);
              max              
 ------------------------------
  "1"=>"5", "2"=>"5", "3"=>"5"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should return #{type} with maxed values;
--- ./spec/istore/functions_plain_spec.rb:323;
-CREATE EXTENSION istore;
 SELECT MIN(s) FROM (VALUES('1=>5, 2=>2, 3=>3'::istore),('1=>1, 2=>5, 3=>3'),('1=>1, 2=>4, 3=>5'))t(s);
              min              
 ------------------------------
  "1"=>"1", "2"=>"2", "3"=>"3"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should return keys as array;
--- ./spec/istore/functions_plain_spec.rb:328;
-CREATE EXTENSION istore;
 SELECT akeys('-5=>10, 0=>-5, 5=>0'::istore);
   akeys   
 ----------
@@ -2429,11 +2054,7 @@ SELECT akeys(''::istore);
  {}
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should return values as array;
--- ./spec/istore/functions_plain_spec.rb:333;
-CREATE EXTENSION istore;
 SELECT avals('-5=>10, 0=>-5, 5=>0'::istore);
    avals   
 -----------
@@ -2446,11 +2067,7 @@ SELECT avals(''::istore);
  {}
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should return keys as set;
--- ./spec/istore/functions_plain_spec.rb:337;
-CREATE EXTENSION istore;
 SELECT skeys('-5=>10, 0=>-5, 5=>0'::istore);
  skeys 
 -------
@@ -2464,11 +2081,7 @@ SELECT skeys(''::istore);
 -------
 (0 rows)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should return values set array;
--- ./spec/istore/functions_plain_spec.rb:345;
-CREATE EXTENSION istore;
 SELECT svals('-5=>10, 0=>-5, 5=>0'::istore);
  svals 
 -------
@@ -2482,77 +2095,49 @@ SELECT svals(''::istore);
 -------
 (0 rows)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should sum up istores;
--- ./spec/istore/functions_plain_spec.rb:353;
-CREATE EXTENSION istore;
 SELECT sum_up('10=>5, 15=>10'::istore);
  sum_up 
 --------
      15
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should sum up istores with big numbers;
--- ./spec/istore/functions_plain_spec.rb:357;
-CREATE EXTENSION istore;
 SELECT sum_up('10=>2000000000, 15=>1000000000'::istore);
    sum_up   
 ------------
  3000000000
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should sum up bigistores;
--- ./spec/istore/functions_plain_spec.rb:361;
-CREATE EXTENSION istore;
 SELECT sum_up('10=>5, 15=>10'::bigistore);
  sum_up 
 --------
      15
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should sum up istores with negative values;
--- ./spec/istore/functions_plain_spec.rb:365;
-CREATE EXTENSION istore;
 SELECT sum_up('10=>5, 15=>-10'::istore);
  sum_up 
 --------
      -5
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should sum up bigistores with negative values;
--- ./spec/istore/functions_plain_spec.rb:369;
-CREATE EXTENSION istore;
 SELECT sum_up('10=>5, 15=>-10'::bigistore);
  sum_up 
 --------
      -5
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should return length of empty istores;
--- ./spec/istore/functions_plain_spec.rb:373;
-CREATE EXTENSION istore;
 SELECT istore_length(istore(ARRAY[]::integer[],ARRAY[]::integer[]));
  istore_length 
 ---------------
              0
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should return length of non-empty istores;
--- ./spec/istore/functions_plain_spec.rb:377;
-CREATE EXTENSION istore;
 SELECT istore_length(istore(ARRAY[1],ARRAY[1]));
  istore_length 
 ---------------
@@ -2571,11 +2156,7 @@ SELECT istore_length('-2147483647 => 10, -10 => -2147483647, 0 => 5, 10 => 21474
              5
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should convert istore to json;
--- ./spec/istore/functions_plain_spec.rb:383;
-CREATE EXTENSION istore;
 SELECT istore_to_json('5=>50, 7=>70, 9=>90'::istore);
        istore_to_json        
 -----------------------------
@@ -2588,11 +2169,7 @@ SELECT istore_to_json('-2147483647 => 10, -10 => -2147483647, 0 => 5, 10 => 2147
  {"-2147483647": 10, "-10": -2147483647, "0": 5, "10": 2147483647, "2147483647": 10}
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should convert istore to array;
--- ./spec/istore/functions_plain_spec.rb:390;
-CREATE EXTENSION istore;
 SELECT istore_to_array('5=>50, 7=>70, 9=>90'::istore);
  istore_to_array  
 ------------------
@@ -2611,11 +2188,7 @@ SELECT istore_to_array(''::istore);
  {}
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should convert istore to matrix;
--- ./spec/istore/functions_plain_spec.rb:399;
-CREATE EXTENSION istore;
 SELECT istore_to_matrix('5=>50, 7=>70, 9=>90'::istore);
     istore_to_matrix    
 ------------------------
@@ -2628,11 +2201,7 @@ SELECT istore_to_matrix('-2147483647 => 10, -10 => -2147483647, 0 => 5, 10 => 21
  {{-2147483647,10},{-10,-2147483647},{0,5},{10,2147483647},{2147483647,10}}
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should be able to find the smallest key;
--- ./spec/istore/functions_plain_spec.rb:495;
-CREATE EXTENSION istore;
 SELECT min_key(''::istore);
  min_key 
 ---------
@@ -2657,11 +2226,7 @@ SELECT min_key('0=>2, 1=>2, 3=>0 ,2=>2'::istore);
        0
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions should be able to find the biggest key;
--- ./spec/istore/functions_plain_spec.rb:502;
-CREATE EXTENSION istore;
 SELECT max_key(''::istore);
  max_key 
 ---------
@@ -2686,11 +2251,7 @@ SELECT max_key('0=>2, 1=>2, 3=>0 ,2=>2'::istore);
        3
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions slice should return a partial istore;
--- ./spec/istore/functions_plain_spec.rb:407;
-CREATE EXTENSION istore;
 SELECT slice('1=>10, 2=>20, 3=>30, 4=>40, 5=>50, 7=>70, 9=>90'::istore, ARRAY[3,5,1,9,11]);
                    slice                    
 --------------------------------------------
@@ -2703,22 +2264,14 @@ SELECT slice('-2147483647 => 10, -10 => -2147483647, 0 => 5, 10 => 2147483647, 2
  "0"=>"5", "10"=>"2147483647"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions slice should return empty istore if no key match;
--- ./spec/istore/functions_plain_spec.rb:414;
-CREATE EXTENSION istore;
 SELECT slice('1=>10, 2=>20, 3=>30, 4=>40, 5=>50, 7=>70, 9=>90'::istore, ARRAY[30,50,10,90]);
  slice 
 -------
  
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions slice_min_max should return a partial istore;
--- ./spec/istore/functions_plain_spec.rb:420;
-CREATE EXTENSION istore;
 SELECT slice('1=>10, 2=>20, 3=>30, 4=>40, 5=>50, 7=>70, 9=>90'::istore, 3,6);
               slice              
 ---------------------------------
@@ -2731,22 +2284,14 @@ SELECT slice('-2147483647 => 10, -10 => -2147483647, 0 => 5, 10 => 2147483647, 2
  "0"=>"5", "10"=>"2147483647"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions slice_min_max should return empty istore if no key match;
--- ./spec/istore/functions_plain_spec.rb:427;
-CREATE EXTENSION istore;
 SELECT slice('1=>10, 2=>20, 3=>30, 4=>40, 5=>50, 7=>70, 9=>90'::istore,10,90);
  slice 
 -------
  
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions slice_array should return a values from istore;
--- ./spec/istore/functions_plain_spec.rb:433;
-CREATE EXTENSION istore;
 SELECT slice_array('1=>10, 2=>20, 3=>30, 4=>40, 5=>50, 7=>70, 9=>90'::istore, ARRAY[3,5,1,9,11]);
     slice_array     
 --------------------
@@ -2759,22 +2304,14 @@ SELECT slice_array('-2147483647 => 10, -10 => -2147483647, 0 => 5, 10 => 2147483
  {2147483647,5}
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions slice_array should return null array if no key match;
--- ./spec/istore/functions_plain_spec.rb:440;
-CREATE EXTENSION istore;
 SELECT slice_array('1=>10, 2=>20, 3=>30, 4=>40, 5=>50, 7=>70, 9=>90'::istore, ARRAY[30,50,10,90]);
       slice_array      
 -----------------------
  {NULL,NULL,NULL,NULL}
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions delete should delete a key from istore;
--- ./spec/istore/functions_plain_spec.rb:447;
-CREATE EXTENSION istore;
 SELECT delete('1=>10, 2=>20, 3=>30, 4=>40, 5=>50, 7=>70, 9=>90'::istore,3);
                               delete                              
 ------------------------------------------------------------------
@@ -2787,22 +2324,14 @@ SELECT delete('-2147483647 => 10, -10 => -2147483647, 0 => 5, 10 => 2147483647, 
  "-2147483647"=>"10", "-10"=>"-2147483647", "0"=>"5", "2147483647"=>"10"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions delete should return istore if key unmatched;
--- ./spec/istore/functions_plain_spec.rb:454;
-CREATE EXTENSION istore;
 SELECT delete('1=>10, 2=>20, 3=>30, 4=>40, 5=>50, 7=>70, 9=>90'::istore,6);
                                    delete                                    
 -----------------------------------------------------------------------------
  "1"=>"10", "2"=>"20", "3"=>"30", "4"=>"40", "5"=>"50", "7"=>"70", "9"=>"90"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions delete should delete multiple keys from istore;
--- ./spec/istore/functions_plain_spec.rb:459;
-CREATE EXTENSION istore;
 SELECT delete('1=>10, 2=>20, 3=>30, 4=>40, 5=>50, 7=>70, 9=>90'::istore,ARRAY[7,8,2,5,4]);
              delete              
 ---------------------------------
@@ -2815,33 +2344,21 @@ SELECT delete('-2147483647 => 10, -10 => -2147483647, 0 => 5, 10 => 2147483647, 
  "-2147483647"=>"10", "2147483647"=>"10"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions delete should return istore if keys are unmatched;
--- ./spec/istore/functions_plain_spec.rb:466;
-CREATE EXTENSION istore;
 SELECT delete('1=>10, 2=>20, 3=>30, 4=>40, 5=>50, 7=>70, 9=>90'::istore,ARRAY[8,6]);
                                    delete                                    
 -----------------------------------------------------------------------------
  "1"=>"10", "2"=>"20", "3"=>"30", "4"=>"40", "5"=>"50", "7"=>"70", "9"=>"90"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions delete should delete istore from istore;
--- ./spec/istore/functions_plain_spec.rb:471;
-CREATE EXTENSION istore;
 SELECT delete('-2147483647 => 10, -10 => -2147483647, 0 => 5, 10 => 2147483647, 2147483647 => 10'::istore, '0=>5, 10=>100');
                                       delete                                       
 -----------------------------------------------------------------------------------
  "-2147483647"=>"10", "-10"=>"-2147483647", "10"=>"2147483647", "2147483647"=>"10"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions existence should check presence of a key;
--- ./spec/istore/functions_plain_spec.rb:478;
-CREATE EXTENSION istore;
 SELECT exist('-2147483647 => 10, -10 => -2147483647, 0 => 5, 10 => 2147483647, 2147483647 => 10'::istore, 10);
  exist 
 -------
@@ -2854,11 +2371,7 @@ SELECT exist('-2147483647 => 10, -10 => -2147483647, 0 => 5, 10 => 2147483647, 2
  f
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions existence should check presence of any key;
--- ./spec/istore/functions_plain_spec.rb:482;
-CREATE EXTENSION istore;
 SELECT exists_any('-2147483647 => 10, -10 => -2147483647, 0 => 5, 10 => 2147483647, 2147483647 => 10'::istore, Array[10,0]);
  exists_any 
 ------------
@@ -2871,17 +2384,13 @@ SELECT exists_any('-2147483647 => 10, -10 => -2147483647, 0 => 5, 10 => 21474836
  f
 (1 row)
 
-SELECT exists_any('1=>4,2=>5'::istore, ARRAY[]::int[]);;
+SELECT exists_any('1=>4,2=>5'::istore, ARRAY[]::int[]);
  exists_any 
 ------------
  f
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions existence should check presence of all key;
--- ./spec/istore/functions_plain_spec.rb:487;
-CREATE EXTENSION istore;
 SELECT exists_all('-2147483647 => 10, -10 => -2147483647, 0 => 5, 10 => 2147483647, 2147483647 => 10'::istore, Array[10,0]);
  exists_all 
 ------------
@@ -2894,23 +2403,19 @@ SELECT exists_all('-2147483647 => 10, -10 => -2147483647, 0 => 5, 10 => 21474836
  f
 (1 row)
 
-SELECT exists_all('1=>4,2=>5'::istore, ARRAY[1,3]);;
+SELECT exists_all('1=>4,2=>5'::istore, ARRAY[1,3]);
  exists_all 
 ------------
  f
 (1 row)
 
-SELECT exists_all('1=>4,2=>5'::istore, ARRAY[]::int[]);;
+SELECT exists_all('1=>4,2=>5'::istore, ARRAY[]::int[]);
  exists_all 
 ------------
  t
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions clamp should clamp keys that are below a specified threshold;
--- ./spec/istore/functions_plain_spec.rb:510;
-CREATE EXTENSION istore;
 SELECT clamp_below('1=>1'::istore, 0);
  clamp_below 
 -------------
@@ -2949,11 +2454,7 @@ SELECT clamp_below('-5=>1, -1=>1, 0=>1, 1=>1'::istore, 2);
 
 SELECT clamp_below('1=>1, 2=>2147483647, 3=>42'::istore, 2);
 ERROR:  integer out of range
-ROLLBACK;
-BEGIN;
 -- istore functions clamp should clamp keys that are above a specified threshold;
--- ./spec/istore/functions_plain_spec.rb:528;
-CREATE EXTENSION istore;
 SELECT clamp_above('1=>1'::istore, 2);
  clamp_above 
 -------------
@@ -2990,11 +2491,7 @@ SELECT clamp_above('-1=>1, 0=>1, 1=>1, 2=>1'::istore, -6);
  "-6"=>"4"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions concat should concat two istores;
--- ./spec/istore/functions_plain_spec.rb:539;
-CREATE EXTENSION istore;
 SELECT concat('1=>4, 2=>5'::istore, '3=>4, 2=>7'::istore);
             concat            
 ------------------------------
@@ -3007,11 +2504,7 @@ SELECT concat('-2147483647 => 10, -10 => -2147483647, 0 => 5, 10 => 2147483647, 
  "-2147483647"=>"10", "-10"=>"-2147483647", "0"=>"5", "10"=>"2147483647", "2147483647"=>"10"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions concat should concat empty istores;
--- ./spec/istore/functions_plain_spec.rb:546;
-CREATE EXTENSION istore;
 SELECT concat('-2147483647 => 10, -10 => -2147483647, 0 => 5, 10 => 2147483647, 2147483647 => 10'::istore, ''::istore);
                                            concat                                            
 ---------------------------------------------------------------------------------------------
@@ -3030,11 +2523,7 @@ SELECT concat(''::istore, ''::istore);
  
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions istore_in_range shoud return true iff istore is in the given range;
--- ./spec/istore/functions_plain_spec.rb:557;
-CREATE EXTENSION istore;
 SELECT istore_in_range('1=>-32768, 2 => 0, 3=>32767'::istore, -32768, 32767);
  istore_in_range 
 -----------------
@@ -3053,11 +2542,7 @@ SELECT istore_in_range('1=>0, 2=>1, 3=>2'::istore, 3, -1);
  f
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions istore_in_range should handle corner cases correctly;
--- ./spec/istore/functions_plain_spec.rb:563;
-CREATE EXTENSION istore;
 SELECT istore_in_range(''::istore, -1, 1);
  istore_in_range 
 -----------------
@@ -3076,11 +2561,7 @@ SELECT istore_in_range('1=>2, 3=>4'::istore, 5, 0);
  f
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions istore_less_than, istore_greater_than, istore_less_than_or_equal, istore_greater_than_or_equal should also work with less than and greater than (or equal);
--- ./spec/istore/functions_plain_spec.rb:571;
-CREATE EXTENSION istore;
 SELECT istore_less_than('1=>100, 2=>-100'::istore, 100);
  istore_less_than 
 ------------------
@@ -3105,11 +2586,7 @@ SELECT istore_greater_than_or_equal('1=>100, 2=>-100'::istore, -100);
  t
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions istore_floor, istore_ceiling should accept corner cases;
--- ./spec/istore/functions_plain_spec.rb:580;
-CREATE EXTENSION istore;
 SELECT istore_ceiling(''::istore, 0);
  istore_ceiling 
 ----------------
@@ -3122,11 +2599,7 @@ SELECT istore_floor(''::istore, 0);
  
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- istore functions istore_floor, istore_ceiling should filter out values based on floor and ceiling;
--- ./spec/istore/functions_plain_spec.rb:585;
-CREATE EXTENSION istore;
 SELECT istore_floor('1=>-32768, -1=>32767'::istore, -32767);
          istore_floor         
 ------------------------------
@@ -3151,4 +2624,3 @@ SELECT istore_ceiling('1=>1, 2=>2, 3=>3, 4=>4, 5=>5'::istore, 3);
  "1"=>"1", "2"=>"2", "3"=>"3", "4"=>"3", "5"=>"3"
 (1 row)
 
-ROLLBACK;

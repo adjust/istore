@@ -1,7 +1,5 @@
-BEGIN;
--- isagg int should skip null keys;
--- ./spec/istore/aggregates_spec.rb:9;
 CREATE EXTENSION istore;
+-- isagg int should skip null keys;
 SELECT id, isagg(NULLIF(i%10,3), NULLIF(i::int, 50) ) FROM generate_series(1,100) i, generate_series(1,3) id GROUP BY id ORDER BY id;;
  id |                                                   isagg                                                    
 ----+------------------------------------------------------------------------------------------------------------
@@ -10,11 +8,7 @@ SELECT id, isagg(NULLIF(i%10,3), NULLIF(i::int, 50) ) FROM generate_series(1,100
   3 | "0"=>"500", "1"=>"460", "2"=>"470", "4"=>"490", "5"=>"500", "6"=>"510", "7"=>"520", "8"=>"530", "9"=>"540"
 (3 rows)
 
-ROLLBACK;
-BEGIN;
 -- isagg int should skip null values;
--- ./spec/istore/aggregates_spec.rb:16;
-CREATE EXTENSION istore;
 SELECT id, isagg((i%10), NULL::int) FROM generate_series(1,100) i, generate_series(1,3) id GROUP BY id ORDER BY id;;
  id | isagg 
 ----+-------
@@ -23,11 +17,7 @@ SELECT id, isagg((i%10), NULL::int) FROM generate_series(1,100) i, generate_seri
   3 | 
 (3 rows)
 
-ROLLBACK;
-BEGIN;
 -- isagg bigint should skip null keys;
--- ./spec/istore/aggregates_spec.rb:9;
-CREATE EXTENSION istore;
 SELECT id, isagg(NULLIF(i%10,3), NULLIF(i::bigint, 50) ) FROM generate_series(1,100) i, generate_series(1,3) id GROUP BY id ORDER BY id;;
  id |                                                   isagg                                                    
 ----+------------------------------------------------------------------------------------------------------------
@@ -36,11 +26,7 @@ SELECT id, isagg(NULLIF(i%10,3), NULLIF(i::bigint, 50) ) FROM generate_series(1,
   3 | "0"=>"500", "1"=>"460", "2"=>"470", "4"=>"490", "5"=>"500", "6"=>"510", "7"=>"520", "8"=>"530", "9"=>"540"
 (3 rows)
 
-ROLLBACK;
-BEGIN;
 -- isagg bigint should skip null values;
--- ./spec/istore/aggregates_spec.rb:16;
-CREATE EXTENSION istore;
 SELECT id, isagg((i%10), NULL::bigint) FROM generate_series(1,100) i, generate_series(1,3) id GROUP BY id ORDER BY id;;
  id | isagg 
 ----+-------
@@ -49,32 +35,23 @@ SELECT id, isagg((i%10), NULL::bigint) FROM generate_series(1,100) i, generate_s
   3 | 
 (3 rows)
 
-ROLLBACK;
-BEGIN;
 -- extend istore should correctly extend internal aggregation state while summing istores which total length is larger than default capacity;
--- ./spec/istore/aggregates_spec.rb:32;
-CREATE EXTENSION istore;
-CREATE TABLE test (v istore);
-INSERT INTO test SELECT istore(array_agg(x), array_agg(x)) FROM generate_series(1, 31, 2) AS a(x);
-INSERT INTO test SELECT istore(array_agg(x), array_agg(x)) FROM generate_series(2, 32, 2) AS a(x);
-SELECT SUM(v) FROM test;
+CREATE TABLE test_istore (v istore);
+INSERT INTO test_istore SELECT istore(array_agg(x), array_agg(x)) FROM generate_series(1, 31, 2) AS a(x);
+INSERT INTO test_istore SELECT istore(array_agg(x), array_agg(x)) FROM generate_series(2, 32, 2) AS a(x);
+SELECT SUM(v) FROM test_istore;
                                                                                                                                                                                      sum                                                                                                                                                                                      
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  "1"=>"1", "2"=>"2", "3"=>"3", "4"=>"4", "5"=>"5", "6"=>"6", "7"=>"7", "8"=>"8", "9"=>"9", "10"=>"10", "11"=>"11", "12"=>"12", "13"=>"13", "14"=>"14", "15"=>"15", "16"=>"16", "17"=>"17", "18"=>"18", "19"=>"19", "20"=>"20", "21"=>"21", "22"=>"22", "23"=>"23", "24"=>"24", "25"=>"25", "26"=>"26", "27"=>"27", "28"=>"28", "29"=>"29", "30"=>"30", "31"=>"31", "32"=>"32"
 (1 row)
 
-ROLLBACK;
-BEGIN;
 -- extend bigistore should correctly extend internal aggregation state while summing istores which total length is larger than default capacity;
--- ./spec/istore/aggregates_spec.rb:32;
-CREATE EXTENSION istore;
-CREATE TABLE test (v bigistore);
-INSERT INTO test SELECT bigistore(array_agg(x), array_agg(x)) FROM generate_series(1, 31, 2) AS a(x);
-INSERT INTO test SELECT bigistore(array_agg(x), array_agg(x)) FROM generate_series(2, 32, 2) AS a(x);
-SELECT SUM(v) FROM test;
+CREATE TABLE test_bigistore (v bigistore);
+INSERT INTO test_bigistore SELECT bigistore(array_agg(x), array_agg(x)) FROM generate_series(1, 31, 2) AS a(x);
+INSERT INTO test_bigistore SELECT bigistore(array_agg(x), array_agg(x)) FROM generate_series(2, 32, 2) AS a(x);
+SELECT SUM(v) FROM test_bigistore;
                                                                                                                                                                                      sum                                                                                                                                                                                      
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  "1"=>"1", "2"=>"2", "3"=>"3", "4"=>"4", "5"=>"5", "6"=>"6", "7"=>"7", "8"=>"8", "9"=>"9", "10"=>"10", "11"=>"11", "12"=>"12", "13"=>"13", "14"=>"14", "15"=>"15", "16"=>"16", "17"=>"17", "18"=>"18", "19"=>"19", "20"=>"20", "21"=>"21", "22"=>"22", "23"=>"23", "24"=>"24", "25"=>"25", "26"=>"26", "27"=>"27", "28"=>"28", "29"=>"29", "30"=>"30", "31"=>"31", "32"=>"32"
 (1 row)
 
-ROLLBACK;
