@@ -1,32 +1,23 @@
 -- bigistore gin access should do index scan using gin;
-CREATE TABLE t1 AS
+CREATE TABLE t AS
 SELECT i, string_agg(j::text || '=>0', ',')::bigistore AS s
 FROM
 generate_series(0, 10000) AS i,
 generate_series(i, i + (i % 10)) AS j
 GROUP BY i;
-CREATE INDEX ON t1 USING gin(s);;
-SET enable_seqscan = 0;;
-EXPLAIN (COSTS OFF) SELECT * FROM t1 WHERE s ? 3;;
-             QUERY PLAN              
--------------------------------------
- Bitmap Heap Scan on t1
+CREATE INDEX ON t USING gin(s);
+SET enable_seqscan = 0;
+EXPLAIN (COSTS OFF) SELECT * FROM t WHERE s ? 3;
+             QUERY PLAN             
+------------------------------------
+ Bitmap Heap Scan on t
    Recheck Cond: (s ? 3)
-   ->  Bitmap Index Scan on t1_s_idx
+   ->  Bitmap Index Scan on t_s_idx
          Index Cond: (s ? 3)
 (4 rows)
 
-RESET enable_seqscan;;
 -- bigistore gin access should find the matching rows for key 300;
-CREATE TABLE t2 AS
-SELECT i, string_agg(j::text || '=>0', ',')::bigistore AS s
-FROM
-generate_series(0, 10000) AS i,
-generate_series(i, i + (i % 10)) AS j
-GROUP BY i;
-CREATE INDEX ON t2 USING gin(s);;
-SET enable_seqscan = 0;;
-SELECT s FROM t2 WHERE s ? 300 ORDER BY i;;
+SELECT s FROM t WHERE s ? 300 ORDER BY i;
                                                            s                                                            
 ------------------------------------------------------------------------------------------------------------------------
  "295"=>"0", "296"=>"0", "297"=>"0", "298"=>"0", "299"=>"0", "300"=>"0"
@@ -37,17 +28,8 @@ SELECT s FROM t2 WHERE s ? 300 ORDER BY i;;
  "300"=>"0"
 (6 rows)
 
-RESET enable_seqscan;;
 -- bigistore gin access should find the matching rows for key 600;
-CREATE TABLE t3 AS
-SELECT i, string_agg(j::text || '=>0', ',')::bigistore AS s
-FROM
-generate_series(0, 10000) AS i,
-generate_series(i, i + (i % 10)) AS j
-GROUP BY i;
-CREATE INDEX ON t3 USING gin(s);;
-SET enable_seqscan = 0;;
-SELECT s FROM t3 WHERE s ? 600 ORDER BY i;;
+SELECT s FROM t WHERE s ? 600 ORDER BY i;
                                                            s                                                            
 ------------------------------------------------------------------------------------------------------------------------
  "595"=>"0", "596"=>"0", "597"=>"0", "598"=>"0", "599"=>"0", "600"=>"0"
@@ -58,17 +40,8 @@ SELECT s FROM t3 WHERE s ? 600 ORDER BY i;;
  "600"=>"0"
 (6 rows)
 
-RESET enable_seqscan;;
 -- bigistore gin access should find the matching rows for key 900;
-CREATE TABLE t4 AS
-SELECT i, string_agg(j::text || '=>0', ',')::bigistore AS s
-FROM
-generate_series(0, 10000) AS i,
-generate_series(i, i + (i % 10)) AS j
-GROUP BY i;
-CREATE INDEX ON t4 USING gin(s);;
-SET enable_seqscan = 0;;
-SELECT s FROM t4 WHERE s ? 900 ORDER BY i;;
+SELECT s FROM t WHERE s ? 900 ORDER BY i;
                                                            s                                                            
 ------------------------------------------------------------------------------------------------------------------------
  "895"=>"0", "896"=>"0", "897"=>"0", "898"=>"0", "899"=>"0", "900"=>"0"
@@ -79,36 +52,18 @@ SELECT s FROM t4 WHERE s ? 900 ORDER BY i;;
  "900"=>"0"
 (6 rows)
 
-RESET enable_seqscan;;
 -- istore gin access should do index scan using gin;
-CREATE TABLE t5 AS
-SELECT i, string_agg(j::text || '=>0', ',')::istore AS s
-FROM
-generate_series(0, 10000) AS i,
-generate_series(i, i + (i % 10)) AS j
-GROUP BY i;
-CREATE INDEX ON t5 USING gin(s);;
-SET enable_seqscan = 0;;
-EXPLAIN (COSTS OFF) SELECT * FROM t5 WHERE s ? 3;;
-             QUERY PLAN              
--------------------------------------
- Bitmap Heap Scan on t5
+EXPLAIN (COSTS OFF) SELECT * FROM t WHERE s ? 3;
+             QUERY PLAN             
+------------------------------------
+ Bitmap Heap Scan on t
    Recheck Cond: (s ? 3)
-   ->  Bitmap Index Scan on t5_s_idx
+   ->  Bitmap Index Scan on t_s_idx
          Index Cond: (s ? 3)
 (4 rows)
 
-RESET enable_seqscan;;
 -- istore gin access should find the matching rows for key 300;
-CREATE TABLE t6 AS
-SELECT i, string_agg(j::text || '=>0', ',')::istore AS s
-FROM
-generate_series(0, 10000) AS i,
-generate_series(i, i + (i % 10)) AS j
-GROUP BY i;
-CREATE INDEX ON t6 USING gin(s);;
-SET enable_seqscan = 0;;
-SELECT s FROM t6 WHERE s ? 300 ORDER BY i;;
+SELECT s FROM t WHERE s ? 300 ORDER BY i;
                                                            s                                                            
 ------------------------------------------------------------------------------------------------------------------------
  "295"=>"0", "296"=>"0", "297"=>"0", "298"=>"0", "299"=>"0", "300"=>"0"
@@ -119,17 +74,8 @@ SELECT s FROM t6 WHERE s ? 300 ORDER BY i;;
  "300"=>"0"
 (6 rows)
 
-RESET enable_seqscan;;
 -- istore gin access should find the matching rows for key 600;
-CREATE TABLE t7 AS
-SELECT i, string_agg(j::text || '=>0', ',')::istore AS s
-FROM
-generate_series(0, 10000) AS i,
-generate_series(i, i + (i % 10)) AS j
-GROUP BY i;
-CREATE INDEX ON t7 USING gin(s);;
-SET enable_seqscan = 0;;
-SELECT s FROM t7 WHERE s ? 600 ORDER BY i;;
+SELECT s FROM t WHERE s ? 600 ORDER BY i;
                                                            s                                                            
 ------------------------------------------------------------------------------------------------------------------------
  "595"=>"0", "596"=>"0", "597"=>"0", "598"=>"0", "599"=>"0", "600"=>"0"
@@ -140,17 +86,8 @@ SELECT s FROM t7 WHERE s ? 600 ORDER BY i;;
  "600"=>"0"
 (6 rows)
 
-RESET enable_seqscan;;
 -- istore gin access should find the matching rows for key 900;
-CREATE TABLE t8 AS
-SELECT i, string_agg(j::text || '=>0', ',')::istore AS s
-FROM
-generate_series(0, 10000) AS i,
-generate_series(i, i + (i % 10)) AS j
-GROUP BY i;
-CREATE INDEX ON t8 USING gin(s);;
-SET enable_seqscan = 0;;
-SELECT s FROM t8 WHERE s ? 900 ORDER BY i;;
+SELECT s FROM t WHERE s ? 900 ORDER BY i;
                                                            s                                                            
 ------------------------------------------------------------------------------------------------------------------------
  "895"=>"0", "896"=>"0", "897"=>"0", "898"=>"0", "899"=>"0", "900"=>"0"
@@ -161,4 +98,4 @@ SELECT s FROM t8 WHERE s ? 900 ORDER BY i;;
  "900"=>"0"
 (6 rows)
 
-RESET enable_seqscan;;
+RESET enable_seqscan;

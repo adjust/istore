@@ -1,11 +1,11 @@
--- bigistore binary_copy should copy data binary from country;
+-- bigistore binary_copy should copy data out and in again using binary format;
 CREATE TABLE before_bigistore (a bigistore);
 INSERT INTO before_bigistore values ('1=>1'),('1=>-9223372036854775807'),('1=>3'),('2=>1'),('2=>0'),('2=>9223372036854775806');
 CREATE TABLE after_bigistore (a bigistore);
 COPY before_bigistore TO '/tmp/tst' WITH (FORMAT binary);
 COPY after_bigistore FROM '/tmp/tst' WITH (FORMAT binary);
 SELECT * FROM after_bigistore;
--- istore binary_copy should copy data binary from country;
+-- istore binary_copy should copy data out and in again using binary format;
 CREATE TABLE before_istore (a istore);
 INSERT INTO before_istore values ('1=>1'),('1=>-2147483647'),('1=>3'),('2=>1'),('2=>0'),('2=>2147483647');
 CREATE TABLE after_istore (a istore);
