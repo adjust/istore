@@ -38,6 +38,7 @@ raise_unexpected_sign(char sign, char *str, char *context)
     do {                                                                     \
         long _l;                                                             \
         char *begin = ptr;                                                   \
+        errno = 0;                                                           \
         _l   = strtol(ptr, &ptr, 10);                                        \
         if (errno == ERANGE)                                                 \
             raise_out_of_range(whole);                                       \
