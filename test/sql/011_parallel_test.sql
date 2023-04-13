@@ -1,5 +1,3 @@
-BEGIN;
-CREATE EXTENSION istore;
 SET max_parallel_workers_per_gather = 8;
 SET force_parallel_mode = on;
 
@@ -70,5 +68,3 @@ SELECT MIN(data->5) FROM bigdata;
 SELECT id, MIN(data->5) FROM bigdata GROUP BY id ORDER BY id LIMIT 10;
 SELECT MAX(data->5) FROM bigdata;
 SELECT id, MAX(data->5) FROM bigdata GROUP BY id ORDER BY id LIMIT 10;
-
-ROLLBACK;

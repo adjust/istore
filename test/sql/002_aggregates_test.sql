@@ -1,0 +1,18 @@
+-- isagg int should skip null keys;
+SELECT id, isagg(NULLIF(i%10,3), NULLIF(i::int, 50) ) FROM generate_series(1,100) i, generate_series(1,3) id GROUP BY id ORDER BY id;;
+-- isagg int should skip null values;
+SELECT id, isagg((i%10), NULL::int) FROM generate_series(1,100) i, generate_series(1,3) id GROUP BY id ORDER BY id;;
+-- isagg bigint should skip null keys;
+SELECT id, isagg(NULLIF(i%10,3), NULLIF(i::bigint, 50) ) FROM generate_series(1,100) i, generate_series(1,3) id GROUP BY id ORDER BY id;;
+-- isagg bigint should skip null values;
+SELECT id, isagg((i%10), NULL::bigint) FROM generate_series(1,100) i, generate_series(1,3) id GROUP BY id ORDER BY id;;
+-- extend istore should correctly extend internal aggregation state while summing istores which total length is larger than default capacity;
+CREATE TABLE test_istore (v istore);
+INSERT INTO test_istore SELECT istore(array_agg(x), array_agg(x)) FROM generate_series(1, 31, 2) AS a(x);
+INSERT INTO test_istore SELECT istore(array_agg(x), array_agg(x)) FROM generate_series(2, 32, 2) AS a(x);
+SELECT SUM(v) FROM test_istore;
+-- extend bigistore should correctly extend internal aggregation state while summing istores which total length is larger than default capacity;
+CREATE TABLE test_bigistore (v bigistore);
+INSERT INTO test_bigistore SELECT bigistore(array_agg(x), array_agg(x)) FROM generate_series(1, 31, 2) AS a(x);
+INSERT INTO test_bigistore SELECT bigistore(array_agg(x), array_agg(x)) FROM generate_series(2, 32, 2) AS a(x);
+SELECT SUM(v) FROM test_bigistore;

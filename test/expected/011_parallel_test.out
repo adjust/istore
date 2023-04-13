@@ -1,5 +1,3 @@
-BEGIN;
-CREATE EXTENSION istore;
 SET max_parallel_workers_per_gather = 8;
 SET force_parallel_mode = on;
 CREATE TABLE data AS
@@ -187,12 +185,12 @@ SELECT id, SUM(data) FROM bigdata GROUP BY id ORDER BY id LIMIT 10;
 EXPLAIN(COSTS OFF) SELECT id, SUM(data) FROM bigdata GROUP BY id ORDER BY id;
                       QUERY PLAN                      
 ------------------------------------------------------
- Sort
-   Sort Key: id
-   ->  Finalize HashAggregate
-         Group Key: id
-         ->  Gather
-               Workers Planned: 8
+ Finalize GroupAggregate
+   Group Key: id
+   ->  Gather Merge
+         Workers Planned: 8
+         ->  Sort
+               Sort Key: id
                ->  Partial HashAggregate
                      Group Key: id
                      ->  Parallel Seq Scan on bigdata
@@ -232,12 +230,12 @@ SELECT id, MIN(data) FROM bigdata GROUP BY id ORDER BY id LIMIT 10;
 EXPLAIN(COSTS OFF) SELECT id, MIN(data) FROM bigdata GROUP BY id ORDER BY id;
                       QUERY PLAN                      
 ------------------------------------------------------
- Sort
-   Sort Key: id
-   ->  Finalize HashAggregate
-         Group Key: id
-         ->  Gather
-               Workers Planned: 8
+ Finalize GroupAggregate
+   Group Key: id
+   ->  Gather Merge
+         Workers Planned: 8
+         ->  Sort
+               Sort Key: id
                ->  Partial HashAggregate
                      Group Key: id
                      ->  Parallel Seq Scan on bigdata
@@ -277,12 +275,12 @@ SELECT id, MAX(data) FROM bigdata GROUP BY id ORDER BY id LIMIT 10;
 EXPLAIN(COSTS OFF) SELECT id, MAX(data) FROM bigdata GROUP BY id ORDER BY id;
                       QUERY PLAN                      
 ------------------------------------------------------
- Sort
-   Sort Key: id
-   ->  Finalize HashAggregate
-         Group Key: id
-         ->  Gather
-               Workers Planned: 8
+ Finalize GroupAggregate
+   Group Key: id
+   ->  Gather Merge
+         Workers Planned: 8
+         ->  Sort
+               Sort Key: id
                ->  Partial HashAggregate
                      Group Key: id
                      ->  Parallel Seq Scan on bigdata
@@ -415,4 +413,3 @@ SELECT id, MAX(data->5) FROM bigdata GROUP BY id ORDER BY id LIMIT 10;
  1900 | 2905
 (10 rows)
 
-ROLLBACK;

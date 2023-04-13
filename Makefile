@@ -5,7 +5,7 @@ DATA = $(wildcard *--*.sql)
 PGXS := $(shell $(PG_CONFIG) --pgxs)
 MODULE_big = istore
 OBJS = $(patsubst %.c,%.o,$(wildcard src/*.c))
-TESTS        = $(wildcard test/sql/*.sql)
+TESTS        = $(sort $(wildcard test/sql/*.sql))
 REGRESS      ?= $(patsubst test/sql/%.sql,%,$(TESTS))
 REGRESS_OPTS = --inputdir=test
 PG_CPPFLAGS  = --std=c99

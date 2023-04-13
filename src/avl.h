@@ -2,7 +2,6 @@
 #define ISTORE_AVL_H
 
 #include "postgres.h"
-#include "utils/int8.h"
 
 
 typedef struct AvlNode AvlNode;

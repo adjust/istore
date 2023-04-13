@@ -1,5 +1,3 @@
-BEGIN;
-CREATE EXTENSION istore;
 -- istore test cases
 SELECT max_value(''::istore);
  max_value 
@@ -68,4 +66,3 @@ SELECT max_value('10=>21, 11=>500, 13=>800 ,12=>3147483647'::bigistore);
  3147483647
 (1 row)
 
-ROLLBACK;
