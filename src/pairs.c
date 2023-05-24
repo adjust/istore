@@ -231,7 +231,7 @@ digits64(int64 num)
     {
         if (num == LLONG_MIN)
             // special case for -2^63 because 2^63 can't fit in a two's complement 64-bit integer
-            return 19;
+            return 20;
         sign = 1;
         num  = -num;
     }
