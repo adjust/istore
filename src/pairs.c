@@ -63,10 +63,7 @@ istore_tree_to_pairs(AvlNode *p, IStorePairs *pairs)
     if (p == NULL)
         return;
     istore_tree_to_pairs(p->left, pairs);
-    istore_pairs_insert(pairs,
-                        p->key,
-                        DatumGetInt32(DirectFunctionCall1(int84,
-                                                          Int64GetDatum(p->value))));
+    istore_pairs_insert(pairs, p->key, DatumGetInt32(DirectFunctionCall1(int84, Int64GetDatum(p->value))));
     istore_tree_to_pairs(p->right, pairs);
 }
 
@@ -229,11 +226,11 @@ digits64(int64 num)
     int sign = 0;
     if (num < 0)
     {
+        sign = 1;
         if (num == LLONG_MIN)
             // special case for -2^63 because 2^63 can't fit in a two's complement 64-bit integer
-            return 20;
-        sign = 1;
-        num  = -num;
+            return 19 + sign;
+        num = -num;
     }
 
     if (num < 1e10)
