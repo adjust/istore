@@ -1,3 +1,4 @@
+![CI](https://github.com/adjust/istore/workflows/CI/badge.svg)\n
 [![Build Status](https://github.com/adjust/istore/actions/workflows/ci.yml/badge.svg)](https://github.com/adjust/istore/actions/workflows/ci.yml)
 
 # istore
