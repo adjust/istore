@@ -7,10 +7,11 @@ MODULE_big = istore
 OBJS = $(patsubst %.c,%.o,$(wildcard src/*.c))
 TESTS        = $(sort $(wildcard test/sql/*.sql))
 REGRESS      ?= $(patsubst test/sql/%.sql,%,$(TESTS))
-REGRESS_OPTS = --inputdir=test
+REGRESS_OPTS = --inputdir=test \
+               --load-extension=$(EXTENSION)
 PG_CPPFLAGS  = --std=c99
 include $(PGXS)
 
 ifeq ($(shell test $(VERSION_NUM) -lt 90600; echo $$?),0)
-REGRESS := $(filter-out parallel_test, $(REGRESS))
+    REGRESS := $(filter-out parallel_test, $(REGRESS))
 endif
