@@ -1,4 +1,4 @@
-![CI](https://github.com/adjust/istore/workflows/CI/badge.svg)\n
+![CI](https://github.com/adjust/istore/workflows/CI/badge.svg)
 
 # istore
 
