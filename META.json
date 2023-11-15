@@ -2,7 +2,9 @@
    "name": "istore",
    "abstract": "An integer -> integer key/value store for analytic workloads",
    "version": "0.1.12",
-   "maintainer": [ "Chris Travers <christravers@adjust.com>", "Manuel Kniep <rapimo@adjust.com>"],
+   "maintainer" : [
+      "adjustgmbh"
+   ],
    "license": {
       "PostgreSQL": "http://www.postgresql.org/about/licence"
    },
@@ -21,7 +23,7 @@
    "prereqs": {
       "runtime": {
         "requires": {
-           "PostgreSQL": "9.4.0"
+           "PostgreSQL": "10.0.0"
         }
       }
    },
