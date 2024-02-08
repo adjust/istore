@@ -3,6 +3,16 @@
 
 #include "postgres.h"
 
+// pg16 compability
+#ifndef SET_VARSIZE
+/*
+ * pg >= 16 reorganized the toastable header files
+ * https://github.com/postgres/postgres/commit/d952373a987bad331c0e499463159dd142ced1ef
+ * to ensure cross version compatibility we do a bit of a hack here
+ */
+#include "varatt.h"
+#endif
+
 #include "avl.h"
 #include "fmgr.h"
 #include "utils/builtins.h"
