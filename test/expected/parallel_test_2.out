@@ -1,6 +1,13 @@
 SET max_parallel_workers_per_gather = 8;
-SET debug_parallel_query = on;
-CREATE TABLE data AS
+SET max_parallel_workers_per_gather = 8;
+DO $$
+BEGIN
+    IF current_setting('server_version_num')::int >= 160000 THEN
+        EXECUTE 'SET debug_parallel_query = on';
+    ELSE
+        EXECUTE 'SET force_parallel_mode = on';
+    END IF;
+END $$;CREATE TABLE data AS
 SELECT id, isagg(k, id+dup+k) as data
 FROM generate_series(1000,10000, 100) id, generate_series(1,10) k, generate_series(1,1000) dup
 GROUP BY id, dup ORDER BY id;
