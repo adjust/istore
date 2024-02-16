@@ -1,5 +1,4 @@
 SET max_parallel_workers_per_gather = 8;
-SET max_parallel_workers_per_gather = 8;
 DO $$
 BEGIN
     IF current_setting('server_version_num')::int >= 160000 THEN
