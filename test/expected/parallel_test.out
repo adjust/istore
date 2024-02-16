@@ -1,5 +1,5 @@
 SET max_parallel_workers_per_gather = 8;
-SET force_parallel_mode = on;
+SET debug_parallel_query = on;
 CREATE TABLE data AS
 SELECT id, isagg(k, id+dup+k) as data
 FROM generate_series(1000,10000, 100) id, generate_series(1,10) k, generate_series(1,1000) dup
